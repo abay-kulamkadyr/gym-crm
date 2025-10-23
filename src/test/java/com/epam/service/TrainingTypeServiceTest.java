@@ -1,0 +1,152 @@
+package com.epam.service;
+
+import com.epam.dao.TrainingTypeDao;
+import com.epam.domain.TrainingType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class TrainingTypeServiceTest {
+
+	@Mock
+	private TrainingTypeDao trainingTypeDao;
+
+	@InjectMocks
+	private TrainingTypeService trainingTypeService;
+
+	private TrainingType testTrainingType;
+
+	@BeforeEach
+	void setUp() {
+		// Assuming TrainingType has a constructor like: new TrainingType(id, name,
+		// trainerId, trainingId)
+		testTrainingType = new TrainingType(1L, "Cardio", 10L, 20L);
+	}
+
+	@Test
+	void create_shouldCallDaoSave() {
+		// When
+		trainingTypeService.create(testTrainingType);
+
+		// Then
+		verify(trainingTypeDao).save(testTrainingType);
+	}
+
+	@Test
+	void create_shouldNotCreateNewIfExists() {
+		// Given
+		when(trainingTypeDao.findById(1L)).thenReturn(testTrainingType);
+
+		// Then
+		assertThrows(IllegalArgumentException.class, () -> {
+			trainingTypeService.create(testTrainingType);
+		});
+	}
+
+	@Test
+	void update_shouldSucceedWhenExists() {
+		// Given
+		testTrainingType = new TrainingType(1L, "Strength Training", 10L, 20L);
+		when(trainingTypeDao.findById(testTrainingType.getId())).thenReturn(testTrainingType);
+
+		// When
+		trainingTypeService.update(testTrainingType);
+
+		// Then
+		verify(trainingTypeDao).save(testTrainingType);
+	}
+
+	@Test
+	void update_shouldFailWhenNotExists() {
+		// Given
+		testTrainingType = new TrainingType(999L, "Invalid", 10L, 20L);
+		when(trainingTypeDao.findById(anyLong())).thenReturn(null);
+
+		// Then
+		assertThrows(IllegalArgumentException.class, () -> {
+			trainingTypeService.update(testTrainingType);
+		});
+		verify(trainingTypeDao, never()).save(any(TrainingType.class));
+	}
+
+	@Test
+	void delete_shouldCallDaoDeleteWhenExists() {
+		// Given
+		long typeId = 1L;
+		when(trainingTypeDao.findById(typeId)).thenReturn(testTrainingType);
+
+		// When
+		trainingTypeService.delete(typeId);
+
+		// Then
+		verify(trainingTypeDao).delete(typeId);
+	}
+
+	@Test
+	void delete_shouldNotCallDaoWhenDoesNotExist() {
+		// Given
+		long typeId = 999L;
+		when(trainingTypeDao.findById(typeId)).thenReturn(null);
+
+		// When
+		trainingTypeService.delete(typeId);
+
+		// Then
+		verify(trainingTypeDao, never()).delete(anyLong());
+	}
+
+	@Test
+	void getById_shouldReturnTrainingTypeFromDao() {
+		// Given
+		long typeId = 1L;
+		when(trainingTypeDao.findById(typeId)).thenReturn(testTrainingType);
+
+		// When
+		TrainingType result = trainingTypeService.getById(typeId);
+
+		// Then
+		assertThat(result).isEqualTo(testTrainingType);
+		verify(trainingTypeDao).findById(typeId);
+	}
+
+	@Test
+	void getAll_shouldReturnAllTrainingTypesFromDao() {
+		// Given
+		TrainingType type2 = new TrainingType(2L, "Zumba", 11L, 21L);
+		Collection<TrainingType> types = Arrays.asList(testTrainingType, type2);
+		when(trainingTypeDao.findAll()).thenReturn(types);
+
+		// When
+		Collection<TrainingType> result = trainingTypeService.getAll();
+
+		// Then
+		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTrainingType, type2);
+		verify(trainingTypeDao).findAll();
+	}
+
+	@Test
+	void getAll_shouldReturnEmptyCollectionWhenNoTrainingTypes() {
+		// Given
+		when(trainingTypeDao.findAll()).thenReturn(Collections.emptyList());
+
+		// When
+		Collection<TrainingType> result = trainingTypeService.getAll();
+
+		// Then
+		assertThat(result).isEmpty();
+		verify(trainingTypeDao).findAll();
+	}
+
+}

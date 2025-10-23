@@ -1,0 +1,35 @@
+[
+  {
+    "userId": 201,
+    "firstName": "Alice",
+    "lastName": "Lee",
+    "username": "Alice.Lee",
+    "password": "randomPassword4",
+    "active": true,
+    "dob": "1998-06-12",
+    "address": "123 Fitness St",
+    "trainingId": 501
+  },
+  {
+    "userId": 202,
+    "firstName": "Brian",
+    "lastName": "Kim",
+    "username": "Brian.Kim",
+    "password": "randomPassword5",
+    "active": true,
+    "dob": "1995-02-23",
+    "address": "42 Muscle Ave",
+    "trainingId": 502
+  },
+  {
+    "userId": 203,
+    "firstName": "Diana",
+    "lastName": "Lopez",
+    "username": "Diana.Lopez",
+    "password": "randomPassword6",
+    "active": false,
+    "dob": "2001-11-04",
+    "address": "88 Yoga Way",
+    "trainingId": 503
+  }
+]

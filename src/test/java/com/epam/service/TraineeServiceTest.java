@@ -1,0 +1,204 @@
+package com.epam.service;
+
+import com.epam.dao.TraineeDao;
+import com.epam.domain.Trainee;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class TraineeServiceTest {
+
+	@Mock
+	private TraineeDao traineeDao;
+
+	@InjectMocks
+	private TraineeService traineeService;
+
+	private Trainee testTrainee;
+
+	@BeforeEach
+	void setUp() {
+		testTrainee = new Trainee(1L, "John", "Doe", LocalDate.of(1990, 1, 1));
+		testTrainee.setActive(true);
+		testTrainee.setAddress("123 Main St");
+	}
+
+	@Test
+	void create_shouldGenerateUsernameAndPassword() {
+		// Given
+		when(traineeDao.findAll()).thenReturn(Collections.emptyList());
+
+		// When
+		traineeService.create(testTrainee);
+
+		// Then
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe");
+		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
+		verify(traineeDao).save(testTrainee);
+	}
+
+	@Test
+	void create_shouldGenerateUniqueUsernameWhenDuplicateExists() {
+		// Given
+		Trainee existingTrainee = new Trainee(2L, "John", "Doe", LocalDate.of(1985, 5, 15));
+		existingTrainee.setUsername("John.Doe");
+		when(traineeDao.findAll()).thenReturn(Collections.singletonList(existingTrainee));
+
+		// When
+		traineeService.create(testTrainee);
+
+		// Then
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe2");
+		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
+		verify(traineeDao).save(testTrainee);
+	}
+
+	@Test
+	void create_shouldGenerateUniqueUsernameWithMultipleDuplicates() {
+		// Given
+		Trainee existingTrainee1 = new Trainee(2L, "John", "Doe", LocalDate.of(1985, 5, 15));
+		existingTrainee1.setUsername("John.Doe");
+		Trainee existingTrainee2 = new Trainee(3L, "John", "Doe", LocalDate.of(1988, 3, 20));
+		existingTrainee2.setUsername("John.Doe2");
+		when(traineeDao.findAll()).thenReturn(Arrays.asList(existingTrainee1, existingTrainee2));
+
+		// When
+		traineeService.create(testTrainee);
+
+		// Then
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe3");
+		verify(traineeDao).save(testTrainee);
+	}
+
+	@Test
+	void create_shouldCallDaoSave() {
+		// Given
+		testTrainee.setUsername("John.Doe");
+		testTrainee.setPassword("password123");
+
+		// When
+		traineeService.create(testTrainee);
+
+		// Then
+		verify(traineeDao).save(testTrainee);
+	}
+
+	@Test
+	void create_shouldNotCreateNewIfExists() {
+		// Given
+		when(traineeDao.findById(1L)).thenReturn(testTrainee);
+
+		// Then
+		assertThrows(IllegalArgumentException.class, () -> {
+			traineeService.create(testTrainee);
+		});
+	}
+
+	@Test
+	void update_shouldSucceedWhenExists() {
+		// Given
+		testTrainee.setUsername("John.Doe");
+		testTrainee.setPassword("password123");
+		when(traineeDao.findById(testTrainee.getUserId())).thenReturn(testTrainee);
+
+		// When
+		traineeService.update(testTrainee);
+
+		// Then
+		verify(traineeDao).save(testTrainee);
+	}
+
+	@Test
+	void update_shouldFailWhenNotExists() {
+		// Given
+		testTrainee.setUsername("John.Doe");
+		testTrainee.setPassword("password123");
+
+		// Then
+		assertThrows(IllegalArgumentException.class, () -> {
+			traineeService.update(testTrainee);
+		});
+	}
+
+	@Test
+	void delete_shouldNotCallDaoWhenDoesNotExist() {
+		// Given
+		long traineeId = 1L;
+
+		// When
+		traineeService.delete(traineeId);
+
+		// Then
+		verify(traineeDao, never()).delete(anyLong());
+	}
+
+	@Test
+	void getById_shouldReturnTraineeFromDao() {
+		// Given
+		long traineeId = 1L;
+		when(traineeDao.findById(traineeId)).thenReturn(testTrainee);
+
+		// When
+		Trainee result = traineeService.getById(traineeId);
+
+		// Then
+		assertThat(result).isEqualTo(testTrainee);
+		verify(traineeDao).findById(traineeId);
+	}
+
+	@Test
+	void getById_shouldReturnNullWhenNotFound() {
+		// Given
+		long traineeId = 999L;
+		when(traineeDao.findById(traineeId)).thenReturn(null);
+
+		// When
+		Trainee result = traineeService.getById(traineeId);
+
+		// Then
+		assertThat(result).isNull();
+		verify(traineeDao).findById(traineeId);
+	}
+
+	@Test
+	void getAll_shouldReturnAllTraineesFromDao() {
+		// Given
+		Trainee trainee2 = new Trainee(2L, "Jane", "Smith", LocalDate.of(1992, 6, 15));
+		Collection<Trainee> trainees = Arrays.asList(testTrainee, trainee2);
+		when(traineeDao.findAll()).thenReturn(trainees);
+
+		// When
+		Collection<Trainee> result = traineeService.getAll();
+
+		// Then
+		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTrainee, trainee2);
+		verify(traineeDao).findAll();
+	}
+
+	@Test
+	void getAll_shouldReturnEmptyCollectionWhenNoTrainees() {
+		// Given
+		when(traineeDao.findAll()).thenReturn(Collections.emptyList());
+
+		// When
+		Collection<Trainee> result = traineeService.getAll();
+
+		// Then
+		assertThat(result).isEmpty();
+		verify(traineeDao).findAll();
+	}
+
+}
