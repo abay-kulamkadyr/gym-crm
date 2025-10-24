@@ -10,7 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-public class TrainingStorageInitializer implements StorageInitializer<Training> {
+@InitializableStorage(entityType = Training.class)
+class TrainingStorageInitializer implements StorageInitializer<Training> {
 
 	private final DataLoader dataLoader;
 
@@ -23,11 +24,6 @@ public class TrainingStorageInitializer implements StorageInitializer<Training> 
 	public void initialize(Map<Long, Training> storage) {
 		List<Training> trainings = dataLoader.loadTrainings();
 		trainings.forEach(training -> storage.put(training.getTrainingId(), training));
-	}
-
-	@Override
-	public String getStorageBeanName() {
-		return "trainingsStorage";
 	}
 
 }

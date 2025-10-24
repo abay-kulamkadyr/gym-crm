@@ -1,5 +1,6 @@
 package com.epam.config;
 
+import com.epam.bootstrap.InitializableStorage;
 import java.util.HashMap;
 import java.util.Map;
 import com.epam.domain.Trainee;
@@ -18,21 +19,25 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 public class AppConfig {
 
 	@Bean("traineesStorage")
+	@InitializableStorage(entityType = Trainee.class)
 	public Map<Long, Trainee> traineeStorage() {
 		return new HashMap<>();
 	}
 
 	@Bean("trainersStorage")
+	@InitializableStorage(entityType = Trainer.class)
 	public Map<Long, Trainer> trainersStorage() {
 		return new HashMap<>();
 	}
 
 	@Bean("trainingsStorage")
+	@InitializableStorage(entityType = Training.class)
 	public Map<Long, Training> trainingsStorage() {
 		return new HashMap<>();
 	}
 
 	@Bean("trainingTypesStorage")
+	@InitializableStorage(entityType = TrainingType.class)
 	public Map<Long, TrainingType> trainingTypesStorage() {
 		return new HashMap<>();
 	}

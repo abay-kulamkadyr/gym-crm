@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 @Slf4j
-public class DataLoader {
+class DataLoader {
 
 	private final ObjectMapper objectMapper;
 
