@@ -1,7 +1,8 @@
 package com.epam.service;
 
-import com.epam.dao.TraineeDao;
-import com.epam.domain.Trainee;
+import com.epam.application.service.TraineeService;
+import com.epam.infrastructure.dao.TraineeRepositoryImpl;
+import com.epam.domain.model.Trainee;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.*;
 class TraineeServiceTest {
 
 	@Mock
-	private TraineeDao traineeDao;
+	private TraineeRepositoryImpl traineeRepositoryImpl;
 
 	@InjectMocks
 	private TraineeService traineeService;
@@ -39,7 +40,7 @@ class TraineeServiceTest {
 	@Test
 	void create_shouldGenerateUsernameAndPassword() {
 		// Given
-		when(traineeDao.findAll()).thenReturn(Collections.emptyList());
+		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.emptyList());
 
 		// When
 		traineeService.create(testTrainee);
@@ -47,7 +48,7 @@ class TraineeServiceTest {
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe");
 		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
-		verify(traineeDao).save(testTrainee);
+		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
 	@Test
@@ -55,7 +56,7 @@ class TraineeServiceTest {
 		// Given
 		Trainee existingTrainee = new Trainee(2L, "John", "Doe", LocalDate.of(1985, 5, 15));
 		existingTrainee.setUsername("John.Doe");
-		when(traineeDao.findAll()).thenReturn(Collections.singletonList(existingTrainee));
+		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.singletonList(existingTrainee));
 
 		// When
 		traineeService.create(testTrainee);
@@ -63,7 +64,7 @@ class TraineeServiceTest {
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe2");
 		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
-		verify(traineeDao).save(testTrainee);
+		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
 	@Test
@@ -73,14 +74,14 @@ class TraineeServiceTest {
 		existingTrainee1.setUsername("John.Doe");
 		Trainee existingTrainee2 = new Trainee(3L, "John", "Doe", LocalDate.of(1988, 3, 20));
 		existingTrainee2.setUsername("John.Doe2");
-		when(traineeDao.findAll()).thenReturn(Arrays.asList(existingTrainee1, existingTrainee2));
+		when(traineeRepositoryImpl.findAll()).thenReturn(Arrays.asList(existingTrainee1, existingTrainee2));
 
 		// When
 		traineeService.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe3");
-		verify(traineeDao).save(testTrainee);
+		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
 	@Test
@@ -93,13 +94,13 @@ class TraineeServiceTest {
 		traineeService.create(testTrainee);
 
 		// Then
-		verify(traineeDao).save(testTrainee);
+		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(traineeDao.findById(1L)).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(1L)).thenReturn(testTrainee);
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> {
@@ -112,13 +113,13 @@ class TraineeServiceTest {
 		// Given
 		testTrainee.setUsername("John.Doe");
 		testTrainee.setPassword("password123");
-		when(traineeDao.findById(testTrainee.getUserId())).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(testTrainee.getUserId())).thenReturn(testTrainee);
 
 		// When
 		traineeService.update(testTrainee);
 
 		// Then
-		verify(traineeDao).save(testTrainee);
+		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
 	@Test
@@ -142,35 +143,35 @@ class TraineeServiceTest {
 		traineeService.delete(traineeId);
 
 		// Then
-		verify(traineeDao, never()).delete(anyLong());
+		verify(traineeRepositoryImpl, never()).delete(anyLong());
 	}
 
 	@Test
 	void getById_shouldReturnTraineeFromDao() {
 		// Given
 		long traineeId = 1L;
-		when(traineeDao.findById(traineeId)).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(testTrainee);
 
 		// When
 		Trainee result = traineeService.getById(traineeId);
 
 		// Then
 		assertThat(result).isEqualTo(testTrainee);
-		verify(traineeDao).findById(traineeId);
+		verify(traineeRepositoryImpl).findById(traineeId);
 	}
 
 	@Test
 	void getById_shouldReturnNullWhenNotFound() {
 		// Given
 		long traineeId = 999L;
-		when(traineeDao.findById(traineeId)).thenReturn(null);
+		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(null);
 
 		// When
 		Trainee result = traineeService.getById(traineeId);
 
 		// Then
 		assertThat(result).isNull();
-		verify(traineeDao).findById(traineeId);
+		verify(traineeRepositoryImpl).findById(traineeId);
 	}
 
 	@Test
@@ -178,27 +179,27 @@ class TraineeServiceTest {
 		// Given
 		Trainee trainee2 = new Trainee(2L, "Jane", "Smith", LocalDate.of(1992, 6, 15));
 		Collection<Trainee> trainees = Arrays.asList(testTrainee, trainee2);
-		when(traineeDao.findAll()).thenReturn(trainees);
+		when(traineeRepositoryImpl.findAll()).thenReturn(trainees);
 
 		// When
 		Collection<Trainee> result = traineeService.getAll();
 
 		// Then
 		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTrainee, trainee2);
-		verify(traineeDao).findAll();
+		verify(traineeRepositoryImpl).findAll();
 	}
 
 	@Test
 	void getAll_shouldReturnEmptyCollectionWhenNoTrainees() {
 		// Given
-		when(traineeDao.findAll()).thenReturn(Collections.emptyList());
+		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.emptyList());
 
 		// When
 		Collection<Trainee> result = traineeService.getAll();
 
 		// Then
 		assertThat(result).isEmpty();
-		verify(traineeDao).findAll();
+		verify(traineeRepositoryImpl).findAll();
 	}
 
 }

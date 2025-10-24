@@ -1,11 +1,12 @@
 package com.epam.facade;
 
+import com.epam.interface_adapters.facade.GymFacade;
 import java.time.Duration;
-import com.epam.config.AppConfig;
-import com.epam.domain.Trainee;
-import com.epam.domain.Trainer;
-import com.epam.domain.Training;
-import com.epam.domain.TrainingType;
+import com.epam.infrastructure.config.AppConfig;
+import com.epam.domain.model.Trainee;
+import com.epam.domain.model.Trainer;
+import com.epam.domain.model.Training;
+import com.epam.domain.model.TrainingType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

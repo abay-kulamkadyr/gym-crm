@@ -1,7 +1,7 @@
 package com.epam;
 
-import com.epam.config.AppConfig;
-import com.epam.facade.GymFacade;
+import com.epam.infrastructure.config.AppConfig;
+import com.epam.interface_adapters.facade.GymFacade;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 public class Main {

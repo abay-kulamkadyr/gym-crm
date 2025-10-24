@@ -1,7 +1,8 @@
 package com.epam.service;
 
-import com.epam.dao.TrainingDao;
-import com.epam.domain.Training;
+import com.epam.application.service.TrainingService;
+import com.epam.infrastructure.dao.TrainingRepositoryImpl;
+import com.epam.domain.model.Training;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +23,7 @@ import static org.mockito.Mockito.*;
 class TrainingServiceTest {
 
 	@Mock
-	private TrainingDao trainingDao;
+	private TrainingRepositoryImpl trainingRepositoryImpl;
 
 	// NOTE: In a real app, this service would also mock TraineeDao and TrainerDao
 	// to validate IDs, but we'll focus on the core TrainingDao interactions.
@@ -44,13 +45,13 @@ class TrainingServiceTest {
 		trainingService.create(testTraining);
 
 		// Then
-		verify(trainingDao).save(testTraining);
+		verify(trainingRepositoryImpl).save(testTraining);
 	}
 
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(trainingDao.findById(1L)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(1L)).thenReturn(testTraining);
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> {
@@ -62,66 +63,66 @@ class TrainingServiceTest {
 	void update_shouldSucceedWhenExists() {
 		// Given
 		testTraining.setTrainingDuration(Duration.ofHours(2));
-		when(trainingDao.findById(testTraining.getTrainingId())).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(testTraining.getTrainingId())).thenReturn(testTraining);
 
 		// When
 		trainingService.update(testTraining);
 
 		// Then
-		verify(trainingDao).save(testTraining);
+		verify(trainingRepositoryImpl).save(testTraining);
 	}
 
 	@Test
 	void update_shouldFailWhenNotExists() {
 		// Given
 		testTraining.setTrainingId(999L);
-		when(trainingDao.findById(anyLong())).thenReturn(null);
+		when(trainingRepositoryImpl.findById(anyLong())).thenReturn(null);
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> {
 			trainingService.update(testTraining);
 		});
-		verify(trainingDao, never()).save(any(Training.class));
+		verify(trainingRepositoryImpl, never()).save(any(Training.class));
 	}
 
 	@Test
 	void delete_shouldCallDaoDeleteWhenExists() {
 		// Given
 		long trainingId = 1L;
-		when(trainingDao.findById(trainingId)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(testTraining);
 
 		// When
 		trainingService.delete(trainingId);
 
 		// Then
-		verify(trainingDao).delete(trainingId);
+		verify(trainingRepositoryImpl).delete(trainingId);
 	}
 
 	@Test
 	void delete_shouldNotCallDaoWhenDoesNotExist() {
 		// Given
 		long trainingId = 999L;
-		when(trainingDao.findById(trainingId)).thenReturn(null);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(null);
 
 		// When
 		trainingService.delete(trainingId);
 
 		// Then
-		verify(trainingDao, never()).delete(anyLong());
+		verify(trainingRepositoryImpl, never()).delete(anyLong());
 	}
 
 	@Test
 	void getById_shouldReturnTrainingFromDao() {
 		// Given
 		long trainingId = 1L;
-		when(trainingDao.findById(trainingId)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(testTraining);
 
 		// When
 		Training result = trainingService.getById(trainingId);
 
 		// Then
 		assertThat(result).isEqualTo(testTraining);
-		verify(trainingDao).findById(trainingId);
+		verify(trainingRepositoryImpl).findById(trainingId);
 	}
 
 	@Test
@@ -129,14 +130,14 @@ class TrainingServiceTest {
 		// Given
 		Training training2 = new Training(2L, 102L, 202L, LocalDate.now().plusDays(1), Duration.ofMinutes(45));
 		Collection<Training> trainings = Arrays.asList(testTraining, training2);
-		when(trainingDao.findAll()).thenReturn(trainings);
+		when(trainingRepositoryImpl.findAll()).thenReturn(trainings);
 
 		// When
 		Collection<Training> result = trainingService.getAll();
 
 		// Then
 		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTraining, training2);
-		verify(trainingDao).findAll();
+		verify(trainingRepositoryImpl).findAll();
 	}
 
 }

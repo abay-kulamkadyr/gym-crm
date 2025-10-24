@@ -1,5 +1,6 @@
 package com.epam.util;
 
+import com.epam.domain.util.PasswordGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
