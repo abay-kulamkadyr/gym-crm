@@ -10,9 +10,24 @@ public class Main {
 		var context = new AnnotationConfigApplicationContext(AppConfig.class);
 		GymFacade facade = context.getBean(GymFacade.class);
 
-		System.out.println("Trainees: ");
+		System.out.println("Trainees:");
 		for (var trainee : facade.getAllTrainees()) {
 			System.out.println(trainee);
+		}
+
+		System.out.println("Trainers:");
+		for (var trainer : facade.getAllTrainers()) {
+			System.out.println(trainer);
+		}
+
+		System.out.println("Trainings:");
+		for (var training : facade.getAllTrainings()) {
+			System.out.println(training);
+		}
+
+		System.out.println("TrainingTypes");
+		for (var trainingType : facade.getAllTrainingTypes()) {
+			System.out.println(trainingType);
 		}
 		context.close();
 	}

@@ -103,9 +103,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findById(1L)).thenReturn(testTrainee);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			traineeService.create(testTrainee);
-		});
+		assertThrows(IllegalArgumentException.class, () -> traineeService.create(testTrainee));
 	}
 
 	@Test
@@ -129,9 +127,7 @@ class TraineeServiceTest {
 		testTrainee.setPassword("password123");
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			traineeService.update(testTrainee);
-		});
+		assertThrows(IllegalArgumentException.class, () -> traineeService.update(testTrainee));
 	}
 
 	@Test

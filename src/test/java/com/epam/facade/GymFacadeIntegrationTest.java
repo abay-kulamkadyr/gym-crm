@@ -125,14 +125,9 @@ class GymFacadeIntegrationTest {
 	@Test
 	void deleteTrainer_shouldRemoveTrainer() {
 		// Given
-		// Create a unique trainer to ensure a clean state for this test ID
 		long trainerIdToDelete = 987L;
 		Trainer trainer = new Trainer(trainerIdToDelete, "Henry", "Cavill", "Weightlifting");
-
-		// 1. First, create the trainer to ensure it exists
 		gymFacade.createTrainer(trainer);
-
-		// Verify it exists before deletion
 		assertThat(gymFacade.getTrainer(trainerIdToDelete)).isNotNull();
 
 		// When
@@ -229,7 +224,6 @@ class GymFacadeIntegrationTest {
 	@Test
 	void createTrainingType_shouldCreateTrainingType() {
 		// Given
-		// Assuming TrainingType(id, name, trainerId, trainingId)
 		TrainingType type = new TrainingType(992L, "High Intensity", 100L, 200L);
 
 		// When
@@ -259,8 +253,6 @@ class GymFacadeIntegrationTest {
 		// Given
 		TrainingType type = new TrainingType(990L, "Strength", 100L, 200L);
 		gymFacade.createTrainingType(type);
-
-		// Modify the type name
 		type.setTrainingNameType("Functional Fitness");
 
 		// When
@@ -287,7 +279,7 @@ class GymFacadeIntegrationTest {
 
 	@Test
 	void getAllTrainingTypes_shouldReturnAllTrainingTypes() {
-		// Given: Ensure at least one type exists for the assertion to be meaningful
+		// Given
 		TrainingType type = new TrainingType(988L, "Pilates", 100L, 200L);
 		gymFacade.createTrainingType(type);
 

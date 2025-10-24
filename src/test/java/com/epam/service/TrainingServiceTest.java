@@ -25,8 +25,6 @@ class TrainingServiceTest {
 	@Mock
 	private TrainingRepositoryImpl trainingRepositoryImpl;
 
-	// NOTE: In a real app, this service would also mock TraineeDao and TrainerDao
-	// to validate IDs, but we'll focus on the core TrainingDao interactions.
 	@InjectMocks
 	private TrainingService trainingService;
 
@@ -34,8 +32,6 @@ class TrainingServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		// Assuming Training has a constructor like: new Training(id, trainerId,
-		// traineeId, date, duration)
 		testTraining = new Training(1L, 101L, 201L, LocalDate.now(), Duration.ofHours(1));
 	}
 
@@ -54,9 +50,7 @@ class TrainingServiceTest {
 		when(trainingRepositoryImpl.findById(1L)).thenReturn(testTraining);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainingService.create(testTraining);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainingService.create(testTraining));
 	}
 
 	@Test
@@ -79,9 +73,7 @@ class TrainingServiceTest {
 		when(trainingRepositoryImpl.findById(anyLong())).thenReturn(null);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainingService.update(testTraining);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainingService.update(testTraining));
 		verify(trainingRepositoryImpl, never()).save(any(Training.class));
 	}
 

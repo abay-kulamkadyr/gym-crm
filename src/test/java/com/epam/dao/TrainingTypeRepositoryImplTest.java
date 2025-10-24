@@ -19,18 +19,10 @@ class TrainingTypeRepositoryImplTest {
 
 	@BeforeEach
 	void setUp() {
-		// Initialize the in-memory storage (Map)
 		storage = new HashMap<>();
-
-		// Instantiate the DAO and inject the storage
 		trainingTypeRepositoryImpl = new TrainingTypeRepositoryImpl();
-		// NOTE: Assumes TrainingTypeDao has a setter for storage, like your other DAOs
 		trainingTypeRepositoryImpl.setStorage(storage);
 	}
-
-	// -------------------------------------------------------------------------
-	// Save Tests
-	// -------------------------------------------------------------------------
 
 	@Test
 	void save_shouldStoreTrainingTypeInStorage() {
@@ -42,10 +34,6 @@ class TrainingTypeRepositoryImplTest {
 		// Then
 		assertThat(storage).containsEntry(1L, type);
 	}
-
-	// -------------------------------------------------------------------------
-	// Find By ID Tests
-	// -------------------------------------------------------------------------
 
 	@Test
 	void findById_shouldReturnTrainingTypeWhenExists() {
@@ -68,10 +56,6 @@ class TrainingTypeRepositoryImplTest {
 		// Then
 		assertThat(result).isNull();
 	}
-
-	// -------------------------------------------------------------------------
-	// Find All Tests
-	// -------------------------------------------------------------------------
 
 	@Test
 	void findAll_shouldReturnAllTrainingTypes() {
@@ -96,10 +80,6 @@ class TrainingTypeRepositoryImplTest {
 		// Then
 		assertThat(result).isEmpty();
 	}
-
-	// -------------------------------------------------------------------------
-	// Delete Tests
-	// -------------------------------------------------------------------------
 
 	@Test
 	void delete_shouldRemoveTrainingTypeFromStorage() {

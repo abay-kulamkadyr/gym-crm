@@ -71,9 +71,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findById(1L)).thenReturn(testTrainer);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainerService.create(testTrainer);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainerService.create(testTrainer));
 	}
 
 	@Test
@@ -97,9 +95,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findById(anyLong())).thenReturn(null);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainerService.update(testTrainer);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainerService.update(testTrainer));
 		verify(trainerRepositoryImpl, never()).save(any(Trainer.class));
 	}
 

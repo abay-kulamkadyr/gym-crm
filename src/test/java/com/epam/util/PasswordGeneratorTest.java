@@ -4,6 +4,7 @@ import com.epam.domain.util.PasswordGenerator;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class PasswordGeneratorTest {
 
@@ -38,8 +39,7 @@ class PasswordGeneratorTest {
 		String password3 = PasswordGenerator.generate(10);
 
 		// Then - at least one should be different (statistically almost certain)
-		boolean allDifferent = !password1.equals(password2) || !password1.equals(password3)
-				|| !password2.equals(password3);
+		boolean allDifferent = !password1.equals(password3) || !password2.equals(password3);
 		assertThat(allDifferent).isTrue();
 	}
 
@@ -63,6 +63,21 @@ class PasswordGeneratorTest {
 
 		// Then
 		assertThat(password).hasSize(1);
+	}
+
+	@Test
+	void generate_shouldReturnEmptyStringWithZeroLength() {
+		// When
+		String password = PasswordGenerator.generate(0);
+
+		// Then
+		assertThat(password).isEqualTo("");
+	}
+
+	@Test
+	void generate_shouldThrowWhenLengthNegative() {
+		// Then
+		assertThrows(NegativeArraySizeException.class, () -> PasswordGenerator.generate(-20));
 	}
 
 }

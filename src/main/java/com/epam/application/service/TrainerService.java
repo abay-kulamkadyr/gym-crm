@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.Objects;
 
 @Service
 @Slf4j
@@ -23,7 +22,10 @@ public class TrainerService implements CrudService<Trainer> {
 
 	@Override
 	public void create(Trainer trainer) {
-		Objects.requireNonNull(trainer, "Trainer cannot be null");
+		if (trainer == null) {
+			throw new IllegalArgumentException("Trainer cannot be null");
+		}
+
 		if (trainerRepository.findById(trainer.getUserId()) != null) {
 			throw new IllegalArgumentException("Trainer with the given id=" + trainer.getUserId() + " already exists");
 		}
@@ -39,7 +41,10 @@ public class TrainerService implements CrudService<Trainer> {
 
 	@Override
 	public void update(Trainer trainer) {
-		Objects.requireNonNull(trainer, "Trainer cannot be null");
+		if (trainer == null) {
+			throw new IllegalArgumentException("Trainer cannot be null");
+		}
+
 		validateTrainer(trainer);
 
 		Trainer existing = trainerRepository.findById(trainer.getUserId());

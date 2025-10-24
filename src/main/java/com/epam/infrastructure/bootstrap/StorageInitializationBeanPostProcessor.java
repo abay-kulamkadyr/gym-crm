@@ -23,15 +23,15 @@ import org.springframework.stereotype.Component;
  * <p>
  * This processor works by inspecting the {@code @Bean} factory method for the presence of
  * the {@code @InitializableStorage} annotation. If the annotation is found, the component
- * locates the corresponding {@link StorageInitializer} and uses it to populate the newly
- * created Map bean with initial data.
+ * locates the corresponding {@link com.epam.infrastructure.bootstrap.StorageInitializer}
+ * and uses it to populate the newly created Map bean with initial data.
  * </p>
  * *
  * <p>
- * It requires the custom {@code @InitializableStorage} annotation and implementations of
- * the {@code StorageInitializer} interface to function correctly. This approach is
- * typically used for simplified data access layers (DAOs) in a pure in-memory
- * environment, often for testing or simple demonstration applications.
+ * It requires the custom {@link com.epam.infrastructure.bootstrap.InitializableStorage}
+ * annotation and implementations of the
+ * {@link com.epam.infrastructure.bootstrap.StorageInitializer} interface to function
+ * correctly.
  * </p>
  */
 @Component
@@ -44,6 +44,12 @@ class StorageInitializationBeanPostProcessor implements BeanPostProcessor, BeanF
 
 	@Autowired
 	public StorageInitializationBeanPostProcessor(List<StorageInitializer<?>> initializers) {
+		// build a map that: {
+		// Trainee.class -> TraineeStorageInitializer,
+		// Trainer.class -> TrainerStorageInitializer,
+		// Training.class -> TrainingStorageInitializer,
+		// TrainingType.class -> TrainingTypeStorageInitializer
+		// }
 		this.initializersByType = new HashMap<>();
 
 		for (StorageInitializer<?> initializer : initializers) {
@@ -56,8 +62,13 @@ class StorageInitializationBeanPostProcessor implements BeanPostProcessor, BeanF
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// Spring Lifecycle Methods
+	// -------------------------------------------------------------------------
+
 	@Override
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+		// for accessing bean metadata
 		this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
 	}
 
@@ -70,56 +81,75 @@ class StorageInitializationBeanPostProcessor implements BeanPostProcessor, BeanF
 		// Try to get the annotation from the bean definition (factory method)
 		InitializableStorage annotation = findStorageAnnotation(beanName);
 
-		log.info("Bean: {}, Annotation: {}", beanName, annotation);
-
-		if (annotation != null) {
-			StorageInitializer<?> initializer = initializersByType.get(annotation.entityType());
-
-			if (initializer != null) {
-				@SuppressWarnings("unchecked")
-				Map<Long, ?> storage = (Map<Long, ?>) bean;
-
-				log.info("Initializing storage '{}' for type: {}", beanName, annotation.entityType().getSimpleName());
-				initializeStorageSafely(initializer, storage);
-				log.info("Storage '{}' initialized with {} entries", beanName, storage.size());
-			}
-			else {
-				log.warn("No initializer found for entity type: {}", annotation.entityType().getSimpleName());
-			}
+		if (annotation == null) {
+			return bean;
 		}
+
+		StorageInitializer<?> initializer = initializersByType.get(annotation.entityType());
+
+		if (initializer == null) {
+			log.warn("No initializer found for entity type: {}", annotation.entityType().getSimpleName());
+			return bean; // Annotated, but no corresponding initializer registered
+		}
+
+		@SuppressWarnings("unchecked")
+		Map<Long, ?> storage = (Map<Long, ?>) bean;
+
+		log.info("Initializing storage '{}' for type: {}", beanName, annotation.entityType().getSimpleName());
+		initializeStorageSafely(initializer, storage);
+		log.info("Storage '{}' initialized with {} entries", beanName, storage.size());
 
 		return bean;
 	}
 
+	// -------------------------------------------------------------------------
+	// Private Helper Methods
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Attempts to find and extract the @InitializableStorage annotation metadata from a
+	 * bean defined by a @Bean factory method.
+	 */
 	private InitializableStorage findStorageAnnotation(String beanName) {
+		final String annotationClassName = InitializableStorage.class.getName();
+
 		try {
 			BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
 
-			// Check if this is an annotated bean definition (from @Bean method)
-			if (beanDefinition instanceof AnnotatedBeanDefinition annotatedBeanDef) {
-
-				// Get factory method metadata (the @Bean method)
-				MethodMetadata factoryMethodMetadata = annotatedBeanDef.getFactoryMethodMetadata();
-
-				if (factoryMethodMetadata != null) {
-					// Check if the factory method has our annotation
-					if (factoryMethodMetadata.isAnnotated(InitializableStorage.class.getName())) {
-						// Extract annotation attributes
-						Map<String, Object> attributes = factoryMethodMetadata
-							.getAnnotationAttributes(InitializableStorage.class.getName());
-
-						if (attributes != null && attributes.containsKey("entityType")) {
-							Class<?> entityType = (Class<?>) attributes.get("entityType");
-							log.debug("Found @InitializableStorage on bean '{}' with entityType: {}", beanName,
-									entityType.getSimpleName());
-							return createAnnotationProxy(entityType);
-						}
-					}
-				}
+			// Guard Clause 1: Must be an AnnotatedBeanDefinition (from a @Bean method)
+			if (!(beanDefinition instanceof AnnotatedBeanDefinition annotatedBeanDef)) {
+				return null;
 			}
+
+			MethodMetadata factoryMethodMetadata = annotatedBeanDef.getFactoryMethodMetadata();
+
+			// Guard Clause 2: Must have a factory method and be annotated with our
+			// annotation
+			if (factoryMethodMetadata == null || !factoryMethodMetadata.isAnnotated(annotationClassName)) {
+				return null;
+			}
+
+			// Extract annotation attributes
+			Map<String, Object> attributes = factoryMethodMetadata.getAnnotationAttributes(annotationClassName);
+
+			// Guard Clause 3: Must have attributes and specifically the "entityType"
+			// attribute
+			if (attributes == null || !attributes.containsKey("entityType")) {
+				return null;
+			}
+
+			// Extract and cast the entityType
+			Class<?> entityType = (Class<?>) attributes.get("entityType");
+
+			log.debug("Found @InitializableStorage on bean '{}' with entityType: {}", beanName,
+					entityType.getSimpleName());
+
+			return createAnnotationProxy(entityType);
+
 		}
 		catch (Exception e) {
-			log.debug("Could not find annotation for bean: {}", beanName, e);
+			// Catches NoSuchBeanDefinitionException, etc.
+			log.debug("Could not find annotation metadata for bean: {}", beanName, e);
 		}
 
 		return null;

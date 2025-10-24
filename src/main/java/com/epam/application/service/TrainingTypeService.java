@@ -2,7 +2,6 @@ package com.epam.application.service;
 
 import com.epam.domain.repository.TrainingTypeRepository;
 import java.util.Collection;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import com.epam.domain.model.TrainingType;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,10 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 
 	@Override
 	public void create(TrainingType trainingType) {
-		Objects.requireNonNull(trainingType, "TrainingType cannot be null");
+		if (trainingType == null) {
+			throw new IllegalArgumentException("TrainingType cannot be null");
+		}
+
 		if (trainingTypeRepository.findById(trainingType.getId()) != null) {
 			throw new IllegalArgumentException(
 					"TrainingType with the given id=" + trainingType.getId() + " already exists");
@@ -35,7 +37,10 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 
 	@Override
 	public void update(TrainingType trainingType) {
-		Objects.requireNonNull(trainingType, "TrainingType cannot be null");
+		if (trainingType == null) {
+			throw new IllegalArgumentException("TrainingType cannot be null");
+		}
+
 		validateTrainingType(trainingType);
 
 		TrainingType existing = trainingTypeRepository.findById(trainingType.getId());

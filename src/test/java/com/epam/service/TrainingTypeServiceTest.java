@@ -31,8 +31,6 @@ class TrainingTypeServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		// Assuming TrainingType has a constructor like: new TrainingType(id, name,
-		// trainerId, trainingId)
 		testTrainingType = new TrainingType(1L, "Cardio", 10L, 20L);
 	}
 
@@ -51,9 +49,7 @@ class TrainingTypeServiceTest {
 		when(trainingTypeRepositoryImpl.findById(1L)).thenReturn(testTrainingType);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainingTypeService.create(testTrainingType);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainingTypeService.create(testTrainingType));
 	}
 
 	@Test
@@ -76,9 +72,7 @@ class TrainingTypeServiceTest {
 		when(trainingTypeRepositoryImpl.findById(anyLong())).thenReturn(null);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> {
-			trainingTypeService.update(testTrainingType);
-		});
+		assertThrows(IllegalArgumentException.class, () -> trainingTypeService.update(testTrainingType));
 		verify(trainingTypeRepositoryImpl, never()).save(any(TrainingType.class));
 	}
 
