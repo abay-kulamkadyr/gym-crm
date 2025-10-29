@@ -15,7 +15,7 @@ public class TrainingService implements CrudService<Training> {
 	private TrainingRepository trainingRepository;
 
 	@Autowired
-	public void setTrainingDao(TrainingRepository trainingRepository) {
+	public void setTrainingRepository(TrainingRepository trainingRepository) {
 		this.trainingRepository = trainingRepository;
 	}
 

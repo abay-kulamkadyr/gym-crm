@@ -1,4 +1,4 @@
-package com.epam.interface_adapters.facade;
+package com.epam.application.facade;
 
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;

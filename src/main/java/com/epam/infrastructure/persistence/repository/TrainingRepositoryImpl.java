@@ -1,6 +1,8 @@
-package com.epam.infrastructure.dao;
+package com.epam.infrastructure.persistence.repository;
 
 import com.epam.domain.repository.TrainingRepository;
+import com.epam.infrastructure.persistence.dao.TrainingDao;
+import com.epam.infrastructure.persistence.mapper.TrainingMapper;
 import java.util.Collection;
 import java.util.Map;
 import com.epam.domain.model.Training;
@@ -11,26 +13,28 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class TrainingRepositoryImpl implements TrainingRepository {
 
-	private Map<Long, Training> storage;
+	private Map<Long, TrainingDao> storage;
 
 	@Autowired
-	public void setStorage(Map<Long, Training> storage) {
+	public void setStorage(Map<Long, TrainingDao> storage) {
 		this.storage = storage;
 	}
 
 	@Override
 	public void save(@NonNull Training training) {
-		storage.put(training.getTrainingId(), training);
+		TrainingDao entity = TrainingMapper.toEntity(training);
+		storage.put(entity.getTrainingId(), entity);
 	}
 
 	@Override
 	public Training findById(long id) {
-		return storage.get(id);
+		TrainingDao trainingDao = storage.get(id);
+		return TrainingMapper.toDomain(trainingDao);
 	}
 
 	@Override
 	public Collection<Training> findAll() {
-		return storage.values();
+		return storage.values().stream().map(TrainingMapper::toDomain).toList();
 	}
 
 	@Override

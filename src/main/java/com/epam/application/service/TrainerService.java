@@ -16,7 +16,7 @@ public class TrainerService implements CrudService<Trainer> {
 	private TrainerRepository trainerRepository;
 
 	@Autowired
-	public void setTrainerDao(TrainerRepository trainerRepository) {
+	public void setTrainerRepository(TrainerRepository trainerRepository) {
 		this.trainerRepository = trainerRepository;
 	}
 
@@ -78,9 +78,15 @@ public class TrainerService implements CrudService<Trainer> {
 		return trainerRepository.findAll();
 	}
 
+	// TODO: Replace with efficient query when migrating to Hibernate
+	// Current implementation loads all records - acceptable for in-memory storage
+	// Future: SELECT COUNT(*) FROM trainee WHERE username LIKE 'base%'
 	private String generateUniqueUsername(Trainer trainer) {
 		String base = trainer.getFirstName() + "." + trainer.getLastName();
-		long duplicates = trainerRepository.findAll().stream().filter(t -> t.getUsername().startsWith(base)).count();
+		long duplicates = trainerRepository.findAll()
+			.stream()
+			.filter(t -> t.getUsername() != null && t.getUsername().startsWith(base))
+			.count();
 		return duplicates > 0 ? base + (duplicates + 1) : base;
 	}
 

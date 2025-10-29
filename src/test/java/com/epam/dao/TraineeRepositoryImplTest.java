@@ -1,22 +1,23 @@
 package com.epam.dao;
 
-import com.epam.domain.model.Trainee;
-import com.epam.infrastructure.dao.TraineeRepositoryImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.epam.domain.model.Trainee;
+import com.epam.infrastructure.persistence.dao.TraineeDao;
+import com.epam.infrastructure.persistence.mapper.TraineeMapper;
+import com.epam.infrastructure.persistence.repository.TraineeRepositoryImpl;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TraineeRepositoryImplTest {
 
 	private TraineeRepositoryImpl traineeRepositoryImpl;
 
-	private Map<Long, Trainee> storage;
+	private Map<Long, TraineeDao> storage;
 
 	@BeforeEach
 	void setUp() {
@@ -36,7 +37,7 @@ class TraineeRepositoryImplTest {
 		traineeRepositoryImpl.save(trainee);
 
 		// Then
-		assertThat(storage).containsEntry(1L, trainee);
+		assertThat(storage).containsEntry(1L, TraineeMapper.toEntity(trainee));
 	}
 
 	@Test
@@ -62,7 +63,7 @@ class TraineeRepositoryImplTest {
 		Trainee trainee = new Trainee(1L, "John", "Doe", LocalDate.of(1990, 1, 1));
 		trainee.setActive(true);
 		trainee.setAddress("123 Main St");
-		storage.put(1L, trainee);
+		storage.put(1L, TraineeMapper.toEntity(trainee));
 
 		// When
 		Trainee result = traineeRepositoryImpl.findById(1L);
@@ -89,8 +90,8 @@ class TraineeRepositoryImplTest {
 		Trainee trainee2 = new Trainee(2L, "Jane", "Smith", LocalDate.of(1992, 6, 15));
 		trainee2.setActive(true);
 		trainee2.setAddress("789 Elm St");
-		storage.put(1L, trainee1);
-		storage.put(2L, trainee2);
+		storage.put(1L, TraineeMapper.toEntity(trainee1));
+		storage.put(2L, TraineeMapper.toEntity(trainee2));
 
 		// When
 		Collection<Trainee> result = traineeRepositoryImpl.findAll();
@@ -114,7 +115,7 @@ class TraineeRepositoryImplTest {
 		Trainee trainee = new Trainee(1L, "John", "Doe", LocalDate.of(1990, 1, 1));
 		trainee.setActive(true);
 		trainee.setAddress("123 Main St");
-		storage.put(1L, trainee);
+		storage.put(1L, TraineeMapper.toEntity(trainee));
 
 		// When
 		traineeRepositoryImpl.delete(1L);
@@ -129,7 +130,7 @@ class TraineeRepositoryImplTest {
 		Trainee trainee = new Trainee(1L, "John", "Doe", LocalDate.of(1990, 1, 1));
 		trainee.setActive(true);
 		trainee.setAddress("123 Main St");
-		storage.put(1L, trainee);
+		storage.put(1L, TraineeMapper.toEntity(trainee));
 
 		// When
 		traineeRepositoryImpl.delete(999L);

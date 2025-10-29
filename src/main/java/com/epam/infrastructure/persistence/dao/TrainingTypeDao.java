@@ -1,5 +1,7 @@
-package com.epam.domain.model;
+package com.epam.infrastructure.persistence.dao;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,9 +11,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @ToString
-public class TrainingType {
+public class TrainingTypeDao {
 
 	@EqualsAndHashCode.Include
 	private long trainingTypeId;
@@ -21,13 +25,5 @@ public class TrainingType {
 	private long trainerId;
 
 	private long trainingId;
-
-	public TrainingType(long id, String trainingNameType, long trainerId, long trainingId) {
-		this.trainingTypeId = id;
-		this.trainingNameType = trainingNameType;
-		this.trainerId = trainerId;
-		this.trainingId = trainingId;
-
-	}
 
 }

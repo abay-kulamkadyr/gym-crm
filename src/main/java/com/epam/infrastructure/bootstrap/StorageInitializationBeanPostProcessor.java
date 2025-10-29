@@ -45,10 +45,10 @@ class StorageInitializationBeanPostProcessor implements BeanPostProcessor, BeanF
 	@Autowired
 	public StorageInitializationBeanPostProcessor(List<StorageInitializer<?>> initializers) {
 		// build a map that: {
-		// Trainee.class -> TraineeStorageInitializer,
-		// Trainer.class -> TrainerStorageInitializer,
-		// Training.class -> TrainingStorageInitializer,
-		// TrainingType.class -> TrainingTypeStorageInitializer
+		// TraineeDao.class -> TraineeStorageInitializer,
+		// TrainerDao.class -> TrainerStorageInitializer,
+		// TrainingDao.class -> TrainingStorageInitializer,
+		// TrainingTypeDao.class -> TrainingTypeStorageInitializer
 		// }
 		this.initializersByType = new HashMap<>();
 

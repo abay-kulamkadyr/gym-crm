@@ -14,7 +14,7 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 	private TrainingTypeRepository trainingTypeRepository;
 
 	@Autowired
-	public void setTrainingTypeDao(TrainingTypeRepository trainingTypeRepository) {
+	public void setTrainingTypeRepository(TrainingTypeRepository trainingTypeRepository) {
 		this.trainingTypeRepository = trainingTypeRepository;
 	}
 
@@ -24,9 +24,9 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 			throw new IllegalArgumentException("TrainingType cannot be null");
 		}
 
-		if (trainingTypeRepository.findById(trainingType.getId()) != null) {
+		if (trainingTypeRepository.findById(trainingType.getTrainingTypeId()) != null) {
 			throw new IllegalArgumentException(
-					"TrainingType with the given id=" + trainingType.getId() + " already exists");
+					"TrainingType with the given id=" + trainingType.getTrainingTypeId() + " already exists");
 		}
 
 		validateTrainingType(trainingType);
@@ -43,13 +43,14 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 
 		validateTrainingType(trainingType);
 
-		TrainingType existing = trainingTypeRepository.findById(trainingType.getId());
+		TrainingType existing = trainingTypeRepository.findById(trainingType.getTrainingTypeId());
 		if (existing == null) {
-			throw new IllegalArgumentException("TrainingType with id " + trainingType.getId() + " does not exist");
+			throw new IllegalArgumentException(
+					"TrainingType with id " + trainingType.getTrainingTypeId() + " does not exist");
 		}
 
 		trainingTypeRepository.save(trainingType);
-		log.info("Updated training type: {}", trainingType.getId());
+		log.info("Updated training type: {}", trainingType.getTrainingTypeId());
 	}
 
 	@Override

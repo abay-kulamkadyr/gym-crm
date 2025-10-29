@@ -1,6 +1,7 @@
 package com.epam.domain.model;
 
 import java.time.LocalDate;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,9 +10,11 @@ import lombok.ToString;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
 public class Trainee extends User {
 
+	@EqualsAndHashCode.Include
 	private long userId;
 
 	private LocalDate dob;

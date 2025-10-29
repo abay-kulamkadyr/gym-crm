@@ -1,7 +1,7 @@
 package com.epam.service;
 
 import com.epam.application.service.TrainingTypeService;
-import com.epam.infrastructure.dao.TrainingTypeRepositoryImpl;
+import com.epam.infrastructure.persistence.repository.TrainingTypeRepositoryImpl;
 import com.epam.domain.model.TrainingType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,7 @@ class TrainingTypeServiceTest {
 	void update_shouldSucceedWhenExists() {
 		// Given
 		testTrainingType = new TrainingType(1L, "Strength Training", 10L, 20L);
-		when(trainingTypeRepositoryImpl.findById(testTrainingType.getId())).thenReturn(testTrainingType);
+		when(trainingTypeRepositoryImpl.findById(testTrainingType.getTrainingTypeId())).thenReturn(testTrainingType);
 
 		// When
 		trainingTypeService.update(testTrainingType);

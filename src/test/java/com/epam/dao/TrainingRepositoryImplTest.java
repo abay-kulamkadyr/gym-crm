@@ -1,23 +1,24 @@
 package com.epam.dao;
 
-import com.epam.infrastructure.dao.TrainingRepositoryImpl;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.epam.domain.model.Training;
+import com.epam.infrastructure.persistence.dao.TrainingDao;
+import com.epam.infrastructure.persistence.mapper.TrainingMapper;
+import com.epam.infrastructure.persistence.repository.TrainingRepositoryImpl;
 import java.time.Duration;
 import java.time.LocalDate;
-import com.epam.domain.model.Training;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TrainingRepositoryImplTest {
 
 	private TrainingRepositoryImpl trainingRepositoryImpl;
 
-	private Map<Long, Training> storage;
+	private Map<Long, TrainingDao> storage;
 
 	@BeforeEach
 	void setUp() {
@@ -35,7 +36,7 @@ class TrainingRepositoryImplTest {
 		trainingRepositoryImpl.save(training);
 
 		// Then
-		assertThat(storage).containsEntry(1L, training);
+		assertThat(storage).containsEntry(1L, TrainingMapper.toEntity(training));
 	}
 
 	@Test
@@ -55,7 +56,7 @@ class TrainingRepositoryImplTest {
 	void findById_shouldReturnTrainingWhenExists() {
 		// Given
 		Training training = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
-		storage.put(1L, training);
+		storage.put(1L, TrainingMapper.toEntity(training));
 
 		// When
 		Training result = trainingRepositoryImpl.findById(1L);
@@ -79,8 +80,8 @@ class TrainingRepositoryImplTest {
 		Training training1 = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
 		Training training2 = new Training(2L, 102L, 202L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
 
-		storage.put(1L, training1);
-		storage.put(2L, training2);
+		storage.put(1L, TrainingMapper.toEntity(training1));
+		storage.put(2L, TrainingMapper.toEntity(training2));
 
 		// When
 		Collection<Training> result = trainingRepositoryImpl.findAll();
@@ -102,7 +103,7 @@ class TrainingRepositoryImplTest {
 	void delete_shouldRemoveTrainingFromStorage() {
 		// Given
 		Training training = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
-		storage.put(1L, training);
+		storage.put(1L, TrainingMapper.toEntity(training));
 
 		// When
 		trainingRepositoryImpl.delete(1L);
@@ -115,7 +116,7 @@ class TrainingRepositoryImplTest {
 	void delete_shouldDoNothingWhenTrainingNotExists() {
 		// Given
 		Training training = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
-		storage.put(1L, training);
+		storage.put(1L, TrainingMapper.toEntity(training));
 
 		// When
 		trainingRepositoryImpl.delete(999L);

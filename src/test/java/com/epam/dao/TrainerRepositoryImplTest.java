@@ -1,21 +1,22 @@
 package com.epam.dao;
 
-import com.epam.domain.model.Trainer;
-import com.epam.infrastructure.dao.TrainerRepositoryImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.epam.domain.model.Trainer;
+import com.epam.infrastructure.persistence.dao.TrainerDao;
+import com.epam.infrastructure.persistence.mapper.TrainerMapper;
+import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class TrainerRepositoryImplTest {
 
 	private TrainerRepositoryImpl trainerRepositoryImpl;
 
-	private Map<Long, Trainer> storage;
+	private Map<Long, TrainerDao> storage;
 
 	@BeforeEach
 	void setUp() {
@@ -33,7 +34,7 @@ class TrainerRepositoryImplTest {
 		trainerRepositoryImpl.save(trainer);
 
 		// Then
-		assertThat(storage).containsEntry(1L, trainer);
+		assertThat(storage).containsEntry(1L, TrainerMapper.toEntity(trainer));
 	}
 
 	@Test
@@ -55,7 +56,7 @@ class TrainerRepositoryImplTest {
 	void findById_shouldReturnTrainerWhenExists() {
 		// Given
 		Trainer trainer = new Trainer(1L, "Alice", "Johnson", "Yoga");
-		storage.put(1L, trainer);
+		storage.put(1L, TrainerMapper.toEntity(trainer));
 
 		// When
 		Trainer result = trainerRepositoryImpl.findById(1L);
@@ -79,8 +80,8 @@ class TrainerRepositoryImplTest {
 		Trainer trainer1 = new Trainer(1L, "Alice", "Johnson", "Yoga");
 		Trainer trainer2 = new Trainer(2L, "Bob", "Smith", "Boxing");
 
-		storage.put(1L, trainer1);
-		storage.put(2L, trainer2);
+		storage.put(1L, TrainerMapper.toEntity(trainer1));
+		storage.put(2L, TrainerMapper.toEntity(trainer2));
 
 		// When
 		Collection<Trainer> result = trainerRepositoryImpl.findAll();
@@ -102,7 +103,7 @@ class TrainerRepositoryImplTest {
 	void delete_shouldRemoveTrainerFromStorage() {
 		// Given
 		Trainer trainer = new Trainer(1L, "Alice", "Johnson", "Yoga");
-		storage.put(1L, trainer);
+		storage.put(1L, TrainerMapper.toEntity(trainer));
 
 		// When
 		trainerRepositoryImpl.delete(1L);
@@ -116,7 +117,7 @@ class TrainerRepositoryImplTest {
 		// Given
 		Trainer trainer = new Trainer(1L, "Alice", "Johnson", "Yoga");
 
-		storage.put(1L, trainer);
+		storage.put(1L, TrainerMapper.toEntity(trainer));
 
 		// When
 		trainerRepositoryImpl.delete(999L);

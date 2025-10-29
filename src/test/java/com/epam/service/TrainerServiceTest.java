@@ -1,7 +1,7 @@
 package com.epam.service;
 
 import com.epam.application.service.TrainerService;
-import com.epam.infrastructure.dao.TrainerRepositoryImpl;
+import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
 import com.epam.domain.model.Trainer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,5 +1,7 @@
 package com.epam.infrastructure.bootstrap;
 
+import com.epam.infrastructure.persistence.dao.TrainingDao;
+import com.epam.infrastructure.persistence.mapper.TrainingMapper;
 import java.util.List;
 import java.util.Map;
 import com.epam.domain.model.Training;
@@ -10,8 +12,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
-@InitializableStorage(entityType = Training.class)
-class TrainingStorageInitializer implements StorageInitializer<Training> {
+@InitializableStorage(entityType = TrainingDao.class)
+class TrainingStorageInitializer implements StorageInitializer<TrainingDao> {
 
 	private final DataLoader dataLoader;
 
@@ -21,9 +23,12 @@ class TrainingStorageInitializer implements StorageInitializer<Training> {
 	}
 
 	@Override
-	public void initialize(Map<Long, Training> storage) {
+	public void initialize(Map<Long, TrainingDao> storage) {
 		List<Training> trainings = dataLoader.loadTrainings();
-		trainings.forEach(training -> storage.put(training.getTrainingId(), training));
+		trainings.forEach(training -> {
+			TrainingDao entity = TrainingMapper.toEntity(training);
+			storage.put(entity.getTrainingId(), entity);
+		});
 	}
 
 }

@@ -1,6 +1,6 @@
 package com.epam.facade;
 
-import com.epam.interface_adapters.facade.GymFacade;
+import com.epam.application.facade.GymFacade;
 import java.time.Duration;
 import com.epam.infrastructure.config.AppConfig;
 import com.epam.domain.model.Trainee;
@@ -288,7 +288,7 @@ class GymFacadeIntegrationTest {
 
 		// Then
 		assertThat(types).isNotEmpty();
-		assertThat(types).anyMatch(t -> t.getId() == 988L);
+		assertThat(types).anyMatch(t -> t.getTrainingTypeId() == 988L);
 	}
 
 }
