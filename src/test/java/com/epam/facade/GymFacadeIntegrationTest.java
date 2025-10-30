@@ -1,26 +1,27 @@
 package com.epam.facade;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.epam.application.facade.GymFacade;
-import java.time.Duration;
-import com.epam.infrastructure.config.AppConfig;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
+import com.epam.infrastructure.config.AppConfig;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDate;
-import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = AppConfig.class)
 class GymFacadeIntegrationTest {
+
+	private long idGenerator = 0;
 
 	@Autowired
 	private GymFacade gymFacade;
@@ -39,10 +40,10 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainee(trainee);
 
 		// Then
-		Trainee retrieved = gymFacade.getTrainee(999L);
-		assertThat(retrieved).isNotNull();
-		assertThat(retrieved.getUsername()).isEqualTo("Michael.Brown");
-		assertThat(retrieved.getPassword()).isNotNull().hasSize(10);
+		Optional<Trainee> retrieved = gymFacade.getTrainee(999L);
+		assertThat(retrieved).isPresent();
+		assertThat(retrieved.get().getUsername()).isEqualTo("Michael.Brown1");
+		assertThat(retrieved.get().getPassword()).isNotNull().hasSize(10);
 	}
 
 	@Test
@@ -56,8 +57,8 @@ class GymFacadeIntegrationTest {
 		gymFacade.updateTrainee(trainee);
 
 		// Then
-		Trainee updated = gymFacade.getTrainee(998L);
-		assertThat(updated.getAddress()).isEqualTo("999 New Address");
+		Optional<Trainee> updated = gymFacade.getTrainee(998L);
+		assertThat(updated).isPresent().get().extracting(Trainee::getAddress).isEqualTo("999 New Address");
 	}
 
 	@Test
@@ -70,17 +71,8 @@ class GymFacadeIntegrationTest {
 		gymFacade.deleteTrainee(997L);
 
 		// Then
-		Trainee deleted = gymFacade.getTrainee(997L);
-		assertThat(deleted).isNull();
-	}
-
-	@Test
-	void getAllTrainees_shouldReturnAllTrainees() {
-		// When
-		Collection<Trainee> trainees = gymFacade.getAllTrainees();
-
-		// Then
-		assertThat(trainees).isNotEmpty();
+		Optional<Trainee> deleted = gymFacade.getTrainee(997L);
+		assertThat(deleted).isEmpty();
 	}
 
 	@Test
@@ -92,34 +84,32 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainer(trainer);
 
 		// Then
-		Trainer retrieved = gymFacade.getTrainer(999L);
-		assertThat(retrieved).isNotNull();
-		assertThat(retrieved.getUsername()).isEqualTo("Emma.Taylor");
-		assertThat(retrieved.getPassword()).isNotNull().hasSize(10);
+		Optional<Trainer> retrieved = gymFacade.getTrainer(999L);
+		assertThat(retrieved).isPresent();
+		assertThat(retrieved).get().satisfies(extractedTrainer -> {
+			assertThat(extractedTrainer.getUsername()).isEqualTo("Emma.Taylor1");
+			assertThat(extractedTrainer.getPassword()).isNotNull().hasSize(10);
+		});
 	}
 
 	@Test
 	void updateTrainer_shouldUpdateExistingTrainer() {
 		// Given
-		Trainer trainer = new Trainer(998L, "David", "Martinez", "Swimming");
+		long id = getNextUniqueId();
+		Trainer trainer = new Trainer(id, "David", "Martinez", "Swimming");
 		gymFacade.createTrainer(trainer);
-		trainer.setActive(false);
+		trainer.setActive(false); // Update the active status
 
 		// When
 		gymFacade.updateTrainer(trainer);
 
 		// Then
-		Trainer updated = gymFacade.getTrainer(998L);
-		assertThat(updated.isActive()).isFalse();
-	}
-
-	@Test
-	void getAllTrainers_shouldReturnAllTrainers() {
-		// When
-		Collection<Trainer> trainers = gymFacade.getAllTrainers();
-
-		// Then
-		assertThat(trainers).isNotEmpty();
+		assertThat(gymFacade.getTrainer(id)).as("Checking that the updated trainer is present and inactive")
+			.isPresent()
+			.get()
+			.extracting(Trainer::isActive)
+			.isEqualTo(false);
+		assertThat(gymFacade.getTrainer(id)).get().extracting(Trainer::getFirstName).isEqualTo("David");
 	}
 
 	@Test
@@ -134,8 +124,8 @@ class GymFacadeIntegrationTest {
 		gymFacade.deleteTrainer(trainerIdToDelete);
 
 		// Then
-		Trainer deleted = gymFacade.getTrainer(trainerIdToDelete);
-		assertThat(deleted).isNull();
+		Optional<Trainer> deleted = gymFacade.getTrainer(trainerIdToDelete);
+		assertThat(deleted).isEmpty();
 	}
 
 	@Test
@@ -147,19 +137,10 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTraining(training);
 
 		// Then
-		Training retrieved = gymFacade.getTraining(999L);
-		assertThat(retrieved).isNotNull();
-		assertThat(retrieved.getTrainerId()).isEqualTo(101L);
-		assertThat(retrieved.getTraineeId()).isEqualTo(201L);
-	}
-
-	@Test
-	void getAllTrainings_shouldReturnAllTrainings() {
-		// When
-		Collection<Training> trainings = gymFacade.getAllTrainings();
-
-		// Then
-		assertThat(trainings).isNotEmpty();
+		Optional<Training> retrieved = gymFacade.getTraining(999L);
+		assertThat(retrieved).isPresent();
+		assertThat(retrieved.get().getTrainerId()).isEqualTo(101L);
+		assertThat(retrieved.get().getTraineeId()).isEqualTo(201L);
 	}
 
 	@Test
@@ -173,8 +154,9 @@ class GymFacadeIntegrationTest {
 		gymFacade.updateTraining(training);
 
 		// Then
-		Training updated = gymFacade.getTraining(994L);
-		assertThat(updated.getTrainingDate()).isEqualTo(LocalDate.of(2025, 12, 25));
+		Optional<Training> updated = gymFacade.getTraining(994L);
+		assertThat(updated).isPresent();
+		assertThat(updated.get().getTrainingDate()).isEqualTo(LocalDate.of(2025, 12, 25));
 	}
 
 	@Test
@@ -187,8 +169,8 @@ class GymFacadeIntegrationTest {
 		gymFacade.deleteTraining(993L);
 
 		// Then
-		Training deleted = gymFacade.getTraining(993L);
-		assertThat(deleted).isNull();
+		Optional<Training> deleted = gymFacade.getTraining(993L);
+		assertThat(deleted).isEmpty();
 	}
 
 	@Test
@@ -200,10 +182,14 @@ class GymFacadeIntegrationTest {
 		// When
 		gymFacade.createTrainee(trainee1);
 		gymFacade.createTrainee(trainee2);
+		Optional<Trainee> trainee1Result = gymFacade.getTrainee(trainee1.getUserId());
+		Optional<Trainee> trainee2Result = gymFacade.getTrainee(trainee2.getUserId());
 
 		// Then
-		assertThat(trainee1.getUsername()).isEqualTo("Duplicate.Name");
-		assertThat(trainee2.getUsername()).isEqualTo("Duplicate.Name2");
+		assertThat(trainee1Result).isPresent();
+		assertThat(trainee1Result.get().getUsername()).isEqualTo("Duplicate.Name1");
+		assertThat(trainee2Result).isPresent();
+		assertThat(trainee2Result.get().getUsername()).isEqualTo("Duplicate.Name2");
 	}
 
 	@Test
@@ -217,7 +203,7 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainer(trainer2);
 
 		// Then
-		assertThat(trainer1.getUsername()).isEqualTo("Same.Person");
+		assertThat(trainer1.getUsername()).isEqualTo("Same.Person1");
 		assertThat(trainer2.getUsername()).isEqualTo("Same.Person2");
 	}
 
@@ -230,9 +216,9 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainingType(type);
 
 		// Then
-		TrainingType retrieved = gymFacade.getTrainingType(992L);
-		assertThat(retrieved).isNotNull();
-		assertThat(retrieved.getTrainingNameType()).isEqualTo("High Intensity");
+		Optional<TrainingType> retrieved = gymFacade.getTrainingType(992L);
+		assertThat(retrieved).isPresent();
+		assertThat(retrieved.get().getTrainingNameType()).isEqualTo("High Intensity");
 	}
 
 	@Test
@@ -242,10 +228,10 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainingType(type);
 
 		// When
-		TrainingType retrieved = gymFacade.getTrainingType(991L);
+		Optional<TrainingType> retrieved = gymFacade.getTrainingType(991L);
 
 		// Then
-		assertThat(retrieved).isEqualTo(type);
+		assertThat(retrieved).get().isEqualTo(type);
 	}
 
 	@Test
@@ -259,8 +245,9 @@ class GymFacadeIntegrationTest {
 		gymFacade.updateTrainingType(type);
 
 		// Then
-		TrainingType updated = gymFacade.getTrainingType(990L);
-		assertThat(updated.getTrainingNameType()).isEqualTo("Functional Fitness");
+		Optional<TrainingType> updated = gymFacade.getTrainingType(990L);
+		assertThat(updated).isPresent();
+		assertThat(updated.get().getTrainingNameType()).isEqualTo("Functional Fitness");
 	}
 
 	@Test
@@ -273,22 +260,13 @@ class GymFacadeIntegrationTest {
 		gymFacade.deleteTrainingType(989L);
 
 		// Then
-		TrainingType deleted = gymFacade.getTrainingType(989L);
-		assertThat(deleted).isNull();
+		Optional<TrainingType> deleted = gymFacade.getTrainingType(989L);
+		assertThat(deleted).isEmpty();
 	}
 
-	@Test
-	void getAllTrainingTypes_shouldReturnAllTrainingTypes() {
-		// Given
-		TrainingType type = new TrainingType(988L, "Pilates", 100L, 200L);
-		gymFacade.createTrainingType(type);
-
-		// When
-		Collection<TrainingType> types = gymFacade.getAllTrainingTypes();
-
-		// Then
-		assertThat(types).isNotEmpty();
-		assertThat(types).anyMatch(t -> t.getTrainingTypeId() == 988L);
+	long getNextUniqueId() {
+		idGenerator++;
+		return idGenerator;
 	}
 
 }

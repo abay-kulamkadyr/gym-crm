@@ -1,13 +1,12 @@
 package com.epam.application.service;
 
-import com.epam.domain.repository.TraineeRepository;
-import lombok.extern.slf4j.Slf4j;
 import com.epam.domain.model.Trainee;
+import com.epam.domain.repository.TraineeRepository;
 import com.epam.domain.util.PasswordGenerator;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Collection;
 
 @Service
 @Slf4j
@@ -25,17 +24,14 @@ public class TraineeService implements CrudService<Trainee> {
 		if (trainee == null) {
 			throw new IllegalArgumentException("Trainee cannot be null");
 		}
-
-		if (traineeRepository.findById(trainee.getUserId()) != null) {
+		if (traineeRepository.findById(trainee.getUserId()).isPresent()) {
 			throw new IllegalArgumentException("Trainee with the given id=" + trainee.getUserId() + " already exists");
 		}
-		validateTrainee(trainee);
 
-		String username = generateUniqueUsername(trainee);
-		trainee.setUsername(username);
+		trainee.setUsername(generateUniqueUsername(trainee));
 		trainee.setPassword(PasswordGenerator.generate(10));
 		traineeRepository.save(trainee);
-		log.info("Created trainee: {}", username);
+		log.info("Created trainee: {}", trainee.getUsername());
 	}
 
 	@Override
@@ -43,10 +39,9 @@ public class TraineeService implements CrudService<Trainee> {
 		if (trainee == null) {
 			throw new IllegalArgumentException("Trainee cannot be null");
 		}
-		validateTrainee(trainee);
 
-		Trainee existing = traineeRepository.findById(trainee.getUserId());
-		if (existing == null) {
+		Optional<Trainee> existing = traineeRepository.findById(trainee.getUserId());
+		if (existing.isEmpty()) {
 			throw new IllegalArgumentException("Trainee with id " + trainee.getUserId() + " does not exist");
 		}
 
@@ -56,8 +51,8 @@ public class TraineeService implements CrudService<Trainee> {
 
 	@Override
 	public void delete(long id) {
-		Trainee existing = traineeRepository.findById(id);
-		if (existing == null) {
+		Optional<Trainee> existing = traineeRepository.findById(id);
+		if (existing.isEmpty()) {
 			log.warn("Attempted to delete non-existent trainee: {}", id);
 			return;
 		}
@@ -67,38 +62,27 @@ public class TraineeService implements CrudService<Trainee> {
 	}
 
 	@Override
-	public Trainee getById(long id) {
+	public Optional<Trainee> getById(long id) {
 		return traineeRepository.findById(id);
 	}
 
-	@Override
-	public Collection<Trainee> getAll() {
-		return traineeRepository.findAll();
-	}
-
-	// TODO: Replace with efficient query when migrating to Hibernate
-	// Current implementation loads all records - acceptable for in-memory storage
-	// Future: SELECT COUNT(*) FROM trainee WHERE username LIKE 'base%'
 	private String generateUniqueUsername(Trainee trainee) {
-		String base = trainee.getFirstName() + "." + trainee.getLastName();
-		long duplicates = traineeRepository.findAll()
-			.stream()
-			.filter(t -> t.getUsername() != null && t.getUsername().startsWith(base))
-			.count();
-		;
-		return duplicates > 0 ? base + (duplicates + 1) : base;
-	}
-
-	private void validateTrainee(Trainee trainee) {
-		if (trainee.getFirstName() == null || trainee.getFirstName().isBlank()) {
-			throw new IllegalArgumentException("Trainee first name cannot be null or empty");
+		String baseUsername = trainee.getFirstName() + "." + trainee.getLastName();
+		String res = baseUsername;
+		Optional<String> latestUsername = traineeRepository.findLatestUsername(baseUsername);
+		if (latestUsername.isEmpty()) {
+			res += "1";
 		}
-		if (trainee.getLastName() == null || trainee.getLastName().isBlank()) {
-			throw new IllegalArgumentException("Trainee last name cannot be null or empty");
+		else {
+			try {
+				String serialPart = latestUsername.get().substring(baseUsername.length());
+				res += Long.parseLong(serialPart) + 1;
+			}
+			catch (NumberFormatException e) {
+				res += "1";
+			}
 		}
-		if (trainee.getDob() == null) {
-			throw new IllegalArgumentException("Trainee date of birth cannot be null");
-		}
+		return res;
 	}
 
 }

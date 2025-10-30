@@ -6,9 +6,9 @@ import com.epam.domain.model.Trainer;
 import com.epam.infrastructure.persistence.dao.TrainerDao;
 import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -59,41 +59,17 @@ class TrainerRepositoryImplTest {
 		storage.put(1L, TrainerMapper.toEntity(trainer));
 
 		// When
-		Trainer result = trainerRepositoryImpl.findById(1L);
+		Optional<Trainer> result = trainerRepositoryImpl.findById(1L);
 
 		// Then
-		assertThat(result).isEqualTo(trainer);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(trainer);
 	}
 
 	@Test
-	void findById_shouldReturnNullWhenNotExists() {
+	void findById_shouldReturnEmptyWhenNotExists() {
 		// When
-		Trainer result = trainerRepositoryImpl.findById(999L);
-
-		// Then
-		assertThat(result).isNull();
-	}
-
-	@Test
-	void findAll_shouldReturnAllTrainers() {
-		// Given
-		Trainer trainer1 = new Trainer(1L, "Alice", "Johnson", "Yoga");
-		Trainer trainer2 = new Trainer(2L, "Bob", "Smith", "Boxing");
-
-		storage.put(1L, TrainerMapper.toEntity(trainer1));
-		storage.put(2L, TrainerMapper.toEntity(trainer2));
-
-		// When
-		Collection<Trainer> result = trainerRepositoryImpl.findAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(trainer1, trainer2);
-	}
-
-	@Test
-	void findAll_shouldReturnEmptyCollectionWhenNoTrainers() {
-		// When
-		Collection<Trainer> result = trainerRepositoryImpl.findAll();
+		Optional<Trainer> result = trainerRepositoryImpl.findById(999L);
 
 		// Then
 		assertThat(result).isEmpty();

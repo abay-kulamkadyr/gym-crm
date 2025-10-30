@@ -1,23 +1,23 @@
 package com.epam.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.epam.application.service.TraineeService;
-import com.epam.infrastructure.persistence.repository.TraineeRepositoryImpl;
 import com.epam.domain.model.Trainee;
+import com.epam.infrastructure.persistence.repository.TraineeRepositoryImpl;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceTest {
@@ -40,13 +40,13 @@ class TraineeServiceTest {
 	@Test
 	void create_shouldGenerateUsernameAndPassword() {
 		// Given
-		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.emptyList());
+		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.empty());
 
 		// When
 		traineeService.create(testTrainee);
 
 		// Then
-		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe");
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe1");
 		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
 		verify(traineeRepositoryImpl).save(testTrainee);
 	}
@@ -56,7 +56,7 @@ class TraineeServiceTest {
 		// Given
 		Trainee existingTrainee = new Trainee(2L, "John", "Doe", LocalDate.of(1985, 5, 15));
 		existingTrainee.setUsername("John.Doe");
-		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.singletonList(existingTrainee));
+		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe1"));
 
 		// When
 		traineeService.create(testTrainee);
@@ -71,16 +71,17 @@ class TraineeServiceTest {
 	void create_shouldGenerateUniqueUsernameWithMultipleDuplicates() {
 		// Given
 		Trainee existingTrainee1 = new Trainee(2L, "John", "Doe", LocalDate.of(1985, 5, 15));
-		existingTrainee1.setUsername("John.Doe");
+		existingTrainee1.setUsername("John.Doe1");
 		Trainee existingTrainee2 = new Trainee(3L, "John", "Doe", LocalDate.of(1988, 3, 20));
 		existingTrainee2.setUsername("John.Doe2");
-		when(traineeRepositoryImpl.findAll()).thenReturn(Arrays.asList(existingTrainee1, existingTrainee2));
+		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe2"));
 
 		// When
 		traineeService.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe3");
+		assertThat(testTrainee.getUsername()).isNotEqualTo(existingTrainee2.getUsername());
 		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 
@@ -100,7 +101,7 @@ class TraineeServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(traineeRepositoryImpl.findById(1L)).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTrainee));
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> traineeService.create(testTrainee));
@@ -111,7 +112,7 @@ class TraineeServiceTest {
 		// Given
 		testTrainee.setUsername("John.Doe");
 		testTrainee.setPassword("password123");
-		when(traineeRepositoryImpl.findById(testTrainee.getUserId())).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(testTrainee.getUserId())).thenReturn(Optional.of(testTrainee));
 
 		// When
 		traineeService.update(testTrainee);
@@ -146,56 +147,29 @@ class TraineeServiceTest {
 	void getById_shouldReturnTraineeFromDao() {
 		// Given
 		long traineeId = 1L;
-		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(testTrainee);
+		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(Optional.of(testTrainee));
 
 		// When
-		Trainee result = traineeService.getById(traineeId);
+		Optional<Trainee> result = traineeService.getById(traineeId);
 
 		// Then
-		assertThat(result).isEqualTo(testTrainee);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(testTrainee);
 		verify(traineeRepositoryImpl).findById(traineeId);
 	}
 
 	@Test
-	void getById_shouldReturnNullWhenNotFound() {
+	void getById_shouldReturnEmptyWhenNotFound() {
 		// Given
 		long traineeId = 999L;
-		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(null);
+		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(Optional.empty());
 
 		// When
-		Trainee result = traineeService.getById(traineeId);
-
-		// Then
-		assertThat(result).isNull();
-		verify(traineeRepositoryImpl).findById(traineeId);
-	}
-
-	@Test
-	void getAll_shouldReturnAllTraineesFromDao() {
-		// Given
-		Trainee trainee2 = new Trainee(2L, "Jane", "Smith", LocalDate.of(1992, 6, 15));
-		Collection<Trainee> trainees = Arrays.asList(testTrainee, trainee2);
-		when(traineeRepositoryImpl.findAll()).thenReturn(trainees);
-
-		// When
-		Collection<Trainee> result = traineeService.getAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTrainee, trainee2);
-		verify(traineeRepositoryImpl).findAll();
-	}
-
-	@Test
-	void getAll_shouldReturnEmptyCollectionWhenNoTrainees() {
-		// Given
-		when(traineeRepositoryImpl.findAll()).thenReturn(Collections.emptyList());
-
-		// When
-		Collection<Trainee> result = traineeService.getAll();
+		Optional<Trainee> result = traineeService.getById(traineeId);
 
 		// Then
 		assertThat(result).isEmpty();
-		verify(traineeRepositoryImpl).findAll();
+		verify(traineeRepositoryImpl).findById(traineeId);
 	}
 
 }

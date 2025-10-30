@@ -1,9 +1,9 @@
 package com.epam.application.service;
 
-import com.epam.domain.repository.TrainingTypeRepository;
-import java.util.Collection;
-import lombok.extern.slf4j.Slf4j;
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.repository.TrainingTypeRepository;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,12 +24,10 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 			throw new IllegalArgumentException("TrainingType cannot be null");
 		}
 
-		if (trainingTypeRepository.findById(trainingType.getTrainingTypeId()) != null) {
+		if (trainingTypeRepository.findById(trainingType.getTrainingTypeId()).isPresent()) {
 			throw new IllegalArgumentException(
 					"TrainingType with the given id=" + trainingType.getTrainingTypeId() + " already exists");
 		}
-
-		validateTrainingType(trainingType);
 
 		trainingTypeRepository.save(trainingType);
 		log.info("Created training type: {}", trainingType.getTrainingNameType());
@@ -41,10 +39,8 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 			throw new IllegalArgumentException("TrainingType cannot be null");
 		}
 
-		validateTrainingType(trainingType);
-
-		TrainingType existing = trainingTypeRepository.findById(trainingType.getTrainingTypeId());
-		if (existing == null) {
+		Optional<TrainingType> existing = trainingTypeRepository.findById(trainingType.getTrainingTypeId());
+		if (existing.isEmpty()) {
 			throw new IllegalArgumentException(
 					"TrainingType with id " + trainingType.getTrainingTypeId() + " does not exist");
 		}
@@ -55,8 +51,8 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 
 	@Override
 	public void delete(long id) {
-		TrainingType existing = trainingTypeRepository.findById(id);
-		if (existing == null) {
+		Optional<TrainingType> existing = trainingTypeRepository.findById(id);
+		if (existing.isEmpty()) {
 			log.warn("Attempted to delete non-existent training type: {}", id);
 			return;
 		}
@@ -66,25 +62,8 @@ public class TrainingTypeService implements CrudService<TrainingType> {
 	}
 
 	@Override
-	public TrainingType getById(long id) {
+	public Optional<TrainingType> getById(long id) {
 		return trainingTypeRepository.findById(id);
-	}
-
-	@Override
-	public Collection<TrainingType> getAll() {
-		return trainingTypeRepository.findAll();
-	}
-
-	private void validateTrainingType(TrainingType trainingType) {
-		if (trainingType.getTrainingNameType() == null || trainingType.getTrainingNameType().isBlank()) {
-			throw new IllegalArgumentException("Training type name cannot be null or empty");
-		}
-		if (trainingType.getTrainerId() <= 0) {
-			throw new IllegalArgumentException("TrainingType must have a valid trainer ID");
-		}
-		if (trainingType.getTrainingId() <= 0) {
-			throw new IllegalArgumentException("TrainingType must have a valid training ID");
-		}
 	}
 
 }

@@ -1,15 +1,13 @@
 package com.epam.domain.repository;
 
-import java.util.Collection;
+import java.util.Optional;
 import org.springframework.lang.NonNull;
 
 public interface CrudRepository<T> {
 
 	void save(@NonNull T t);
 
-	T findById(long id);
-
-	Collection<T> findAll();
+	Optional<T> findById(long id);
 
 	void delete(long id);
 

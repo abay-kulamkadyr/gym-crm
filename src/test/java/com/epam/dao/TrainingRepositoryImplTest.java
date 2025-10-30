@@ -8,9 +8,9 @@ import com.epam.infrastructure.persistence.mapper.TrainingMapper;
 import com.epam.infrastructure.persistence.repository.TrainingRepositoryImpl;
 import java.time.Duration;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +30,7 @@ class TrainingRepositoryImplTest {
 	@Test
 	void save_shouldStoreTrainingInStorage() {
 		// Given
+		System.out.println("Is negative " + Duration.ofHours(1).isNegative());
 		Training training = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
 
 		// When
@@ -59,41 +60,17 @@ class TrainingRepositoryImplTest {
 		storage.put(1L, TrainingMapper.toEntity(training));
 
 		// When
-		Training result = trainingRepositoryImpl.findById(1L);
+		Optional<Training> result = trainingRepositoryImpl.findById(1L);
 
 		// Then
-		assertThat(result).isEqualTo(training);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(training);
 	}
 
 	@Test
-	void findById_shouldReturnNullWhenNotExists() {
+	void findById_shouldReturnEmptyWhenNotExists() {
 		// When
-		Training result = trainingRepositoryImpl.findById(999L);
-
-		// Then
-		assertThat(result).isNull();
-	}
-
-	@Test
-	void findAll_shouldReturnAllTrainings() {
-		// Given
-		Training training1 = new Training(1L, 101L, 201L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
-		Training training2 = new Training(2L, 102L, 202L, LocalDate.of(2025, 9, 9), Duration.ofHours(1));
-
-		storage.put(1L, TrainingMapper.toEntity(training1));
-		storage.put(2L, TrainingMapper.toEntity(training2));
-
-		// When
-		Collection<Training> result = trainingRepositoryImpl.findAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(training1, training2);
-	}
-
-	@Test
-	void findAll_shouldReturnEmptyCollectionWhenNoTrainings() {
-		// When
-		Collection<Training> result = trainingRepositoryImpl.findAll();
+		Optional<Training> result = trainingRepositoryImpl.findById(999L);
 
 		// Then
 		assertThat(result).isEmpty();

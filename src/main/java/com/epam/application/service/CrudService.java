@@ -1,6 +1,6 @@
 package com.epam.application.service;
 
-import java.util.Collection;
+import java.util.Optional;
 
 public interface CrudService<T> {
 
@@ -10,8 +10,6 @@ public interface CrudService<T> {
 
 	void delete(long id);
 
-	T getById(long id);
-
-	Collection<T> getAll();
+	Optional<T> getById(long id);
 
 }

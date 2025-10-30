@@ -1,22 +1,23 @@
 package com.epam.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.epam.application.service.TrainerService;
-import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
 import com.epam.domain.model.Trainer;
+import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TrainerServiceTest {
@@ -38,13 +39,13 @@ class TrainerServiceTest {
 	@Test
 	void create_shouldGenerateUsernameAndPassword() {
 		// Given
-		when(trainerRepositoryImpl.findAll()).thenReturn(Collections.emptyList());
+		when(trainerRepositoryImpl.findLatestUsername(any())).thenReturn(Optional.empty());
 
 		// When
 		trainerService.create(testTrainer);
 
 		// Then
-		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson");
+		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson1");
 		assertThat(testTrainer.getPassword()).isNotNull().hasSize(10);
 		verify(trainerRepositoryImpl).save(testTrainer);
 	}
@@ -54,7 +55,7 @@ class TrainerServiceTest {
 		// Given
 		Trainer existingTrainer = new Trainer(2L, "Alice", "Johnson", "Zumba");
 		existingTrainer.setUsername("Alice.Johnson");
-		when(trainerRepositoryImpl.findAll()).thenReturn(Collections.singletonList(existingTrainer));
+		when(trainerRepositoryImpl.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson1"));
 
 		// When
 		trainerService.create(testTrainer);
@@ -68,7 +69,7 @@ class TrainerServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(trainerRepositoryImpl.findById(1L)).thenReturn(testTrainer);
+		when(trainerRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTrainer));
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> trainerService.create(testTrainer));
@@ -79,7 +80,7 @@ class TrainerServiceTest {
 		// Given
 		testTrainer.setUsername("Alice.Johnson");
 		testTrainer.setPassword("password123");
-		when(trainerRepositoryImpl.findById(testTrainer.getUserId())).thenReturn(testTrainer);
+		when(trainerRepositoryImpl.findById(testTrainer.getUserId())).thenReturn(Optional.of(testTrainer));
 
 		// When
 		trainerService.update(testTrainer);
@@ -92,7 +93,7 @@ class TrainerServiceTest {
 	void update_shouldFailWhenNotExists() {
 		// Given
 		testTrainer.setUserId(999L); // ID not in mock storage
-		when(trainerRepositoryImpl.findById(anyLong())).thenReturn(null);
+		when(trainerRepositoryImpl.findById(anyLong())).thenReturn(Optional.empty());
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> trainerService.update(testTrainer));
@@ -103,7 +104,7 @@ class TrainerServiceTest {
 	void delete_shouldCallDaoDeleteWhenExists() {
 		// Given
 		long trainerId = 1L;
-		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(testTrainer);
+		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.of(testTrainer));
 
 		// When
 		trainerService.delete(trainerId);
@@ -116,7 +117,7 @@ class TrainerServiceTest {
 	void delete_shouldNotCallDaoWhenDoesNotExist() {
 		// Given
 		long trainerId = 999L;
-		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(null);
+		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.empty());
 
 		// When
 		trainerService.delete(trainerId);
@@ -129,29 +130,15 @@ class TrainerServiceTest {
 	void getById_shouldReturnTrainerFromDao() {
 		// Given
 		long trainerId = 1L;
-		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(testTrainer);
+		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.of(testTrainer));
 
 		// When
-		Trainer result = trainerService.getById(trainerId);
+		Optional<Trainer> result = trainerService.getById(trainerId);
 
 		// Then
-		assertThat(result).isEqualTo(testTrainer);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(testTrainer);
 		verify(trainerRepositoryImpl).findById(trainerId);
-	}
-
-	@Test
-	void getAll_shouldReturnAllTrainersFromDao() {
-		// Given
-		Trainer trainer2 = new Trainer(2L, "Bob", "Smith", "Boxing");
-		Collection<Trainer> trainers = Arrays.asList(testTrainer, trainer2);
-		when(trainerRepositoryImpl.findAll()).thenReturn(trainers);
-
-		// When
-		Collection<Trainer> result = trainerService.getAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTrainer, trainer2);
-		verify(trainerRepositoryImpl).findAll();
 	}
 
 }

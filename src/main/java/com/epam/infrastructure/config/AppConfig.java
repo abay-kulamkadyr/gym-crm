@@ -18,6 +18,11 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 @PropertySource("classpath:application.properties")
 public class AppConfig {
 
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
+		return new PropertySourcesPlaceholderConfigurer();
+	}
+
 	@Bean("traineesStorage")
 	@InitializableStorage(entityType = TraineeDao.class)
 	public Map<Long, TraineeDao> traineeStorage() {
@@ -40,11 +45,6 @@ public class AppConfig {
 	@InitializableStorage(entityType = TrainingTypeDao.class)
 	public Map<Long, TrainingTypeDao> trainingTypesStorage() {
 		return new HashMap<>();
-	}
-
-	@Bean
-	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
 	}
 
 }

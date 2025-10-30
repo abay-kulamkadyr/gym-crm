@@ -1,10 +1,10 @@
 package com.epam.infrastructure.bootstrap;
 
+import com.epam.domain.model.Trainee;
 import com.epam.infrastructure.persistence.dao.TraineeDao;
 import com.epam.infrastructure.persistence.mapper.TraineeMapper;
 import java.util.List;
 import java.util.Map;
-import com.epam.domain.model.Trainee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Role;

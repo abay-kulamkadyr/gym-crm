@@ -1,23 +1,25 @@
 package com.epam.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.epam.application.service.TrainingService;
-import com.epam.infrastructure.persistence.repository.TrainingRepositoryImpl;
 import com.epam.domain.model.Training;
+import com.epam.infrastructure.persistence.repository.TrainingRepositoryImpl;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Duration;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceTest {
@@ -47,7 +49,7 @@ class TrainingServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(trainingRepositoryImpl.findById(1L)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTraining));
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> trainingService.create(testTraining));
@@ -57,7 +59,7 @@ class TrainingServiceTest {
 	void update_shouldSucceedWhenExists() {
 		// Given
 		testTraining.setTrainingDuration(Duration.ofHours(2));
-		when(trainingRepositoryImpl.findById(testTraining.getTrainingId())).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(testTraining.getTrainingId())).thenReturn(Optional.of(testTraining));
 
 		// When
 		trainingService.update(testTraining);
@@ -70,7 +72,7 @@ class TrainingServiceTest {
 	void update_shouldFailWhenNotExists() {
 		// Given
 		testTraining.setTrainingId(999L);
-		when(trainingRepositoryImpl.findById(anyLong())).thenReturn(null);
+		when(trainingRepositoryImpl.findById(anyLong())).thenReturn(Optional.empty());
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> trainingService.update(testTraining));
@@ -81,7 +83,7 @@ class TrainingServiceTest {
 	void delete_shouldCallDaoDeleteWhenExists() {
 		// Given
 		long trainingId = 1L;
-		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.of(testTraining));
 
 		// When
 		trainingService.delete(trainingId);
@@ -94,7 +96,7 @@ class TrainingServiceTest {
 	void delete_shouldNotCallDaoWhenDoesNotExist() {
 		// Given
 		long trainingId = 999L;
-		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(null);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.empty());
 
 		// When
 		trainingService.delete(trainingId);
@@ -107,29 +109,15 @@ class TrainingServiceTest {
 	void getById_shouldReturnTrainingFromDao() {
 		// Given
 		long trainingId = 1L;
-		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(testTraining);
+		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.of(testTraining));
 
 		// When
-		Training result = trainingService.getById(trainingId);
+		Optional<Training> result = trainingService.getById(trainingId);
 
 		// Then
-		assertThat(result).isEqualTo(testTraining);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(testTraining);
 		verify(trainingRepositoryImpl).findById(trainingId);
-	}
-
-	@Test
-	void getAll_shouldReturnAllTrainingsFromDao() {
-		// Given
-		Training training2 = new Training(2L, 102L, 202L, LocalDate.now().plusDays(1), Duration.ofMinutes(45));
-		Collection<Training> trainings = Arrays.asList(testTraining, training2);
-		when(trainingRepositoryImpl.findAll()).thenReturn(trainings);
-
-		// When
-		Collection<Training> result = trainingService.getAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(testTraining, training2);
-		verify(trainingRepositoryImpl).findAll();
 	}
 
 }

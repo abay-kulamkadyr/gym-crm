@@ -1,17 +1,16 @@
 package com.epam.application.facade;
 
-import com.epam.domain.model.Trainee;
-import com.epam.domain.model.Trainer;
-import com.epam.domain.model.Training;
-import com.epam.domain.model.TrainingType;
 import com.epam.application.service.TraineeService;
 import com.epam.application.service.TrainerService;
 import com.epam.application.service.TrainingService;
 import com.epam.application.service.TrainingTypeService;
+import com.epam.domain.model.Trainee;
+import com.epam.domain.model.Trainer;
+import com.epam.domain.model.Training;
+import com.epam.domain.model.TrainingType;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.Collection;
 
 @Component
 public class GymFacade {
@@ -46,12 +45,8 @@ public class GymFacade {
 		traineeService.delete(id);
 	}
 
-	public Trainee getTrainee(long id) {
+	public Optional<Trainee> getTrainee(long id) {
 		return traineeService.getById(id);
-	}
-
-	public Collection<Trainee> getAllTrainees() {
-		return traineeService.getAll();
 	}
 
 	// --- Trainer operations ---
@@ -67,12 +62,8 @@ public class GymFacade {
 		trainerService.delete(id);
 	}
 
-	public Trainer getTrainer(long id) {
+	public Optional<Trainer> getTrainer(long id) {
 		return trainerService.getById(id);
-	}
-
-	public Collection<Trainer> getAllTrainers() {
-		return trainerService.getAll();
 	}
 
 	// --- Training operations ---
@@ -80,7 +71,7 @@ public class GymFacade {
 		trainingService.create(training);
 	}
 
-	public Training getTraining(long id) {
+	public Optional<Training> getTraining(long id) {
 		return trainingService.getById(id);
 	}
 
@@ -92,16 +83,12 @@ public class GymFacade {
 		trainingService.delete(id);
 	}
 
-	public Collection<Training> getAllTrainings() {
-		return trainingService.getAll();
-	}
-
 	// --- TrainingType operations ---
 	public void createTrainingType(TrainingType trainingType) {
 		trainingTypeService.create(trainingType);
 	}
 
-	public TrainingType getTrainingType(long id) {
+	public Optional<TrainingType> getTrainingType(long id) {
 		return trainingTypeService.getById(id);
 	}
 
@@ -111,10 +98,6 @@ public class GymFacade {
 
 	public void deleteTrainingType(long id) {
 		trainingTypeService.delete(id);
-	}
-
-	public Collection<TrainingType> getAllTrainingTypes() {
-		return trainingTypeService.getAll();
 	}
 
 }

@@ -6,15 +6,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @Builder
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString
 public class TrainerDao {
 
 	@EqualsAndHashCode.Include

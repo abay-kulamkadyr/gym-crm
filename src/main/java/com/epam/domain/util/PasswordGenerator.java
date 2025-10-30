@@ -4,13 +4,13 @@ import java.security.SecureRandom;
 
 public final class PasswordGenerator {
 
-	private PasswordGenerator() {
-
-	}
-
 	private static final String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 	private static final SecureRandom RANDOM = new SecureRandom();
+
+	private PasswordGenerator() {
+
+	}
 
 	public static String generate(int length) {
 		StringBuilder sb = new StringBuilder(length);

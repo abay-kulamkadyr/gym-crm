@@ -8,7 +8,7 @@ import lombok.ToString;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor // for jackson
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 @ToString
 public class Trainer extends User {
@@ -24,6 +24,12 @@ public class Trainer extends User {
 
 	public Trainer(long userId, String firstName, String lastName, String specialization) {
 		super(firstName, lastName);
+		if (userId <= 0) {
+			throw new IllegalArgumentException("UserId cannot be less or equal to 0");
+		}
+		if (specialization == null || specialization.isEmpty()) {
+			throw new IllegalArgumentException("Specialization cannot be null or empty");
+		}
 		this.userId = userId;
 		this.specialization = specialization;
 	}

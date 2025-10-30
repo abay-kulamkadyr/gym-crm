@@ -6,9 +6,9 @@ import com.epam.domain.model.TrainingType;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDao;
 import com.epam.infrastructure.persistence.mapper.TrainingTypeMapper;
 import com.epam.infrastructure.persistence.repository.TrainingTypeRepositoryImpl;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,40 +43,17 @@ class TrainingTypeRepositoryImplTest {
 		storage.put(1L, TrainingTypeMapper.toEntity(type));
 
 		// When
-		TrainingType result = trainingTypeRepositoryImpl.findById(1L);
+		Optional<TrainingType> result = trainingTypeRepositoryImpl.findById(1L);
 
 		// Then
-		assertThat(result).isEqualTo(type);
+		assertThat(result).isPresent();
+		assertThat(result.get()).isEqualTo(type);
 	}
 
 	@Test
-	void findById_shouldReturnNullWhenNotExists() {
+	void findById_shouldReturnEmptyWhenNotExists() {
 		// When
-		TrainingType result = trainingTypeRepositoryImpl.findById(999L);
-
-		// Then
-		assertThat(result).isNull();
-	}
-
-	@Test
-	void findAll_shouldReturnAllTrainingTypes() {
-		// Given
-		TrainingType type1 = new TrainingType(1L, "Cardio", 1L, 2L);
-		TrainingType type2 = new TrainingType(2L, "Strength", 1L, 2L);
-		storage.put(1L, TrainingTypeMapper.toEntity(type1));
-		storage.put(2L, TrainingTypeMapper.toEntity(type2));
-
-		// When
-		Collection<TrainingType> result = trainingTypeRepositoryImpl.findAll();
-
-		// Then
-		assertThat(result).hasSize(2).containsExactlyInAnyOrder(type1, type2);
-	}
-
-	@Test
-	void findAll_shouldReturnEmptyCollectionWhenNoTrainingTypes() {
-		// When
-		Collection<TrainingType> result = trainingTypeRepositoryImpl.findAll();
+		Optional<TrainingType> result = trainingTypeRepositoryImpl.findById(999L);
 
 		// Then
 		assertThat(result).isEmpty();

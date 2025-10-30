@@ -1,11 +1,11 @@
 package com.epam.infrastructure.persistence.repository;
 
+import com.epam.domain.model.TrainingType;
 import com.epam.domain.repository.TrainingTypeRepository;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDao;
 import com.epam.infrastructure.persistence.mapper.TrainingTypeMapper;
-import java.util.Collection;
 import java.util.Map;
-import com.epam.domain.model.TrainingType;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -27,14 +27,12 @@ public class TrainingTypeRepositoryImpl implements TrainingTypeRepository {
 	}
 
 	@Override
-	public TrainingType findById(long id) {
+	public Optional<TrainingType> findById(long id) {
 		TrainingTypeDao entity = storage.get(id);
-		return TrainingTypeMapper.toDomain(entity);
-	}
-
-	@Override
-	public Collection<TrainingType> findAll() {
-		return storage.values().stream().map(TrainingTypeMapper::toDomain).toList();
+		if (entity == null) {
+			return Optional.empty();
+		}
+		return Optional.of(TrainingTypeMapper.toDomain(entity));
 	}
 
 	@Override
