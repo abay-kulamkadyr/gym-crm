@@ -2,7 +2,7 @@ package com.epam.application.service;
 
 import com.epam.domain.model.Trainee;
 import com.epam.domain.repository.TraineeRepository;
-import com.epam.domain.util.PasswordGenerator;
+import com.epam.application.util.CredentialsGenerator;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +28,9 @@ public class TraineeService implements CrudService<Trainee> {
 			throw new IllegalArgumentException("Trainee with the given id=" + trainee.getUserId() + " already exists");
 		}
 
-		trainee.setUsername(generateUniqueUsername(trainee));
-		trainee.setPassword(PasswordGenerator.generate(10));
+		trainee.setUsername(CredentialsGenerator.generateUniqueUsername(trainee.getFirstName(), trainee.getLastName(),
+				traineeRepository::findLatestUsername));
+		trainee.setPassword(CredentialsGenerator.generateRandomPassword(10));
 		traineeRepository.save(trainee);
 		log.info("Created trainee: {}", trainee.getUsername());
 	}
@@ -64,25 +65,6 @@ public class TraineeService implements CrudService<Trainee> {
 	@Override
 	public Optional<Trainee> getById(long id) {
 		return traineeRepository.findById(id);
-	}
-
-	private String generateUniqueUsername(Trainee trainee) {
-		String baseUsername = trainee.getFirstName() + "." + trainee.getLastName();
-		String res = baseUsername;
-		Optional<String> latestUsername = traineeRepository.findLatestUsername(baseUsername);
-		if (latestUsername.isEmpty()) {
-			res += "1";
-		}
-		else {
-			try {
-				String serialPart = latestUsername.get().substring(baseUsername.length());
-				res += Long.parseLong(serialPart) + 1;
-			}
-			catch (NumberFormatException e) {
-				res += "1";
-			}
-		}
-		return res;
 	}
 
 }

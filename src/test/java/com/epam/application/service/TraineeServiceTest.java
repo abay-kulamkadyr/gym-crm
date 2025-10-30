@@ -1,4 +1,4 @@
-package com.epam.service;
+package com.epam.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -46,7 +46,7 @@ class TraineeServiceTest {
 		traineeService.create(testTrainee);
 
 		// Then
-		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe1");
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe");
 		assertThat(testTrainee.getPassword()).isNotNull().hasSize(10);
 		verify(traineeRepositoryImpl).save(testTrainee);
 	}
@@ -82,6 +82,19 @@ class TraineeServiceTest {
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe3");
 		assertThat(testTrainee.getUsername()).isNotEqualTo(existingTrainee2.getUsername());
+		verify(traineeRepositoryImpl).save(testTrainee);
+	}
+
+	@Test
+	void create_shouldGenerateUniqueWhenBaseExists() {
+		// Given
+		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe"));
+
+		// When
+		traineeService.create(testTrainee);
+
+		// Then
+		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe1");
 		verify(traineeRepositoryImpl).save(testTrainee);
 	}
 

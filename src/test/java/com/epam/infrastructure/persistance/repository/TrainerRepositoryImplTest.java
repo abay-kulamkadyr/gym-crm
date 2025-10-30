@@ -1,4 +1,4 @@
-package com.epam.dao;
+package com.epam.infrastructure.persistance.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

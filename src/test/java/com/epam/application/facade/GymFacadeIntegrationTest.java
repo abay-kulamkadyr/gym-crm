@@ -1,4 +1,4 @@
-package com.epam.facade;
+package com.epam.application.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,7 +42,7 @@ class GymFacadeIntegrationTest {
 		// Then
 		Optional<Trainee> retrieved = gymFacade.getTrainee(999L);
 		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getUsername()).isEqualTo("Michael.Brown1");
+		assertThat(retrieved.get().getUsername()).isEqualTo("Michael.Brown");
 		assertThat(retrieved.get().getPassword()).isNotNull().hasSize(10);
 	}
 
@@ -87,7 +87,7 @@ class GymFacadeIntegrationTest {
 		Optional<Trainer> retrieved = gymFacade.getTrainer(999L);
 		assertThat(retrieved).isPresent();
 		assertThat(retrieved).get().satisfies(extractedTrainer -> {
-			assertThat(extractedTrainer.getUsername()).isEqualTo("Emma.Taylor1");
+			assertThat(extractedTrainer.getUsername()).isEqualTo("Emma.Taylor");
 			assertThat(extractedTrainer.getPassword()).isNotNull().hasSize(10);
 		});
 	}
@@ -187,9 +187,9 @@ class GymFacadeIntegrationTest {
 
 		// Then
 		assertThat(trainee1Result).isPresent();
-		assertThat(trainee1Result.get().getUsername()).isEqualTo("Duplicate.Name1");
+		assertThat(trainee1Result.get().getUsername()).isEqualTo("Duplicate.Name");
 		assertThat(trainee2Result).isPresent();
-		assertThat(trainee2Result.get().getUsername()).isEqualTo("Duplicate.Name2");
+		assertThat(trainee2Result.get().getUsername()).isEqualTo("Duplicate.Name1");
 	}
 
 	@Test
@@ -203,8 +203,8 @@ class GymFacadeIntegrationTest {
 		gymFacade.createTrainer(trainer2);
 
 		// Then
-		assertThat(trainer1.getUsername()).isEqualTo("Same.Person1");
-		assertThat(trainer2.getUsername()).isEqualTo("Same.Person2");
+		assertThat(trainer1.getUsername()).isEqualTo("Same.Person");
+		assertThat(trainer2.getUsername()).isEqualTo("Same.Person1");
 	}
 
 	@Test

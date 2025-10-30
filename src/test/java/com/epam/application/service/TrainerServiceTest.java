@@ -1,4 +1,4 @@
-package com.epam.service;
+package com.epam.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -45,7 +45,7 @@ class TrainerServiceTest {
 		trainerService.create(testTrainer);
 
 		// Then
-		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson1");
+		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson");
 		assertThat(testTrainer.getPassword()).isNotNull().hasSize(10);
 		verify(trainerRepositoryImpl).save(testTrainer);
 	}
@@ -53,8 +53,6 @@ class TrainerServiceTest {
 	@Test
 	void create_shouldGenerateUniqueUsernameWhenDuplicateExists() {
 		// Given
-		Trainer existingTrainer = new Trainer(2L, "Alice", "Johnson", "Zumba");
-		existingTrainer.setUsername("Alice.Johnson");
 		when(trainerRepositoryImpl.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson1"));
 
 		// When
@@ -73,6 +71,19 @@ class TrainerServiceTest {
 
 		// Then
 		assertThrows(IllegalArgumentException.class, () -> trainerService.create(testTrainer));
+	}
+
+	@Test
+	void create_shouldGenerateUniqueWhenBaseExists() {
+		// Given
+		when(trainerRepositoryImpl.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson"));
+
+		// When
+		trainerService.create(testTrainer);
+
+		// Then
+		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson1");
+		verify(trainerRepositoryImpl).save(testTrainer);
 	}
 
 	@Test
