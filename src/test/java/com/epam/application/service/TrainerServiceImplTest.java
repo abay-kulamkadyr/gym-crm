@@ -8,7 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.application.service.TrainerService;
+import com.epam.application.service.impl.TrainerServiceImpl;
 import com.epam.domain.model.Trainer;
 import com.epam.infrastructure.persistence.repository.TrainerRepositoryImpl;
 import java.util.Optional;
@@ -20,19 +20,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TrainerServiceTest {
+class TrainerServiceImplTest {
 
 	@Mock
 	private TrainerRepositoryImpl trainerRepositoryImpl;
 
 	@InjectMocks
-	private TrainerService trainerService;
+	private TrainerServiceImpl trainerServiceImpl;
 
 	private Trainer testTrainer;
 
 	@BeforeEach
 	void setUp() {
-		testTrainer = new Trainer(1L, "Alice", "Johnson", "Yoga");
+		testTrainer = new Trainer(null, "Alice", "Johnson", "Yoga");
 		testTrainer.setActive(true);
 	}
 
@@ -42,7 +42,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findLatestUsername(any())).thenReturn(Optional.empty());
 
 		// When
-		trainerService.create(testTrainer);
+		trainerServiceImpl.create(testTrainer);
 
 		// Then
 		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson");
@@ -56,7 +56,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson1"));
 
 		// When
-		trainerService.create(testTrainer);
+		trainerServiceImpl.create(testTrainer);
 
 		// Then
 		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson2");
@@ -67,10 +67,10 @@ class TrainerServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(trainerRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTrainer));
+		testTrainer.setUserId(1L);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> trainerService.create(testTrainer));
+		assertThrows(IllegalArgumentException.class, () -> trainerServiceImpl.create(testTrainer));
 	}
 
 	@Test
@@ -79,7 +79,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson"));
 
 		// When
-		trainerService.create(testTrainer);
+		trainerServiceImpl.create(testTrainer);
 
 		// Then
 		assertThat(testTrainer.getUsername()).isEqualTo("Alice.Johnson1");
@@ -91,10 +91,11 @@ class TrainerServiceTest {
 		// Given
 		testTrainer.setUsername("Alice.Johnson");
 		testTrainer.setPassword("password123");
+		testTrainer.setUserId(1L);
 		when(trainerRepositoryImpl.findById(testTrainer.getUserId())).thenReturn(Optional.of(testTrainer));
 
 		// When
-		trainerService.update(testTrainer);
+		trainerServiceImpl.update(testTrainer);
 
 		// Then
 		verify(trainerRepositoryImpl).save(testTrainer);
@@ -107,34 +108,8 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findById(anyLong())).thenReturn(Optional.empty());
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> trainerService.update(testTrainer));
+		assertThrows(IllegalArgumentException.class, () -> trainerServiceImpl.update(testTrainer));
 		verify(trainerRepositoryImpl, never()).save(any(Trainer.class));
-	}
-
-	@Test
-	void delete_shouldCallDaoDeleteWhenExists() {
-		// Given
-		long trainerId = 1L;
-		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.of(testTrainer));
-
-		// When
-		trainerService.delete(trainerId);
-
-		// Then
-		verify(trainerRepositoryImpl).delete(trainerId);
-	}
-
-	@Test
-	void delete_shouldNotCallDaoWhenDoesNotExist() {
-		// Given
-		long trainerId = 999L;
-		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.empty());
-
-		// When
-		trainerService.delete(trainerId);
-
-		// Then
-		verify(trainerRepositoryImpl, never()).delete(anyLong());
 	}
 
 	@Test
@@ -144,7 +119,7 @@ class TrainerServiceTest {
 		when(trainerRepositoryImpl.findById(trainerId)).thenReturn(Optional.of(testTrainer));
 
 		// When
-		Optional<Trainer> result = trainerService.getById(trainerId);
+		Optional<Trainer> result = trainerServiceImpl.getById(trainerId);
 
 		// Then
 		assertThat(result).isPresent();

@@ -14,19 +14,16 @@ import lombok.ToString;
 public class Trainer extends User {
 
 	@EqualsAndHashCode.Include
-	private long userId;
+	private Long userId;
 
 	private String specialization;
 
-	private long trainingId;
+	private Long trainingId;
 
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
-	public Trainer(long userId, String firstName, String lastName, String specialization) {
+	public Trainer(Long userId, String firstName, String lastName, String specialization) {
 		super(firstName, lastName);
-		if (userId <= 0) {
-			throw new IllegalArgumentException("UserId cannot be less or equal to 0");
-		}
 		if (specialization == null || specialization.isEmpty()) {
 			throw new IllegalArgumentException("Specialization cannot be null or empty");
 		}

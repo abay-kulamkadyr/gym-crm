@@ -15,19 +15,17 @@ import lombok.ToString;
 public class Trainee extends User {
 
 	@EqualsAndHashCode.Include
-	private long userId;
+	private Long userId;
 
 	private LocalDate dob;
 
 	private String address;
 
-	private long trainingId;
+	private Long trainingId;
 
-	public Trainee(long userId, String firstName, String lastName, LocalDate dob) {
+	public Trainee(Long userId, String firstName, String lastName, LocalDate dob) {
 		super(firstName, lastName);
-		if (userId <= 0) {
-			throw new IllegalArgumentException("UserId cannot be less or equal to 0");
-		}
+
 		if (dob == null || dob.isAfter(LocalDate.now())) {
 			throw new IllegalArgumentException("Date of birth is not valid");
 		}

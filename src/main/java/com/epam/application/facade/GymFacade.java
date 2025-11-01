@@ -1,9 +1,9 @@
 package com.epam.application.facade;
 
-import com.epam.application.service.TraineeService;
-import com.epam.application.service.TrainerService;
-import com.epam.application.service.TrainingService;
-import com.epam.application.service.TrainingTypeService;
+import com.epam.application.service.impl.TraineeServiceImpl;
+import com.epam.application.service.impl.TrainerServiceImpl;
+import com.epam.application.service.impl.TrainingServiceImpl;
+import com.epam.application.service.impl.TrainingTypeServiceImpl;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
@@ -15,89 +15,89 @@ import org.springframework.stereotype.Component;
 @Component
 public class GymFacade {
 
-	private final TraineeService traineeService;
+	private final TraineeServiceImpl traineeServiceImpl;
 
-	private final TrainerService trainerService;
+	private final TrainerServiceImpl trainerServiceImpl;
 
-	private final TrainingService trainingService;
+	private final TrainingServiceImpl trainingServiceImpl;
 
-	private final TrainingTypeService trainingTypeService;
+	private final TrainingTypeServiceImpl trainingTypeServiceImpl;
 
 	@Autowired
-	public GymFacade(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService,
-			TrainingTypeService trainingTypeService) {
-		this.traineeService = traineeService;
-		this.trainerService = trainerService;
-		this.trainingService = trainingService;
-		this.trainingTypeService = trainingTypeService;
+	public GymFacade(TraineeServiceImpl traineeServiceImpl, TrainerServiceImpl trainerServiceImpl,
+			TrainingServiceImpl trainingServiceImpl, TrainingTypeServiceImpl trainingTypeServiceImpl) {
+		this.traineeServiceImpl = traineeServiceImpl;
+		this.trainerServiceImpl = trainerServiceImpl;
+		this.trainingServiceImpl = trainingServiceImpl;
+		this.trainingTypeServiceImpl = trainingTypeServiceImpl;
 	}
 
 	// --- Trainee operations ---
 	public void createTrainee(Trainee trainee) {
-		traineeService.create(trainee);
+		traineeServiceImpl.create(trainee);
 	}
 
 	public void updateTrainee(Trainee trainee) {
-		traineeService.update(trainee);
+		traineeServiceImpl.update(trainee);
 	}
 
 	public void deleteTrainee(long id) {
-		traineeService.delete(id);
+		traineeServiceImpl.delete(id);
 	}
 
 	public Optional<Trainee> getTrainee(long id) {
-		return traineeService.getById(id);
+		return traineeServiceImpl.getById(id);
 	}
 
 	// --- Trainer operations ---
 	public void createTrainer(Trainer trainer) {
-		trainerService.create(trainer);
+		trainerServiceImpl.create(trainer);
 	}
 
 	public void updateTrainer(Trainer trainer) {
-		trainerService.update(trainer);
+		trainerServiceImpl.update(trainer);
 	}
 
 	public void deleteTrainer(long id) {
-		trainerService.delete(id);
+		trainerServiceImpl.delete(id);
 	}
 
 	public Optional<Trainer> getTrainer(long id) {
-		return trainerService.getById(id);
+		return trainerServiceImpl.getById(id);
 	}
 
 	// --- Training operations ---
 	public void createTraining(Training training) {
-		trainingService.create(training);
+		trainingServiceImpl.create(training);
 	}
 
 	public Optional<Training> getTraining(long id) {
-		return trainingService.getById(id);
+		return trainingServiceImpl.getById(id);
 	}
 
 	public void updateTraining(Training training) {
-		trainingService.update(training);
+		trainingServiceImpl.update(training);
 	}
 
 	public void deleteTraining(long id) {
-		trainingService.delete(id);
+		trainingServiceImpl.delete(id);
 	}
 
 	// --- TrainingType operations ---
 	public void createTrainingType(TrainingType trainingType) {
-		trainingTypeService.create(trainingType);
+		trainingTypeServiceImpl.create(trainingType);
 	}
 
 	public Optional<TrainingType> getTrainingType(long id) {
-		return trainingTypeService.getById(id);
+		return trainingTypeServiceImpl.getById(id);
 	}
 
 	public void updateTrainingType(TrainingType trainingType) {
-		trainingTypeService.update(trainingType);
+		trainingTypeServiceImpl.update(trainingType);
 	}
 
 	public void deleteTrainingType(long id) {
-		trainingTypeService.delete(id);
+		trainingTypeServiceImpl.delete(id);
 	}
 
 }

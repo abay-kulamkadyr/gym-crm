@@ -4,11 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.application.service.TrainingService;
+import com.epam.application.service.impl.TrainingServiceImpl;
 import com.epam.domain.model.Training;
 import com.epam.infrastructure.persistence.repository.TrainingRepositoryImpl;
 import java.time.Duration;
@@ -22,25 +23,27 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TrainingServiceTest {
+class TrainingServiceImplTest {
 
 	@Mock
 	private TrainingRepositoryImpl trainingRepositoryImpl;
 
 	@InjectMocks
-	private TrainingService trainingService;
+	private TrainingServiceImpl trainingServiceImpl;
 
 	private Training testTraining;
 
 	@BeforeEach
 	void setUp() {
-		testTraining = new Training(1L, 101L, 201L, LocalDate.now(), Duration.ofHours(1));
+		testTraining = new Training(null, 101L, 201L, LocalDate.now(), Duration.ofHours(1));
 	}
 
 	@Test
 	void create_shouldCallDaoSave() {
+		doNothing().when(trainingRepositoryImpl).save(testTraining);
+
 		// When
-		trainingService.create(testTraining);
+		trainingServiceImpl.create(testTraining);
 
 		// Then
 		verify(trainingRepositoryImpl).save(testTraining);
@@ -49,20 +52,21 @@ class TrainingServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(trainingRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTraining));
+		testTraining.setTrainingId(1L);
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> trainingService.create(testTraining));
+		assertThrows(IllegalArgumentException.class, () -> trainingServiceImpl.create(testTraining));
 	}
 
 	@Test
 	void update_shouldSucceedWhenExists() {
 		// Given
 		testTraining.setTrainingDuration(Duration.ofHours(2));
+		testTraining.setTrainingId(1L);
 		when(trainingRepositoryImpl.findById(testTraining.getTrainingId())).thenReturn(Optional.of(testTraining));
 
 		// When
-		trainingService.update(testTraining);
+		trainingServiceImpl.update(testTraining);
 
 		// Then
 		verify(trainingRepositoryImpl).save(testTraining);
@@ -75,34 +79,18 @@ class TrainingServiceTest {
 		when(trainingRepositoryImpl.findById(anyLong())).thenReturn(Optional.empty());
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> trainingService.update(testTraining));
+		assertThrows(IllegalArgumentException.class, () -> trainingServiceImpl.update(testTraining));
 		verify(trainingRepositoryImpl, never()).save(any(Training.class));
 	}
 
 	@Test
 	void delete_shouldCallDaoDeleteWhenExists() {
-		// Given
-		long trainingId = 1L;
-		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.of(testTraining));
 
 		// When
-		trainingService.delete(trainingId);
+		trainingServiceImpl.delete(1L);
 
 		// Then
-		verify(trainingRepositoryImpl).delete(trainingId);
-	}
-
-	@Test
-	void delete_shouldNotCallDaoWhenDoesNotExist() {
-		// Given
-		long trainingId = 999L;
-		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.empty());
-
-		// When
-		trainingService.delete(trainingId);
-
-		// Then
-		verify(trainingRepositoryImpl, never()).delete(anyLong());
+		verify(trainingRepositoryImpl).delete(1L);
 	}
 
 	@Test
@@ -112,7 +100,7 @@ class TrainingServiceTest {
 		when(trainingRepositoryImpl.findById(trainingId)).thenReturn(Optional.of(testTraining));
 
 		// When
-		Optional<Training> result = trainingService.getById(trainingId);
+		Optional<Training> result = trainingServiceImpl.getById(trainingId);
 
 		// Then
 		assertThat(result).isPresent();

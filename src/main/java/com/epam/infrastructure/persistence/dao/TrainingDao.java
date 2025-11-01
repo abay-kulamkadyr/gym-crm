@@ -19,13 +19,13 @@ import lombok.Setter;
 public class TrainingDao {
 
 	@EqualsAndHashCode.Include
-	private long trainingId;
+	private Long trainingId;
 
-	private long traineeId;
+	private Long traineeId;
 
-	private long trainerId;
+	private Long trainerId;
 
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate trainingDate;

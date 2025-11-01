@@ -14,25 +14,17 @@ import lombok.ToString;
 public class TrainingType {
 
 	@EqualsAndHashCode.Include
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
 	private String trainingNameType;
 
-	private long trainerId;
+	private Long trainerId;
 
-	private long trainingId;
+	private Long trainingId;
 
-	public TrainingType(long trainingTypeId, String trainingNameType, long trainerId, long trainingId) {
+	public TrainingType(Long trainingTypeId, String trainingNameType, Long trainerId, Long trainingId) {
 		if (trainingNameType == null || trainingNameType.isBlank()) {
 			throw new IllegalArgumentException("Training type name cannot be null or empty");
-		}
-
-		if (trainerId <= 0) {
-			throw new IllegalArgumentException("TrainingType must have a valid trainer ID");
-		}
-
-		if (trainingId <= 0) {
-			throw new IllegalArgumentException("TrainingType must have a valid training ID");
 		}
 
 		this.trainingTypeId = trainingTypeId;

@@ -7,8 +7,8 @@ public interface CrudRepository<T> {
 
 	void save(@NonNull T t);
 
-	Optional<T> findById(long id);
+	Optional<T> findById(Long id);
 
-	void delete(long id);
+	void delete(Long id);
 
 }

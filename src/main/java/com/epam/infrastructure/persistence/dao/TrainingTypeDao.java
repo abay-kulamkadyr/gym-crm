@@ -16,12 +16,12 @@ import lombok.Setter;
 public class TrainingTypeDao {
 
 	@EqualsAndHashCode.Include
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
 	private String trainingNameType;
 
-	private long trainerId;
+	private Long trainerId;
 
-	private long trainingId;
+	private Long trainingId;
 
 }

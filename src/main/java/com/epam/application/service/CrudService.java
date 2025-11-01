@@ -8,8 +8,8 @@ public interface CrudService<T> {
 
 	void update(T t);
 
-	void delete(long id);
+	void delete(Long id);
 
-	Optional<T> getById(long id);
+	Optional<T> getById(Long id);
 
 }

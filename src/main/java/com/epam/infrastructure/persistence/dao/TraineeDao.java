@@ -17,7 +17,7 @@ import lombok.Setter;
 public class TraineeDao {
 
 	@EqualsAndHashCode.Include
-	private long userId;
+	private Long userId;
 
 	private String firstName;
 
@@ -33,6 +33,6 @@ public class TraineeDao {
 
 	private String address;
 
-	private long trainingId;
+	private Long trainingId;
 
 }

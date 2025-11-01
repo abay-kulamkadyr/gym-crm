@@ -17,13 +17,13 @@ import lombok.ToString;
 public class Training {
 
 	@EqualsAndHashCode.Include
-	private long trainingId;
+	private Long trainingId;
 
-	private long traineeId;
+	private Long traineeId;
 
-	private long trainerId;
+	private Long trainerId;
 
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate trainingDate;
@@ -31,20 +31,8 @@ public class Training {
 	@JsonFormat(shape = JsonFormat.Shape.STRING)
 	private Duration trainingDuration;
 
-	public Training(long trainingId, long trainerId, long traineeId, LocalDate trainingDate,
+	public Training(Long trainingId, Long trainerId, Long traineeId, LocalDate trainingDate,
 			Duration trainingDuration) {
-		if (trainingId <= 0) {
-			throw new IllegalArgumentException("Training must have a valid training ID");
-		}
-
-		if (trainerId <= 0) {
-			throw new IllegalArgumentException("Training must have a valid trainer ID");
-		}
-
-		if (traineeId <= 0) {
-			throw new IllegalArgumentException("Training must have a valid trainee ID");
-		}
-
 		if (trainingDate == null) {
 			throw new IllegalArgumentException("Training date cannot be null");
 		}

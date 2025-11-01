@@ -7,6 +7,7 @@ import com.epam.infrastructure.persistence.mapper.TraineeMapper;
 import com.epam.infrastructure.persistence.util.UsernameFinder;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
@@ -16,6 +17,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 
 	private Map<Long, TraineeDao> storage;
 
+	private final AtomicLong idGenerator = new AtomicLong(1);
+
 	@Autowired
 	public void setStorage(Map<Long, TraineeDao> storage) {
 		this.storage = storage;
@@ -23,12 +26,17 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 
 	@Override
 	public void save(@NonNull Trainee trainee) {
+		if (trainee.getUserId() == null) {
+			Long newId = idGenerator.getAndIncrement();
+			trainee.setUserId(newId);
+		}
+
 		TraineeDao entity = TraineeMapper.toEntity(trainee);
 		storage.put(entity.getUserId(), entity);
 	}
 
 	@Override
-	public Optional<Trainee> findById(long id) {
+	public Optional<Trainee> findById(Long id) {
 		TraineeDao entity = storage.get(id);
 		if (entity == null) {
 			return Optional.empty();
@@ -37,7 +45,7 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 	}
 
 	@Override
-	public void delete(long id) {
+	public void delete(Long id) {
 		storage.remove(id);
 	}
 

@@ -30,8 +30,8 @@ public class TrainerDao {
 
 	private String specialization;
 
-	private long trainingId;
+	private Long trainingId;
 
-	private long trainingTypeId;
+	private Long trainingTypeId;
 
 }

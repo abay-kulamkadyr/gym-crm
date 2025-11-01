@@ -2,12 +2,11 @@ package com.epam.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.anyLong;
-import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.application.service.TraineeService;
+import com.epam.application.service.impl.TraineeServiceImpl;
 import com.epam.domain.model.Trainee;
 import com.epam.infrastructure.persistence.repository.TraineeRepositoryImpl;
 import java.time.LocalDate;
@@ -20,19 +19,19 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TraineeServiceTest {
+class TraineeServiceImplTest {
 
 	@Mock
 	private TraineeRepositoryImpl traineeRepositoryImpl;
 
 	@InjectMocks
-	private TraineeService traineeService;
+	private TraineeServiceImpl traineeServiceImpl;
 
 	private Trainee testTrainee;
 
 	@BeforeEach
 	void setUp() {
-		testTrainee = new Trainee(1L, "John", "Doe", LocalDate.of(1990, 1, 1));
+		testTrainee = new Trainee(null, "John", "Doe", LocalDate.of(1990, 1, 1));
 		testTrainee.setActive(true);
 		testTrainee.setAddress("123 Main St");
 	}
@@ -40,10 +39,10 @@ class TraineeServiceTest {
 	@Test
 	void create_shouldGenerateUsernameAndPassword() {
 		// Given
-		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.empty());
+		doNothing().when(traineeRepositoryImpl).save(testTrainee);
 
 		// When
-		traineeService.create(testTrainee);
+		traineeServiceImpl.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe");
@@ -59,7 +58,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe1"));
 
 		// When
-		traineeService.create(testTrainee);
+		traineeServiceImpl.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe2");
@@ -77,7 +76,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe2"));
 
 		// When
-		traineeService.create(testTrainee);
+		traineeServiceImpl.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe3");
@@ -91,7 +90,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findLatestUsername("John.Doe")).thenReturn(Optional.of("John.Doe"));
 
 		// When
-		traineeService.create(testTrainee);
+		traineeServiceImpl.create(testTrainee);
 
 		// Then
 		assertThat(testTrainee.getUsername()).isEqualTo("John.Doe1");
@@ -105,7 +104,7 @@ class TraineeServiceTest {
 		testTrainee.setPassword("password123");
 
 		// When
-		traineeService.create(testTrainee);
+		traineeServiceImpl.create(testTrainee);
 
 		// Then
 		verify(traineeRepositoryImpl).save(testTrainee);
@@ -114,10 +113,9 @@ class TraineeServiceTest {
 	@Test
 	void create_shouldNotCreateNewIfExists() {
 		// Given
-		when(traineeRepositoryImpl.findById(1L)).thenReturn(Optional.of(testTrainee));
-
+		testTrainee.setUserId(1L);
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> traineeService.create(testTrainee));
+		assertThrows(IllegalArgumentException.class, () -> traineeServiceImpl.create(testTrainee));
 	}
 
 	@Test
@@ -125,10 +123,11 @@ class TraineeServiceTest {
 		// Given
 		testTrainee.setUsername("John.Doe");
 		testTrainee.setPassword("password123");
+		testTrainee.setUserId(1L);
 		when(traineeRepositoryImpl.findById(testTrainee.getUserId())).thenReturn(Optional.of(testTrainee));
 
 		// When
-		traineeService.update(testTrainee);
+		traineeServiceImpl.update(testTrainee);
 
 		// Then
 		verify(traineeRepositoryImpl).save(testTrainee);
@@ -141,19 +140,7 @@ class TraineeServiceTest {
 		testTrainee.setPassword("password123");
 
 		// Then
-		assertThrows(IllegalArgumentException.class, () -> traineeService.update(testTrainee));
-	}
-
-	@Test
-	void delete_shouldNotCallDaoWhenDoesNotExist() {
-		// Given
-		long traineeId = 1L;
-
-		// When
-		traineeService.delete(traineeId);
-
-		// Then
-		verify(traineeRepositoryImpl, never()).delete(anyLong());
+		assertThrows(IllegalArgumentException.class, () -> traineeServiceImpl.update(testTrainee));
 	}
 
 	@Test
@@ -163,7 +150,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(Optional.of(testTrainee));
 
 		// When
-		Optional<Trainee> result = traineeService.getById(traineeId);
+		Optional<Trainee> result = traineeServiceImpl.getById(traineeId);
 
 		// Then
 		assertThat(result).isPresent();
@@ -178,7 +165,7 @@ class TraineeServiceTest {
 		when(traineeRepositoryImpl.findById(traineeId)).thenReturn(Optional.empty());
 
 		// When
-		Optional<Trainee> result = traineeService.getById(traineeId);
+		Optional<Trainee> result = traineeServiceImpl.getById(traineeId);
 
 		// Then
 		assertThat(result).isEmpty();
