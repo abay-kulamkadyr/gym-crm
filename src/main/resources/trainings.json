@@ -1,0 +1,26 @@
+[
+  {
+    "trainingId": 501,
+    "traineeId": 201,
+    "trainerId": 101,
+    "trainingTypeId": 1,
+    "trainingDate": "2025-10-20",
+    "trainingDuration": "PT1H30M"
+  },
+  {
+    "trainingId": 502,
+    "traineeId": 202,
+    "trainerId": 103,
+    "trainingTypeId": 3,
+    "trainingDate": "2025-10-21",
+    "trainingDuration": "PT1H"
+  },
+  {
+    "trainingId": 503,
+    "traineeId": 203,
+    "trainerId": 102,
+    "trainingTypeId": 2,
+    "trainingDate": "2025-10-22",
+    "trainingDuration": "PT45M"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "trainingTypeId": 1,
+    "trainingNameType": "Strength Training",
+    "trainerId": 101,
+    "trainingId": 501
+  },
+  {
+    "trainingTypeId": 2,
+    "trainingNameType": "Yoga and Flexibility",
+    "trainerId": 102,
+    "trainingId": 503
+  },
+  {
+    "trainingTypeId": 3,
+    "trainingNameType": "Cardio and Endurance",
+    "trainerId": 103,
+    "trainingId": 502
+  }
+]

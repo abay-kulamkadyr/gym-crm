@@ -1,0 +1,35 @@
+[
+  {
+    "userId": 101,
+    "firstName": "John",
+    "lastName": "Smith",
+    "username": "John.Smith",
+    "password": "randomPassword1",
+    "active": true,
+    "specialization": "Strength Training",
+    "trainingId": 501,
+    "trainingTypeId": 1
+  },
+  {
+    "userId": 102,
+    "firstName": "Emily",
+    "lastName": "Brown",
+    "username": "Emily.Brown",
+    "password": "randomPassword2",
+    "active": true,
+    "specialization": "Yoga and Flexibility",
+    "trainingId": 503,
+    "trainingTypeId": 2
+  },
+  {
+    "userId": 103,
+    "firstName": "Mark",
+    "lastName": "Johnson",
+    "username": "Mark.Johnson",
+    "password": "randomPassword3",
+    "active": false,
+    "specialization": "Cardio and Endurance",
+    "trainingId": 502,
+    "trainingTypeId": 3
+  }
+]
