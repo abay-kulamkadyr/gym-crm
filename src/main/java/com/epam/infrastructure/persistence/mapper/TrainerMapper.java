@@ -1,46 +1,56 @@
 package com.epam.infrastructure.persistence.mapper;
 
 import com.epam.domain.model.Trainer;
-import com.epam.infrastructure.persistence.dao.TrainerDao;
+import com.epam.domain.model.TrainingType;
+import com.epam.infrastructure.persistence.dao.TrainerDAO;
+import com.epam.infrastructure.persistence.dao.UserDAO;
+import com.epam.infrastructure.persistence.exception.MappingException;
+import org.springframework.lang.NonNull;
 
-public class TrainerMapper {
+public final class TrainerMapper {
 
 	private TrainerMapper() {
-
+		throw new UnsupportedOperationException("Utility class");
 	}
 
-	public static TrainerDao toEntity(Trainer trainer) {
-		if (trainer == null) {
-			return null;
-		}
+	public static TrainerDAO toEntity(@NonNull Trainer trainer) {
+		UserDAO userDAO = new UserDAO();
+		userDAO.setUserId(trainer.getUserId());
+		userDAO.setFirstName(trainer.getFirstName());
+		userDAO.setLastName(trainer.getLastName());
+		userDAO.setUsername(trainer.getUsername());
+		userDAO.setPassword(trainer.getPassword());
+		userDAO.setActive(trainer.getActive());
 
-		return TrainerDao.builder()
-			.userId(trainer.getUserId())
-			.firstName(trainer.getFirstName())
-			.lastName(trainer.getLastName())
-			.username(trainer.getUsername())
-			.password(trainer.getPassword())
-			.active(trainer.isActive())
-			.specialization(trainer.getSpecialization())
-			.trainingId(trainer.getTrainingId())
-			.trainingTypeId(trainer.getTrainingTypeId())
-			.build();
+		TrainerDAO trainerDAO = new TrainerDAO();
+		trainerDAO.setTrainerId(trainer.getTrainerId());
+		trainerDAO.setUserDAO(userDAO);
+		trainerDAO.setTrainingTypeDAO(TrainingTypeMapper.toEntity(trainer.getSpecialization()));
+
+		return trainerDAO;
 	}
 
-	public static Trainer toDomain(TrainerDao entity) {
-		if (entity == null) {
-			return null;
+	public static Trainer toDomain(@NonNull TrainerDAO trainerDAO) {
+		UserDAO userDAO = trainerDAO.getUserDAO();
+		if (userDAO == null) {
+			throw new MappingException("Cannot map TrainerDAO to Trainer: UserDAO is null");
 		}
 
-		Trainer trainee = new Trainer(entity.getUserId(), entity.getFirstName(), entity.getLastName(),
-				entity.getSpecialization());
+		if (trainerDAO.getTrainingTypeDAO() == null) {
+			throw new MappingException("Cannot map TrainerDAO to Trainer: TrainingTypeDAO is null");
+		}
 
-		trainee.setTrainingId(entity.getTrainingId());
-		trainee.setUsername(entity.getUsername());
-		trainee.setPassword(entity.getPassword());
-		trainee.setActive(entity.isActive());
+		TrainingType specialization = TrainingTypeMapper.toDomain(trainerDAO.getTrainingTypeDAO());
 
-		return trainee;
+		Trainer trainer = new Trainer(userDAO.getFirstName(), userDAO.getLastName(), userDAO.getActive(),
+				specialization);
+
+		trainer.setTrainerId(trainerDAO.getTrainerId());
+		trainer.setUserId(userDAO.getUserId());
+		trainer.setUsername(userDAO.getUsername());
+		trainer.setPassword(userDAO.getPassword());
+
+		return trainer;
 	}
 
 }

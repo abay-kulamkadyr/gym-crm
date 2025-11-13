@@ -8,6 +8,7 @@ import java.util.function.Function;
 public final class UsernameFinder {
 
 	private UsernameFinder() {
+		throw new UnsupportedOperationException("Utility class");
 	}
 
 	public static <T> Optional<String> findLatestUsername(Collection<T> daos, String prefix,

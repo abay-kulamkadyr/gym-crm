@@ -1,20 +1,20 @@
 [
   {
-    "trainingTypeId": 1,
-    "trainingNameType": "Strength Training",
-    "trainerId": 101,
-    "trainingId": 501
+    "name": "Cardio"
   },
   {
-    "trainingTypeId": 2,
-    "trainingNameType": "Yoga and Flexibility",
-    "trainerId": 102,
-    "trainingId": 503
+    "name": "Strength Training"
   },
   {
-    "trainingTypeId": 3,
-    "trainingNameType": "Cardio and Endurance",
-    "trainerId": 103,
-    "trainingId": 502
+    "name": "Yoga"
+  },
+  {
+    "name": "CrossFit"
+  },
+  {
+    "name": "Pilates"
+  },
+  {
+    "name": "Boxing"
   }
 ]

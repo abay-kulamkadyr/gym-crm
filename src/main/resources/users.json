@@ -1,0 +1,58 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Smith",
+    "username": "John.Smith",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "Emma",
+    "lastName": "Johnson",
+    "username": "Emma.Johnson",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "Michael",
+    "lastName": "Williams",
+    "username": "Michael.Williams",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Brown",
+    "username": "Sarah.Brown",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "David",
+    "lastName": "Davis",
+    "username": "David.Davis",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "Lisa",
+    "lastName": "Miller",
+    "username": "Lisa.Miller",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "James",
+    "lastName": "Wilson",
+    "username": "James.Wilson",
+    "password": "pass123456",
+    "active": true
+  },
+  {
+    "firstName": "Emily",
+    "lastName": "Moore",
+    "username": "Emily.Moore",
+    "password": "pass123456",
+    "active": false
+  }
+]

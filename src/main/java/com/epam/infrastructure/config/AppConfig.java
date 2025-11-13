@@ -1,50 +1,67 @@
 package com.epam.infrastructure.config;
 
-import com.epam.infrastructure.bootstrap.InitializableStorage;
-import com.epam.infrastructure.persistence.dao.TraineeDao;
-import com.epam.infrastructure.persistence.dao.TrainerDao;
-import com.epam.infrastructure.persistence.dao.TrainingDao;
-import com.epam.infrastructure.persistence.dao.TrainingTypeDao;
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.persistence.EntityManagerFactory;
+import java.util.Objects;
+import java.util.Properties;
+import javax.sql.DataSource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.Environment;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @ComponentScan(basePackages = "com.epam")
 @PropertySource("classpath:application.properties")
+@EnableTransactionManagement
 public class AppConfig {
+
+	@Autowired
+	private Environment env;
 
 	@Bean
 	public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {
 		return new PropertySourcesPlaceholderConfigurer();
 	}
 
-	@Bean("traineesStorage")
-	@InitializableStorage(entityType = TraineeDao.class)
-	public Map<Long, TraineeDao> traineeStorage() {
-		return new HashMap<>();
+	@Bean
+	public DataSource dataSource() {
+		DriverManagerDataSource ds = new DriverManagerDataSource();
+		ds.setDriverClassName(Objects.requireNonNull(env.getProperty("db.driver")));
+		ds.setUrl(env.getProperty("db.url"));
+		ds.setUsername(env.getProperty("db.username"));
+		ds.setPassword(env.getProperty("db.password"));
+		return ds;
 	}
 
-	@Bean("trainersStorage")
-	@InitializableStorage(entityType = TrainerDao.class)
-	public Map<Long, TrainerDao> trainersStorage() {
-		return new HashMap<>();
+	@Bean
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
+		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
+		emf.setDataSource(dataSource);
+		emf.setPackagesToScan(env.getProperty("entity.packages"));
+		emf.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+
+		Properties jpaProps = new Properties();
+		jpaProps.put("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+		jpaProps.put("hibernate.dialect", env.getProperty("hibernate.dialect"));
+		jpaProps.put("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+		jpaProps.put("hibernate.format_sql", env.getProperty("hibernate.format_sql"));
+		emf.setJpaProperties(jpaProps);
+
+		return emf;
 	}
 
-	@Bean("trainingsStorage")
-	@InitializableStorage(entityType = TrainingDao.class)
-	public Map<Long, TrainingDao> trainingsStorage() {
-		return new HashMap<>();
-	}
-
-	@Bean("trainingTypesStorage")
-	@InitializableStorage(entityType = TrainingTypeDao.class)
-	public Map<Long, TrainingTypeDao> trainingTypesStorage() {
-		return new HashMap<>();
+	@Bean
+	public PlatformTransactionManager transactionManager(EntityManagerFactory emf) {
+		return new JpaTransactionManager(emf);
 	}
 
 }

@@ -2,16 +2,15 @@ package com.epam.domain.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
-@Getter
 @Setter
-@NoArgsConstructor
-@EqualsAndHashCode
-@ToString
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 abstract class User {
+
+	@EqualsAndHashCode.Include
+	private Long userId;
 
 	private String firstName;
 
@@ -21,19 +20,12 @@ abstract class User {
 
 	private String password;
 
-	private boolean active;
+	private Boolean active;
 
-	protected User(String firstName, String lastName) {
-		if (firstName == null || firstName.isBlank()) {
-			throw new IllegalArgumentException("First name cannot be null or empty");
-		}
-
-		if (lastName == null || lastName.isBlank()) {
-			throw new IllegalArgumentException("Last name cannot be null or empty");
-		}
-
+	protected User(String firstName, String lastName, Boolean active) {
 		this.firstName = firstName;
 		this.lastName = lastName;
+		this.active = active;
 	}
 
 }

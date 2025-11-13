@@ -1,51 +1,106 @@
 package com.epam.domain.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import java.time.Duration;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
-@Setter
-@NoArgsConstructor // for jackson
-@EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
-@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Training {
 
 	@EqualsAndHashCode.Include
+	@Setter
 	private Long trainingId;
 
-	private Long traineeId;
+	@Setter
+	private String trainingName;
 
-	private Long trainerId;
+	@Setter
+	private LocalDateTime trainingDate;
 
-	private Long trainingTypeId;
+	@Setter
+	private Integer trainingDurationMin;
 
-	@JsonFormat(pattern = "yyyy-MM-dd")
-	private LocalDate trainingDate;
+	@Setter
+	private TrainingType trainingType;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING)
-	private Duration trainingDuration;
+	private final Trainee trainee;
 
-	public Training(Long trainingId, Long trainerId, Long traineeId, LocalDate trainingDate,
-			Duration trainingDuration) {
-		if (trainingDate == null) {
-			throw new IllegalArgumentException("Training date cannot be null");
-		}
+	private final Trainer trainer;
 
-		if (trainingDuration == null || trainingDuration.isZero() || trainingDuration.isNegative()) {
-			throw new IllegalArgumentException("Training duration must be positive");
-		}
-
-		this.trainingId = trainingId;
-		this.trainerId = trainerId;
-		this.traineeId = traineeId;
+	public Training(String trainingName, LocalDateTime trainingDate, Integer trainingDurationMin, Trainee trainee,
+			Trainer trainer, TrainingType trainingType) {
+		this.trainingName = trainingName;
 		this.trainingDate = trainingDate;
-		this.trainingDuration = trainingDuration;
+		this.trainingDurationMin = trainingDurationMin;
+		this.trainee = trainee;
+		this.trainer = trainer;
+		this.trainingType = trainingType;
+	}
+
+	public static class Builder {
+
+		private Long trainingId;
+
+		private String trainingName;
+
+		private LocalDateTime trainingDate;
+
+		private Integer trainingDurationMin;
+
+		private TrainingType trainingType;
+
+		private Trainee trainee;
+
+		private Trainer trainer;
+
+		public Builder trainingId(Long trainingId) {
+			this.trainingId = trainingId;
+			return this;
+		}
+
+		public Builder trainingName(String trainingName) {
+			this.trainingName = trainingName;
+			return this;
+		}
+
+		public Builder trainingDate(LocalDateTime trainingDate) {
+			this.trainingDate = trainingDate;
+			return this;
+		}
+
+		public Builder trainingDurationMin(Integer trainingDurationMin) {
+			this.trainingDurationMin = trainingDurationMin;
+			return this;
+		}
+
+		public Builder trainingType(TrainingType trainingType) {
+			this.trainingType = trainingType;
+			return this;
+		}
+
+		public Builder trainee(Trainee trainee) {
+			this.trainee = trainee;
+			return this;
+		}
+
+		public Builder trainer(Trainer trainer) {
+			this.trainer = trainer;
+			return this;
+		}
+
+		public Training build() {
+			Training training = new Training(trainingName, trainingDate, trainingDurationMin, trainee, trainer,
+					trainingType);
+			training.setTrainingId(trainingId);
+			return training;
+		}
+
+	}
+
+	public static Builder builder() {
+		return new Builder();
 	}
 
 }
