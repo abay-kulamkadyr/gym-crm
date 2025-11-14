@@ -15,7 +15,7 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
-import com.epam.infrastructure.config.AppConfig;
+import com.epam.infrastructure.config.TestConfig;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
@@ -35,7 +35,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = AppConfig.class)
+@ContextConfiguration(classes = TestConfig.class)
 @Transactional
 class GymFacadeImplIntegrationTest {
 
