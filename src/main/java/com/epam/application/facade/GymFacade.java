@@ -1,103 +1,52 @@
 package com.epam.application.facade;
 
-import com.epam.application.service.impl.TraineeServiceImpl;
-import com.epam.application.service.impl.TrainerServiceImpl;
-import com.epam.application.service.impl.TrainingServiceImpl;
-import com.epam.application.service.impl.TrainingTypeServiceImpl;
+import com.epam.application.Credentials;
+import com.epam.application.request.CreateTraineeProfileRequest;
+import com.epam.application.request.CreateTrainerProfileRequest;
+import com.epam.application.request.CreateTrainingRequest;
+import com.epam.application.request.UpdateTraineeProfileRequest;
+import com.epam.application.request.UpdateTrainerProfileRequest;
+import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
-import com.epam.domain.model.TrainingType;
+import java.util.List;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
-@Component
-public class GymFacade {
+public interface GymFacade {
 
-	private final TraineeServiceImpl traineeServiceImpl;
+	Trainee createTraineeProfile(CreateTraineeProfileRequest request);
 
-	private final TrainerServiceImpl trainerServiceImpl;
+	Trainee updateTraineeProfile(UpdateTraineeProfileRequest request);
 
-	private final TrainingServiceImpl trainingServiceImpl;
+	void updateTraineePassword(Credentials credentials, String newPassword);
 
-	private final TrainingTypeServiceImpl trainingTypeServiceImpl;
+	void toggleTraineeActiveStatus(Credentials credentials);
 
-	@Autowired
-	public GymFacade(TraineeServiceImpl traineeServiceImpl, TrainerServiceImpl trainerServiceImpl,
-			TrainingServiceImpl trainingServiceImpl, TrainingTypeServiceImpl trainingTypeServiceImpl) {
-		this.traineeServiceImpl = traineeServiceImpl;
-		this.trainerServiceImpl = trainerServiceImpl;
-		this.trainingServiceImpl = trainingServiceImpl;
-		this.trainingTypeServiceImpl = trainingTypeServiceImpl;
-	}
+	void deleteTraineeProfile(Credentials credentials);
 
-	// --- Trainee operations ---
-	public void createTrainee(Trainee trainee) {
-		traineeServiceImpl.create(trainee);
-	}
+	Optional<Trainee> findTraineeByUsername(Credentials credentials);
 
-	public void updateTrainee(Trainee trainee) {
-		traineeServiceImpl.update(trainee);
-	}
+	void updateTraineeTrainersList(Credentials credentials, List<String> usernames);
 
-	public void deleteTrainee(long id) {
-		traineeServiceImpl.delete(id);
-	}
+	List<Trainer> getTraineeUnassignedTrainers(Credentials credentials);
 
-	public Optional<Trainee> getTrainee(long id) {
-		return traineeServiceImpl.getById(id);
-	}
+	List<Training> getTraineeTrainings(Credentials credentials, TrainingFilter filter);
 
-	// --- Trainer operations ---
-	public void createTrainer(Trainer trainer) {
-		trainerServiceImpl.create(trainer);
-	}
+	Trainer createTrainerProfile(CreateTrainerProfileRequest request);
 
-	public void updateTrainer(Trainer trainer) {
-		trainerServiceImpl.update(trainer);
-	}
+	Trainer updateTrainerProfile(UpdateTrainerProfileRequest request);
 
-	public void deleteTrainer(long id) {
-		trainerServiceImpl.delete(id);
-	}
+	void updateTrainerPassword(Credentials credentials, String newPassword);
 
-	public Optional<Trainer> getTrainer(long id) {
-		return trainerServiceImpl.getById(id);
-	}
+	void toggleTrainerActiveStatus(Credentials credentials);
 
-	// --- Training operations ---
-	public void createTraining(Training training) {
-		trainingServiceImpl.create(training);
-	}
+	void deleteTrainerProfile(Credentials credentials);
 
-	public Optional<Training> getTraining(long id) {
-		return trainingServiceImpl.getById(id);
-	}
+	Optional<Trainer> findTrainerByUsername(Credentials credentials);
 
-	public void updateTraining(Training training) {
-		trainingServiceImpl.update(training);
-	}
+	List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter);
 
-	public void deleteTraining(long id) {
-		trainingServiceImpl.delete(id);
-	}
-
-	// --- TrainingType operations ---
-	public void createTrainingType(TrainingType trainingType) {
-		trainingTypeServiceImpl.create(trainingType);
-	}
-
-	public Optional<TrainingType> getTrainingType(long id) {
-		return trainingTypeServiceImpl.getById(id);
-	}
-
-	public void updateTrainingType(TrainingType trainingType) {
-		trainingTypeServiceImpl.update(trainingType);
-	}
-
-	public void deleteTrainingType(long id) {
-		trainingTypeServiceImpl.delete(id);
-	}
+	void createTraining(CreateTrainingRequest request);
 
 }

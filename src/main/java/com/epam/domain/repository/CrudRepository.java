@@ -5,10 +5,10 @@ import org.springframework.lang.NonNull;
 
 public interface CrudRepository<T> {
 
-	void save(@NonNull T t);
+	T save(@NonNull T entity);
 
-	Optional<T> findById(Long id);
+	Optional<T> findById(@NonNull Long id);
 
-	void delete(Long id);
+	void delete(@NonNull Long id);
 
 }

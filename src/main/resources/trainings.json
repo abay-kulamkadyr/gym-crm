@@ -1,26 +1,82 @@
 [
   {
-    "trainingId": 501,
-    "traineeId": 201,
-    "trainerId": 101,
-    "trainingTypeId": 1,
-    "trainingDate": "2025-10-20",
-    "trainingDuration": "PT1H30M"
+    "name": "Morning Cardio Session",
+    "date": "2024-01-15T09:00:00",
+    "durationMinutes": 60,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "John.Smith",
+    "trainingType": "Cardio"
   },
   {
-    "trainingId": 502,
-    "traineeId": 202,
-    "trainerId": 103,
-    "trainingTypeId": 3,
-    "trainingDate": "2025-10-21",
-    "trainingDuration": "PT1H"
+    "name": "Strength Building Workout",
+    "date": "2024-01-15T14:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "Emma.Johnson",
+    "trainingType": "Strength Training"
   },
   {
-    "trainingId": 503,
-    "traineeId": 203,
-    "trainerId": 102,
-    "trainingTypeId": 2,
-    "trainingDate": "2025-10-22",
-    "trainingDuration": "PT45M"
+    "name": "Evening Yoga Class",
+    "date": "2024-01-16T18:00:00",
+    "durationMinutes": 75,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "Yoga"
+  },
+  {
+    "name": "CrossFit Intensive",
+    "date": "2024-01-17T10:00:00",
+    "durationMinutes": 120,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "Sarah.Brown",
+    "trainingType": "CrossFit"
+  },
+  {
+    "name": "Cardio Bootcamp",
+    "date": "2024-01-17T16:00:00",
+    "durationMinutes": 45,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "John.Smith",
+    "trainingType": "Cardio"
+  },
+  {
+    "name": "Advanced Strength Training",
+    "date": "2024-01-18T11:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "Emma.Johnson",
+    "trainingType": "Strength Training"
+  },
+  {
+    "name": "Beginner Yoga Flow",
+    "date": "2024-01-18T19:00:00",
+    "durationMinutes": 60,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "Yoga"
+  },
+  {
+    "name": "HIIT Cardio",
+    "date": "2024-01-19T08:00:00",
+    "durationMinutes": 45,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "John.Smith",
+    "trainingType": "Cardio"
+  },
+  {
+    "name": "CrossFit Fundamentals",
+    "date": "2024-01-19T15:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "Sarah.Brown",
+    "trainingType": "CrossFit"
+  },
+  {
+    "name": "Power Yoga",
+    "date": "2024-01-20T17:00:00",
+    "durationMinutes": 75,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "Yoga"
   }
 ]
