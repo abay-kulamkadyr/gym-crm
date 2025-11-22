@@ -15,7 +15,6 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
-import com.epam.infrastructure.config.TestConfig;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
@@ -28,14 +27,11 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@SpringBootTest
 @Transactional
 class GymFacadeImplIntegrationTest {
 
