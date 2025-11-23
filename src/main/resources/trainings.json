@@ -13,7 +13,7 @@
     "durationMinutes": 90,
     "traineeUsername": "David.Davis",
     "trainerUsername": "Emma.Johnson",
-    "trainingType": "Strength Training"
+    "trainingType": "Strength"
   },
   {
     "name": "Evening Yoga Class",
@@ -45,7 +45,7 @@
     "durationMinutes": 90,
     "traineeUsername": "David.Davis",
     "trainerUsername": "Emma.Johnson",
-    "trainingType": "Strength Training"
+    "trainingType": "Strength"
   },
   {
     "name": "Beginner Yoga Flow",

@@ -10,6 +10,7 @@ import com.epam.application.service.TrainerService;
 import com.epam.application.util.CredentialsUtil;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.repository.TrainerRepository;
 import com.epam.domain.repository.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -48,8 +49,9 @@ public class TrainerServiceImpl implements TrainerService {
 
 	@Override
 	public Trainer createProfile(CreateTrainerProfileRequest request) {
-		Trainer trainer = new Trainer(request.firstName(), request.lastName(), request.active(),
-				request.specialization());
+		TrainingType specialization = findTrainingTypeOrThrow(request.specialization());
+
+		Trainer trainer = new Trainer(request.firstName(), request.lastName(), request.active(), specialization);
 
 		String username = CredentialsUtil.generateUniqueUsername(trainer.getFirstName(), trainer.getLastName(),
 				trainerRepository::findLatestUsername);
@@ -152,6 +154,13 @@ public class TrainerServiceImpl implements TrainerService {
 		return trainerRepository.findByUsername(username).orElseThrow(() -> {
 			log.error("Trainer not found with username: {}", username);
 			return new EntityNotFoundException(String.format("Trainer not found with username: %s", username));
+		});
+	}
+
+	private TrainingType findTrainingTypeOrThrow(TrainingTypeEnum trainingType) {
+		return trainingTypeRepository.findByTrainingTypeName(trainingType).orElseThrow(() -> {
+			log.error("TrainingType not found with type: {}", trainingType);
+			return new EntityNotFoundException(String.format("TrainingType not found with type: %s", trainingType));
 		});
 	}
 

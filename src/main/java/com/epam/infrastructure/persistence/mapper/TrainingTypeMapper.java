@@ -1,6 +1,7 @@
 package com.epam.infrastructure.persistence.mapper;
 
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.exception.MappingException;
 import org.springframework.lang.NonNull;
@@ -12,8 +13,8 @@ public final class TrainingTypeMapper {
 	}
 
 	public static TrainingTypeDAO toEntity(@NonNull TrainingType trainingType) {
-		if (trainingType.getTrainingTypeName() == null || trainingType.getTrainingTypeName().isBlank()) {
-			throw new MappingException("TrainingType name cannot be null or blank");
+		if (trainingType.getTrainingTypeName() == null) {
+			throw new MappingException("TrainingType name cannot be null");
 		}
 
 		TrainingTypeDAO trainingTypeDAO = new TrainingTypeDAO();
@@ -24,10 +25,9 @@ public final class TrainingTypeMapper {
 	}
 
 	public static TrainingType toDomain(@NonNull TrainingTypeDAO trainingTypeDAO) {
-		String typeName = trainingTypeDAO.getTrainingTypeName();
-		if (typeName == null || typeName.isBlank()) {
-			throw new MappingException(
-					"Cannot map TrainingTypeDAO to TrainingType: training type name is null or blank");
+		TrainingTypeEnum typeName = trainingTypeDAO.getTrainingTypeName();
+		if (typeName == null) {
+			throw new MappingException("Cannot map TrainingTypeDAO to TrainingType: training type name is null");
 		}
 
 		TrainingType trainingType = new TrainingType(typeName);

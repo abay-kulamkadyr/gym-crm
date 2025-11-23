@@ -15,6 +15,7 @@ import com.epam.application.service.impl.TraineeServiceImpl;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.repository.TraineeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -323,8 +324,8 @@ class TraineeServiceImplTest {
 	@Test
 	void getUnassignedTrainers_shouldReturnListOfTrainers() {
 		// Given
-		TrainingType yogaType = new TrainingType("Yoga");
-		TrainingType boxingType = new TrainingType("Boxing");
+		TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxingType = new TrainingType(TrainingTypeEnum.BOXING);
 
 		Trainer trainer1 = new Trainer("Alice", "Trainer", true, yogaType);
 		trainer1.setUsername("Alice.Trainer");

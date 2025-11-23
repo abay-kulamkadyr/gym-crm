@@ -14,6 +14,7 @@ import com.epam.application.service.impl.AuthenticationServiceImpl;
 import com.epam.application.service.impl.TrainerServiceImpl;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.repository.TrainerRepository;
 import com.epam.domain.repository.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,7 +50,7 @@ class TrainerServiceImplTest {
 
 	@BeforeEach
 	void setUp() {
-		cardioType = new TrainingType("Cardio");
+		cardioType = new TrainingType(TrainingTypeEnum.CARDIO);
 		cardioType.setTrainingTypeId(1L);
 
 		testTrainer = new Trainer("Alice", "Johnson", true, cardioType);
@@ -64,11 +65,14 @@ class TrainerServiceImplTest {
 	@Test
 	void createProfile_shouldGenerateUsernameAndPassword() {
 		// Given
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Alice", "Johnson", true, cardioType);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Alice", "Johnson", true,
+				cardioType.getTrainingTypeName());
 
 		when(trainerRepository.findLatestUsername("Alice.Johnson")).thenReturn(Optional.empty());
 		when(trainerRepository.save(any(Trainer.class))).thenReturn(testTrainer);
 
+		when(trainingTypeRepository.findByTrainingTypeName(cardioType.getTrainingTypeName()))
+			.thenReturn(Optional.of(cardioType));
 		// When
 		Trainer created = trainerService.createProfile(request);
 
@@ -76,14 +80,15 @@ class TrainerServiceImplTest {
 		assertThat(created).isNotNull();
 		assertThat(created.getUsername()).isEqualTo("Alice.Johnson");
 		assertThat(created.getPassword()).isNotNull();
-		assertThat(created.getSpecialization().getTrainingTypeName()).isEqualTo("Cardio");
+		assertThat(created.getSpecialization().getTrainingTypeName()).isEqualTo(TrainingTypeEnum.CARDIO);
 		verify(trainerRepository).save(any(Trainer.class));
 	}
 
 	@Test
 	void createProfile_shouldGenerateUniqueUsernameWhenDuplicateExists() {
 		// Given
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Alice", "Johnson", true, cardioType);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Alice", "Johnson", true,
+				cardioType.getTrainingTypeName());
 
 		when(trainerRepository.findLatestUsername("Alice.Johnson")).thenReturn(Optional.of("Alice.Johnson1"));
 
@@ -92,7 +97,8 @@ class TrainerServiceImplTest {
 		trainerWithSerial.setPassword("generatedPass");
 
 		when(trainerRepository.save(any(Trainer.class))).thenReturn(trainerWithSerial);
-
+		when(trainingTypeRepository.findByTrainingTypeName(cardioType.getTrainingTypeName()))
+			.thenReturn(Optional.of(cardioType));
 		// When
 		Trainer created = trainerService.createProfile(request);
 
@@ -104,17 +110,17 @@ class TrainerServiceImplTest {
 	@Test
 	void updateProfile_shouldUpdateAllProvidedFields() {
 		// Given
-		TrainingType yogaType = new TrainingType("Yoga");
+		TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
 		yogaType.setTrainingTypeId(2L);
 
 		UpdateTrainerProfileRequest request = new UpdateTrainerProfileRequest(testCredentials, Optional.of("Bob"),
 				Optional.of("Smith"), Optional.of("Bob.Smith"), Optional.of("newpassword123"), Optional.of(false),
-				Optional.of("Yoga"));
+				Optional.of(TrainingTypeEnum.YOGA));
 
 		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 		when(trainerRepository.findByUsername("Bob.Smith")).thenReturn(Optional.empty());
-		when(trainingTypeRepository.findByTrainingTypeName("Yoga")).thenReturn(Optional.of(yogaType));
+		when(trainingTypeRepository.findByTrainingTypeName(TrainingTypeEnum.YOGA)).thenReturn(Optional.of(yogaType));
 
 		Trainer updatedTrainer = new Trainer("Bob", "Smith", false, yogaType);
 		updatedTrainer.setUsername("Bob.Smith");
@@ -141,18 +147,13 @@ class TrainerServiceImplTest {
 	}
 
 	@Test
-	void updateProfile_shouldThrowEntityNotFoundException_whenSpecializationNotFound() {
+	void updateProfile_shouldThrowEntityNotFoundException_whenSpecializationIsNotValid() {
 		// Given
-		UpdateTrainerProfileRequest request = new UpdateTrainerProfileRequest(testCredentials, Optional.empty(),
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of("NonExistentType"));
+		assertThatThrownBy(() -> {
+			new UpdateTrainerProfileRequest(testCredentials, Optional.empty(), Optional.empty(), Optional.empty(),
+					Optional.empty(), Optional.empty(), Optional.of(TrainingTypeEnum.fromString("Non existent")));
+		}).isInstanceOf(EntityNotFoundException.class);
 
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
-		when(trainingTypeRepository.findByTrainingTypeName("NonExistentType")).thenReturn(Optional.empty());
-
-		// When/Then
-		assertThatThrownBy(() -> trainerService.updateProfile(request)).isInstanceOf(EntityNotFoundException.class)
-			.hasMessageContaining("TrainingType with name 'NonExistentType' not found");
 	}
 
 	@Test

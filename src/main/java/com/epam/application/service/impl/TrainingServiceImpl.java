@@ -10,6 +10,7 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.repository.TraineeRepository;
 import com.epam.domain.repository.TrainerRepository;
 import com.epam.domain.repository.TrainingRepository;
@@ -105,7 +106,7 @@ public class TrainingServiceImpl implements TrainingService {
 		});
 	}
 
-	private TrainingType findTrainingType(String name) {
+	private TrainingType findTrainingType(TrainingTypeEnum name) {
 		return trainingTypeRepository.findByTrainingTypeName(name).orElseThrow(() -> {
 			log.warn("TrainingType not found with name: {}", name);
 			return new EntityNotFoundException("TrainingType not found: " + name);

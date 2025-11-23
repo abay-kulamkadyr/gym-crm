@@ -1,10 +1,11 @@
 package com.epam.domain;
 
+import com.epam.domain.model.TrainingTypeEnum;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 public record TrainingFilter(Optional<LocalDateTime> fromDate, Optional<LocalDateTime> toDate,
-		Optional<String> trainerName, Optional<String> traineeName, Optional<String> trainingType) {
+		Optional<String> trainerName, Optional<String> traineeName, Optional<TrainingTypeEnum> trainingType) {
 
 	public static TrainingFilter empty() {
 		return new TrainingFilter(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -12,7 +13,7 @@ public record TrainingFilter(Optional<LocalDateTime> fromDate, Optional<LocalDat
 	}
 
 	public static TrainingFilter forTrainee(Optional<LocalDateTime> fromDate, Optional<LocalDateTime> toDate,
-			Optional<String> trainerName, Optional<String> trainingType) {
+			Optional<String> trainerName, Optional<TrainingTypeEnum> trainingType) {
 		return new TrainingFilter(fromDate, toDate, trainerName, Optional.empty(), trainingType);
 	}
 

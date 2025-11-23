@@ -12,9 +12,9 @@ public class TrainingType {
 	@EqualsAndHashCode.Include
 	private Long trainingTypeId;
 
-	private final String trainingTypeName;
+	private final TrainingTypeEnum trainingTypeName;
 
-	public TrainingType(String trainingTypeName) {
+	public TrainingType(TrainingTypeEnum trainingTypeName) {
 		this.trainingTypeName = trainingTypeName;
 	}
 

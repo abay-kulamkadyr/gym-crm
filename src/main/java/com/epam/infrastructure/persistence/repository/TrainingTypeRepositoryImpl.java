@@ -1,6 +1,7 @@
 package com.epam.infrastructure.persistence.repository;
 
 import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.repository.TrainingTypeRepository;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.mapper.TrainingTypeMapper;
@@ -58,7 +59,7 @@ public class TrainingTypeRepositoryImpl implements TrainingTypeRepository {
 	}
 
 	@Override
-	public Optional<TrainingType> findByTrainingTypeName(String trainingTypeName) {
+	public Optional<TrainingType> findByTrainingTypeName(TrainingTypeEnum trainingTypeName) {
 		String jpql = "SELECT t FROM TrainingTypeDAO t WHERE t.trainingTypeName = :trainingTypeName";
 		List<TrainingTypeDAO> results = entityManager.createQuery(jpql, TrainingTypeDAO.class)
 			.setParameter("trainingTypeName", trainingTypeName)

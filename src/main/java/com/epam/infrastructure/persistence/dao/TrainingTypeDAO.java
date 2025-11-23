@@ -1,7 +1,10 @@
 package com.epam.infrastructure.persistence.dao;
 
+import com.epam.domain.model.TrainingTypeEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,8 +27,9 @@ public class TrainingTypeDAO {
 	@Column(name = "training_type_id")
 	private Long trainingTypeId;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "training_type_name", unique = true, nullable = false)
-	private String trainingTypeName;
+	private TrainingTypeEnum trainingTypeName;
 
 	@OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
 	private List<TrainerDAO> trainerDAOS = new ArrayList<>();
