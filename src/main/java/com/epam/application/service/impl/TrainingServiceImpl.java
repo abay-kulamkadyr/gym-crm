@@ -11,12 +11,13 @@ import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
-import com.epam.domain.repository.TraineeRepository;
-import com.epam.domain.repository.TrainerRepository;
-import com.epam.domain.repository.TrainingRepository;
-import com.epam.domain.repository.TrainingTypeRepository;
+import com.epam.domain.port.TraineeRepository;
+import com.epam.domain.port.TrainerRepository;
+import com.epam.domain.port.TrainingRepository;
+import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import java.util.List;
+import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,8 +30,6 @@ public class TrainingServiceImpl implements TrainingService {
 
 	private final TrainingRepository trainingRepository;
 
-	private final AuthenticationService authenticationService;
-
 	private final TrainerRepository trainerRepository;
 
 	private final TraineeRepository traineeRepository;
@@ -38,11 +37,9 @@ public class TrainingServiceImpl implements TrainingService {
 	private final TrainingTypeRepository trainingTypeRepository;
 
 	@Autowired
-	public TrainingServiceImpl(TrainingRepository trainingRepository, AuthenticationService authenticationService,
-			TrainerRepository trainerRepository, TraineeRepository traineeRepository,
-			TrainingTypeRepository trainingTypeRepository) {
+	public TrainingServiceImpl(TrainingRepository trainingRepository, TrainerRepository trainerRepository,
+			TraineeRepository traineeRepository, TrainingTypeRepository trainingTypeRepository) {
 		this.trainingRepository = trainingRepository;
-		this.authenticationService = authenticationService;
 		this.trainerRepository = trainerRepository;
 		this.traineeRepository = traineeRepository;
 		this.trainingTypeRepository = trainingTypeRepository;
@@ -50,11 +47,17 @@ public class TrainingServiceImpl implements TrainingService {
 
 	@Override
 	public Training create(CreateTrainingRequest request) {
-		authenticateOrThrow(request.credentials());
 
 		Trainee trainee = findTrainee(request.traineeUsername());
 		Trainer trainer = findTrainer(request.trainerUsername());
-		TrainingType trainingType = findTrainingType(request.trainingType());
+
+		TrainingType trainingType;
+		if (request.trainingType().isEmpty()) {
+			trainingType = trainer.getSpecialization();
+		}
+		else {
+			trainingType = findTrainingType(request.trainingType().get());
+		}
 
 		Training training = Training.builder()
 			.trainingName(request.trainingName())
@@ -70,26 +73,12 @@ public class TrainingServiceImpl implements TrainingService {
 
 	@Override
 	public List<Training> getTraineeTrainings(Credentials credentials, TrainingFilter filter) {
-		authenticateOrThrow(credentials);
 		return trainingRepository.getTraineeTrainings(credentials.username(), filter);
 	}
 
 	@Override
 	public List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter) {
-		authenticateOrThrow(credentials);
 		return trainingRepository.getTrainerTrainings(credentials.username(), filter);
-	}
-
-	private void authenticateOrThrow(Credentials credentials) {
-		boolean isAuthenticated = authenticationService.authenticateTrainee(credentials)
-				|| authenticationService.authenticateTrainer(credentials);
-
-		if (!isAuthenticated) {
-			log.warn("Authentication failed for user: {}", credentials.username());
-			throw new AuthenticationException(
-					String.format("Invalid credentials for user: %s", credentials.username()));
-		}
-
 	}
 
 	private Trainee findTrainee(String username) {

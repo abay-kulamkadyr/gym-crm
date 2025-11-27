@@ -4,55 +4,64 @@
     "lastName": "Smith",
     "username": "John.Smith",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINER"
+
   },
   {
     "firstName": "Emma",
     "lastName": "Johnson",
     "username": "Emma.Johnson",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINER"
   },
   {
     "firstName": "Michael",
     "lastName": "Williams",
     "username": "Michael.Williams",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINER"
   },
   {
     "firstName": "Sarah",
     "lastName": "Brown",
     "username": "Sarah.Brown",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINER"
   },
   {
     "firstName": "David",
     "lastName": "Davis",
     "username": "David.Davis",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINEE"
   },
   {
     "firstName": "Lisa",
     "lastName": "Miller",
     "username": "Lisa.Miller",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINEE"
   },
   {
     "firstName": "James",
     "lastName": "Wilson",
     "username": "James.Wilson",
     "password": "pass123456",
-    "active": true
+    "active": true,
+    "role": "TRAINEE"
   },
   {
     "firstName": "Emily",
     "lastName": "Moore",
     "username": "Emily.Moore",
     "password": "pass123456",
-    "active": false
+    "active": false,
+    "role": "TRAINEE"
   }
 ]

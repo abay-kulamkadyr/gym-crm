@@ -1,5 +1,6 @@
 package com.epam.infrastructure.persistence.mapper;
 
+import com.epam.domain.model.Role;
 import com.epam.domain.model.Trainee;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
@@ -19,6 +20,7 @@ public final class TraineeMapper {
 		userDAO.setLastName(trainee.getLastName());
 		userDAO.setUsername(trainee.getUsername());
 		userDAO.setPassword(trainee.getPassword());
+		userDAO.setRole(Role.TRAINEE);
 		userDAO.setActive(trainee.getActive());
 
 		TraineeDAO traineeDAO = new TraineeDAO();
@@ -26,6 +28,8 @@ public final class TraineeMapper {
 		traineeDAO.setTraineeId(trainee.getTraineeId());
 		traineeDAO.setDob(trainee.getDob());
 		traineeDAO.setAddress(trainee.getAddress());
+
+		userDAO.setTraineeDAO(traineeDAO);
 
 		return traineeDAO;
 	}
@@ -46,6 +50,15 @@ public final class TraineeMapper {
 		trainee.setAddress(traineeDAO.getAddress());
 
 		return trainee;
+	}
+
+	public static void updateEntity(TraineeDAO dao, Trainee trainee) {
+		dao.getUserDAO().setFirstName(trainee.getFirstName());
+		dao.getUserDAO().setLastName(trainee.getLastName());
+		dao.getUserDAO().setPassword(trainee.getPassword());
+		dao.getUserDAO().setActive(trainee.getActive());
+		dao.setDob(trainee.getDob());
+		dao.setAddress(trainee.getAddress());
 	}
 
 }

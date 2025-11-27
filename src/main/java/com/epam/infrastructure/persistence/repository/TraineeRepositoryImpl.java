@@ -2,8 +2,8 @@ package com.epam.infrastructure.persistence.repository;
 
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
-import com.epam.domain.repository.TraineeRepository;
-import com.epam.domain.repository.TrainerRepository;
+import com.epam.domain.port.TraineeRepository;
+import com.epam.domain.port.TrainerRepository;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
@@ -42,7 +42,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 			entityManager.persist(entity);
 		}
 		else {
-			entity = entityManager.merge(entity);
+			TraineeDAO existing = entityManager.find(TraineeDAO.class, entity.getTraineeId());
+			TraineeMapper.updateEntity(existing, trainee);
 		}
 
 		return TraineeMapper.toDomain(entity);
@@ -97,6 +98,24 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 	}
 
 	@Override
+	public List<Trainer> getTrainers(String traineeUsername) {
+		if (findByUsername(traineeUsername).isEmpty()) {
+			throw new EntityNotFoundException(String.format("Trainee with username '%s' not found", traineeUsername));
+		}
+		String jpql = """
+				SELECT t
+				FROM TraineeDAO t
+				LEFT JOIN FETCH t.trainerDAOS
+				WHERE t.userDAO.username = :username
+				""";
+		TraineeDAO traineeDAO = entityManager.createQuery(jpql, TraineeDAO.class)
+			.setParameter("username", traineeUsername)
+			.getSingleResult();
+
+		return traineeDAO.getTrainerDAOS().stream().map(TrainerMapper::toDomain).toList();
+	}
+
+	@Override
 	public List<Trainer> getUnassignedTrainers(String traineeUsername) {
 		if (findByUsername(traineeUsername).isEmpty()) {
 			throw new EntityNotFoundException(String.format("Trainee with username '%s' not found", traineeUsername));
@@ -110,7 +129,7 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 				        FROM TraineeDAO t
 				        JOIN t.trainerDAOS t2
 				        WHERE t.userDAO.username = :username
-				    )
+				    ) AND tr.userDAO.active=true
 				""";
 
 		List<TrainerDAO> unassignedTrainers = entityManager.createQuery(jpql, TrainerDAO.class)

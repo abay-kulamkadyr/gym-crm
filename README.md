@@ -44,7 +44,7 @@
 │ └─────────────────────────────────────────────────────────────────┘ │
 │                                                                     │
 │ ┌─────────────────────────────────────────────────────────────────┐ │
-│ │ com.epam.domain.repository (INTERFACES - Ports)                 │ │
+│ │ com.epam.domain.port (INTERFACES - Ports)                 │ │
 │ │   ├── CrudRepository<T>                                         │ │
 │ │   ├── TraineeRepository                                         │ │
 │ │   ├── TrainerRepository                                         │ │

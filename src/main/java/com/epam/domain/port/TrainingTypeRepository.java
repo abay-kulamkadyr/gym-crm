@@ -1,4 +1,4 @@
-package com.epam.domain.repository;
+package com.epam.domain.port;
 
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;

@@ -11,6 +11,8 @@ public interface TraineeService extends UserService<Trainee, CreateTraineeProfil
 
 	List<Trainer> getUnassignedTrainers(Credentials credentials);
 
+	List<Trainer> getTrainers(Credentials credentials);
+
 	void updateTrainersList(Credentials credentials, List<String> trainerUsernames);
 
 }

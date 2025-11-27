@@ -15,8 +15,8 @@ import com.epam.application.service.impl.TrainerServiceImpl;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
-import com.epam.domain.repository.TrainerRepository;
-import com.epam.domain.repository.TrainingTypeRepository;
+import com.epam.domain.port.TrainerRepository;
+import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,7 +117,7 @@ class TrainerServiceImplTest {
 				Optional.of("Smith"), Optional.of("Bob.Smith"), Optional.of("newpassword123"), Optional.of(false),
 				Optional.of(TrainingTypeEnum.YOGA));
 
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 		when(trainerRepository.findByUsername("Bob.Smith")).thenReturn(Optional.empty());
 		when(trainingTypeRepository.findByTrainingTypeName(TrainingTypeEnum.YOGA)).thenReturn(Optional.of(yogaType));
@@ -140,7 +140,7 @@ class TrainerServiceImplTest {
 		UpdateTrainerProfileRequest request = new UpdateTrainerProfileRequest(testCredentials, Optional.of("Bob"),
 				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> trainerService.updateProfile(request)).isInstanceOf(AuthenticationException.class);
@@ -149,10 +149,10 @@ class TrainerServiceImplTest {
 	@Test
 	void updateProfile_shouldThrowEntityNotFoundException_whenSpecializationIsNotValid() {
 		// Given
-		assertThatThrownBy(() -> {
-			new UpdateTrainerProfileRequest(testCredentials, Optional.empty(), Optional.empty(), Optional.empty(),
-					Optional.empty(), Optional.empty(), Optional.of(TrainingTypeEnum.fromString("Non existent")));
-		}).isInstanceOf(EntityNotFoundException.class);
+		assertThatThrownBy(() -> new UpdateTrainerProfileRequest(testCredentials, Optional.empty(), Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(),
+				Optional.of(TrainingTypeEnum.fromString("Non existent"))))
+			.isInstanceOf(EntityNotFoundException.class);
 
 	}
 
@@ -165,7 +165,7 @@ class TrainerServiceImplTest {
 		Trainer existingTrainer = new Trainer("Bob", "Smith", true, cardioType);
 		existingTrainer.setUsername("Bob.Smith");
 
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 		when(trainerRepository.findByUsername("Bob.Smith")).thenReturn(Optional.of(existingTrainer));
 
@@ -178,7 +178,7 @@ class TrainerServiceImplTest {
 	void updatePassword_shouldUpdatePassword() {
 		// Given
 		String newPassword = "newSecurePass123";
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 		when(trainerRepository.save(any(Trainer.class))).thenReturn(testTrainer);
 
@@ -192,7 +192,7 @@ class TrainerServiceImplTest {
 	@Test
 	void updatePassword_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> trainerService.updatePassword(testCredentials, "newPassword"))
@@ -210,7 +210,7 @@ class TrainerServiceImplTest {
 	@Test
 	void toggleActiveStatus_shouldToggleFromTrueToFalse() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 		when(trainerRepository.save(any(Trainer.class))).thenReturn(testTrainer);
 
@@ -224,7 +224,7 @@ class TrainerServiceImplTest {
 	@Test
 	void toggleActiveStatus_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> trainerService.toggleActiveStatus(testCredentials))
@@ -234,7 +234,7 @@ class TrainerServiceImplTest {
 	@Test
 	void deleteProfile_shouldDeleteTrainer() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		doNothing().when(trainerRepository).deleteByUsername("Alice.Johnson");
 
 		// When
@@ -247,7 +247,7 @@ class TrainerServiceImplTest {
 	@Test
 	void deleteProfile_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> trainerService.deleteProfile(testCredentials))
@@ -257,7 +257,7 @@ class TrainerServiceImplTest {
 	@Test
 	void findProfileByUsername_shouldReturnTrainer() {
 		// Given
-		when(authenticationService.authenticateTrainer(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainer);
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 
 		// When
@@ -270,6 +270,8 @@ class TrainerServiceImplTest {
 
 	@Test
 	void findProfileByUsername_shouldThrowAuthenticationException_whenInvalidCredentials() {
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
+
 		// Given/When/Then
 		assertThatThrownBy(() -> trainerService.findProfileByUsername(testCredentials))
 			.isInstanceOf(AuthenticationException.class);

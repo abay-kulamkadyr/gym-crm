@@ -1,19 +1,20 @@
 package com.epam.application.service.impl;
 
 import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
 import com.epam.application.service.AuthenticationService;
 import com.epam.application.service.TrainerService;
 import com.epam.application.util.CredentialsUtil;
+import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
-import com.epam.domain.repository.TrainerRepository;
-import com.epam.domain.repository.TrainingTypeRepository;
+import com.epam.domain.port.TrainerRepository;
+import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,7 +66,7 @@ public class TrainerServiceImpl implements TrainerService {
 
 	@Override
 	public Trainer updateProfile(UpdateTrainerProfileRequest request) {
-		authenticateOrThrow(request.credentials());
+		authenticationService.authenticate(request.credentials());
 		Trainer trainer = findTrainerByUsernameOrThrow(request.credentials().username());
 
 		request.firstName().ifPresent(newFirstName -> {
@@ -108,7 +109,7 @@ public class TrainerServiceImpl implements TrainerService {
 	public void updatePassword(Credentials credentials, String newPassword) {
 		validateNewPassword(newPassword);
 
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
 
 		validateNewPassword(newPassword);
@@ -119,7 +120,7 @@ public class TrainerServiceImpl implements TrainerService {
 
 	@Override
 	public void toggleActiveStatus(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
 
 		boolean oldStatus = trainer.getActive();
@@ -131,23 +132,15 @@ public class TrainerServiceImpl implements TrainerService {
 
 	@Override
 	public void deleteProfile(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		trainerRepository.deleteByUsername(credentials.username());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<Trainer> findProfileByUsername(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		return trainerRepository.findByUsername(credentials.username());
-	}
-
-	private void authenticateOrThrow(Credentials credentials) {
-		if (!authenticationService.authenticateTrainer(credentials)) {
-			log.warn("Authentication failed for trainer: {}", credentials.username());
-			throw new AuthenticationException(
-					String.format("Invalid credentials for trainer: %s", credentials.username()));
-		}
 	}
 
 	private Trainer findTrainerByUsernameOrThrow(String username) {
@@ -183,6 +176,12 @@ public class TrainerServiceImpl implements TrainerService {
 			log.error("Username already exists: {}", newUsername);
 			throw new ValidationException(String.format("Username already exists: %s", newUsername));
 		}
+	}
+
+	@Override
+	public List<Trainee> getTrainees(Credentials credentials) {
+		authenticationService.authenticate(credentials);
+		return trainerRepository.getTrainees(credentials.username());
 	}
 
 }

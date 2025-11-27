@@ -13,10 +13,13 @@ import com.epam.application.service.TrainingService;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
+import com.epam.domain.model.TrainingType;
+import com.epam.domain.port.TrainingTypeRepository;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class GymFacadeImpl implements GymFacade {
@@ -27,12 +30,15 @@ public class GymFacadeImpl implements GymFacade {
 
 	private final TrainingService trainingService;
 
+	private final TrainingTypeRepository trainingTypeRepository;
+
 	@Autowired
-	public GymFacadeImpl(TraineeService traineeService, TrainerService trainerService,
-			TrainingService trainingService) {
+	public GymFacadeImpl(TraineeService traineeService, TrainerService trainerService, TrainingService trainingService,
+			TrainingTypeRepository trainingTypeRepository) {
 		this.traineeService = traineeService;
 		this.trainerService = trainerService;
 		this.trainingService = trainingService;
+		this.trainingTypeRepository = trainingTypeRepository;
 	}
 
 	@Override
@@ -116,8 +122,24 @@ public class GymFacadeImpl implements GymFacade {
 	}
 
 	@Override
-	public void createTraining(CreateTrainingRequest request) {
-		trainingService.create(request);
+	public Training createTraining(CreateTrainingRequest request) {
+		return trainingService.create(request);
+	}
+
+	@Override
+	public List<Trainer> getTraineeTrainers(Credentials credentials) {
+		return traineeService.getTrainers(credentials);
+	}
+
+	@Override
+	public List<Trainee> getTrainerTrainees(Credentials credentials) {
+		return trainerService.getTrainees(credentials);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TrainingType> getTrainingTypes() {
+		return trainingTypeRepository.getTrainingTypes();
 	}
 
 }

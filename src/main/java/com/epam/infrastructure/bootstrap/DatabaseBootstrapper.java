@@ -1,5 +1,6 @@
 package com.epam.infrastructure.bootstrap;
 
+import com.epam.domain.model.Role;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.infrastructure.bootstrap.dto.*;
 import com.epam.infrastructure.persistence.dao.*;
@@ -104,6 +105,7 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 			dao.setUsername(userDTO.getUsername());
 			dao.setPassword(userDTO.getPassword());
 			dao.setActive(userDTO.isActive());
+			dao.setRole(Role.valueOf(userDTO.getRole()));
 
 			entityManager.persist(dao);
 			entityManager.flush();
