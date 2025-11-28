@@ -143,12 +143,11 @@ class TrainingServiceImplTest {
 	}
 
 	@Test
-	void create_shouldThrowEntityNotFoundException_whenTrainingTypeNotFound() {
+	void create_shouldThrowIllegalArgumentExceptionException_whenTrainingTypeNotFound() {
 		// Given
-		assertThatThrownBy(() -> {
-			new CreateTrainingRequest("Morning Cardio Session", LocalDateTime.now(), 60,
-					Optional.of(TrainingTypeEnum.fromString("NonExistentTYpe")), "John.Doe", "Alice.Johnson");
-		}).isInstanceOf(EntityNotFoundException.class);
+		assertThatThrownBy(() -> new CreateTrainingRequest("Morning Cardio Session", LocalDateTime.now(), 60,
+				Optional.of(TrainingTypeEnum.valueOf("NonExistentTYpe")), "John.Doe", "Alice.Johnson"))
+			.isInstanceOf(IllegalArgumentException.class);
 
 	}
 

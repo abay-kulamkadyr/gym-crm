@@ -17,7 +17,9 @@ import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainerRepository;
 import com.epam.domain.port.TrainingTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
+
+import java.lang.IllegalArgumentException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -147,12 +149,12 @@ class TrainerServiceImplTest {
 	}
 
 	@Test
-	void updateProfile_shouldThrowEntityNotFoundException_whenSpecializationIsNotValid() {
+	void updateProfile_shouldThrowIllegalArgumentException_whenSpecializationIsNotValid() {
 		// Given
 		assertThatThrownBy(() -> new UpdateTrainerProfileRequest(testCredentials, Optional.empty(), Optional.empty(),
 				Optional.empty(), Optional.empty(), Optional.empty(),
-				Optional.of(TrainingTypeEnum.fromString("Non existent"))))
-			.isInstanceOf(EntityNotFoundException.class);
+				Optional.of(TrainingTypeEnum.valueOf("Non existent"))))
+			.isInstanceOf(IllegalArgumentException.class);
 
 	}
 

@@ -31,14 +31,9 @@ public class TrainingController {
 			description = "Create a new training session, training type is determined by the trainer's specialization")
 	public ResponseEntity<Void> addTraining(@Valid @RequestBody AddTrainingRequest request) {
 
-		CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest( //
-				request.trainingName(), //
-				request.trainingDate(), //
-				request.trainingDurationMin(), //
-				Optional.empty(), //
-				request.traineeUsername(), //
-				request.trainerUsername() //
-		);
+		CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest(request.trainingName(),
+				request.trainingDate(), request.trainingDurationMin(), Optional.empty(), request.traineeUsername(),
+				request.trainerUsername());
 
 		gymFacade.createTraining(createTrainingRequest);
 		return ResponseEntity.ok().build();

@@ -103,11 +103,8 @@ class TraineeControllerTest {
 	@DisplayName("POST /api/trainees - Should return 400 for invalid input")
 	void testRegisterTrainee_InvalidInput() throws Exception {
 		// Given
-		TraineeRegistrationRequest request = new TraineeRegistrationRequest("", // Invalid:
-																				// blank
-																				// first
-																				// name
-				"Doe", Optional.of(LocalDate.of(1990, 1, 1)), Optional.of("123 Main St"));
+		TraineeRegistrationRequest request = new TraineeRegistrationRequest("", "Doe",
+				Optional.of(LocalDate.of(1990, 1, 1)), Optional.of("123 Main St"));
 
 		// When & Then
 		mockMvc

@@ -58,13 +58,8 @@ public class TraineeController {
 	@PostMapping
 	@Operation(summary = "Register Trainee", description = "Create a new trainee profile")
 	public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TraineeRegistrationRequest request) {
-		CreateTraineeProfileRequest createTraineeProfileRequest = new CreateTraineeProfileRequest( //
-				request.firstName(), //
-				request.lastName(), //
-				true, //
-				request.dateOfBirth(), //
-				request.address() //
-		);
+		CreateTraineeProfileRequest createTraineeProfileRequest = new CreateTraineeProfileRequest(request.firstName(),
+				request.lastName(), true, request.dateOfBirth(), request.address());
 
 		Trainee createdTrainee = gymFacade.createTraineeProfile(createTraineeProfileRequest);
 
@@ -86,19 +81,12 @@ public class TraineeController {
 			.orElseThrow(() -> new EntityNotFoundException("Trainee not found with username: " + username));
 
 		List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(credentials)
-			.stream() //
-			.map(EmbeddedTrainerResponse::toEmbeddedTrainer) //
+			.stream()
+			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
 
-		TraineeResponse response = new TraineeResponse( //
-				Optional.empty(), //
-				trainee.getFirstName(), //
-				trainee.getLastName(), //
-				trainee.getDob(), //
-				trainee.getAddress(), //
-				trainee.getActive(), //
-				trainers //
-		);
+		TraineeResponse response = new TraineeResponse(Optional.empty(), trainee.getFirstName(), trainee.getLastName(),
+				trainee.getDob(), trainee.getAddress(), trainee.getActive(), trainers);
 		return ResponseEntity.ok(response);
 	}
 
@@ -112,15 +100,10 @@ public class TraineeController {
 
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 
-		UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(//
-				credentials, //
-				Optional.of(request.firstName()), //
-				Optional.of(request.lastName()), //
-				Optional.empty(), //
-				Optional.of(request.active()), //
-				Optional.ofNullable(request.dateOfBirth()), //
-				Optional.ofNullable(request.address()) //
-		);
+		UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(credentials,
+				Optional.of(request.firstName()), Optional.of(request.lastName()), Optional.empty(),
+				Optional.of(request.active()), Optional.ofNullable(request.dateOfBirth()),
+				Optional.ofNullable(request.address()));
 
 		Trainee trainee = gymFacade.updateTraineeProfile(updateProfileRequest);
 
@@ -129,14 +112,8 @@ public class TraineeController {
 			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
 
-		TraineeResponse response = new TraineeResponse(//
-				Optional.of(trainee.getUsername()), //
-				trainee.getFirstName(), //
-				trainee.getLastName(), //
-				trainee.getDob(), //
-				trainee.getAddress(), //
-				trainee.getActive(), //
-				trainers);
+		TraineeResponse response = new TraineeResponse(Optional.of(trainee.getUsername()), trainee.getFirstName(),
+				trainee.getLastName(), trainee.getDob(), trainee.getAddress(), trainee.getActive(), trainers);
 
 		return ResponseEntity.ok(response);
 	}
@@ -202,12 +179,8 @@ public class TraineeController {
 
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 
-		TrainingFilter filter = TrainingFilter.forTrainee( //
-				Optional.ofNullable(periodFrom), //
-				Optional.ofNullable(periodTo), //
-				Optional.ofNullable(trainerName), //
-				Optional.ofNullable(trainingType) //
-		);
+		TrainingFilter filter = TrainingFilter.forTrainee(Optional.ofNullable(periodFrom),
+				Optional.ofNullable(periodTo), Optional.ofNullable(trainerName), Optional.ofNullable(trainingType));
 
 		List<EmbeddedTraineeTrainingResponse> response = gymFacade.getTraineeTrainings(credentials, filter)
 			.stream()

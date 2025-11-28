@@ -1,6 +1,6 @@
 package com.epam.infrastructure.persistence.repository;
 
-import com.epam.domain.model.Role;
+import com.epam.domain.model.UserRole;
 import com.epam.domain.model.User;
 import com.epam.domain.port.UserRepository;
 import com.epam.infrastructure.persistence.dao.UserDAO;
@@ -35,7 +35,7 @@ public class UserRepositoryImpl implements UserRepository {
 	}
 
 	private User mapToDomain(UserDAO userDAO) {
-		if (userDAO.getRole() == Role.TRAINEE) {
+		if (userDAO.getUserRole() == UserRole.TRAINEE) {
 
 			if (userDAO.getTraineeDAO() == null) {
 				throw new IllegalStateException("Data Integrity Error: Role is TRAINEE but profile missing");
@@ -43,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
 			return TraineeMapper.toDomain(userDAO.getTraineeDAO());
 
 		}
-		else if (userDAO.getRole() == Role.TRAINER) {
+		else if (userDAO.getUserRole() == UserRole.TRAINER) {
 
 			if (userDAO.getTrainerDAO() == null) {
 				throw new IllegalStateException("Data Integrity Error: Role is TRAINER but profile missing");

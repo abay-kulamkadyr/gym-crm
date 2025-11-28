@@ -56,9 +56,8 @@ class TrainingControllerTest {
 	@DisplayName("POST /api/trainings - Should return 400 for missing trainee username")
 	void testAddTraining_MissingTraineeUsername() throws Exception {
 		// Given
-		AddTrainingRequest request = new AddTrainingRequest("", // Invalid: blank trainee
-																// username
-				"jane.smith", "Morning Workout", LocalDateTime.of(2024, 12, 1, 9, 0), 60);
+		AddTrainingRequest request = new AddTrainingRequest("", "jane.smith", "Morning Workout",
+				LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
 		// When & Then
 		mockMvc
@@ -74,11 +73,8 @@ class TrainingControllerTest {
 	@DisplayName("POST /api/trainings - Should return 400 for missing trainer username")
 	void testAddTraining_MissingTrainerUsername() throws Exception {
 		// Given
-		AddTrainingRequest request = new AddTrainingRequest("john.doe", "", // Invalid:
-																			// blank
-																			// trainer
-																			// username
-				"Morning Workout", LocalDateTime.of(2024, 12, 1, 9, 0), 60);
+		AddTrainingRequest request = new AddTrainingRequest("john.doe", "", "Morning Workout",
+				LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
 		// When & Then
 		mockMvc

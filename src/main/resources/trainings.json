@@ -5,7 +5,7 @@
     "durationMinutes": 60,
     "traineeUsername": "David.Davis",
     "trainerUsername": "John.Smith",
-    "trainingType": "Cardio"
+    "trainingType": "CARDIO"
   },
   {
     "name": "Strength Building Workout",
@@ -13,7 +13,7 @@
     "durationMinutes": 90,
     "traineeUsername": "David.Davis",
     "trainerUsername": "Emma.Johnson",
-    "trainingType": "Strength"
+    "trainingType": "STRENGTH"
   },
   {
     "name": "Evening Yoga Class",
@@ -21,7 +21,7 @@
     "durationMinutes": 75,
     "traineeUsername": "Lisa.Miller",
     "trainerUsername": "Michael.Williams",
-    "trainingType": "Yoga"
+    "trainingType": "YOGA"
   },
   {
     "name": "CrossFit Intensive",
@@ -29,7 +29,7 @@
     "durationMinutes": 120,
     "traineeUsername": "James.Wilson",
     "trainerUsername": "Sarah.Brown",
-    "trainingType": "CrossFit"
+    "trainingType": "CROSSFIT"
   },
   {
     "name": "Cardio Bootcamp",
@@ -37,7 +37,7 @@
     "durationMinutes": 45,
     "traineeUsername": "James.Wilson",
     "trainerUsername": "John.Smith",
-    "trainingType": "Cardio"
+    "trainingType": "CARDIO"
   },
   {
     "name": "Advanced Strength Training",
@@ -45,7 +45,7 @@
     "durationMinutes": 90,
     "traineeUsername": "David.Davis",
     "trainerUsername": "Emma.Johnson",
-    "trainingType": "Strength"
+    "trainingType": "STRENGTH"
   },
   {
     "name": "Beginner Yoga Flow",
@@ -53,7 +53,7 @@
     "durationMinutes": 60,
     "traineeUsername": "Lisa.Miller",
     "trainerUsername": "Michael.Williams",
-    "trainingType": "Yoga"
+    "trainingType": "YOGA"
   },
   {
     "name": "HIIT Cardio",
@@ -61,7 +61,7 @@
     "durationMinutes": 45,
     "traineeUsername": "David.Davis",
     "trainerUsername": "John.Smith",
-    "trainingType": "Cardio"
+    "trainingType": "CARDIO"
   },
   {
     "name": "CrossFit Fundamentals",
@@ -69,7 +69,7 @@
     "durationMinutes": 90,
     "traineeUsername": "James.Wilson",
     "trainerUsername": "Sarah.Brown",
-    "trainingType": "CrossFit"
+    "trainingType": "CROSSFIT"
   },
   {
     "name": "Power Yoga",
@@ -77,6 +77,6 @@
     "durationMinutes": 75,
     "traineeUsername": "Lisa.Miller",
     "trainerUsername": "Michael.Williams",
-    "trainingType": "Yoga"
+    "trainingType": "YOGA"
   }
 ]

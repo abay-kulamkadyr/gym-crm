@@ -1,6 +1,6 @@
 package com.epam.infrastructure.persistence.mapper;
 
-import com.epam.domain.model.Role;
+import com.epam.domain.model.UserRole;
 import com.epam.domain.model.Trainee;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
@@ -20,7 +20,7 @@ public final class TraineeMapper {
 		userDAO.setLastName(trainee.getLastName());
 		userDAO.setUsername(trainee.getUsername());
 		userDAO.setPassword(trainee.getPassword());
-		userDAO.setRole(Role.TRAINEE);
+		userDAO.setUserRole(UserRole.TRAINEE);
 		userDAO.setActive(trainee.getActive());
 
 		TraineeDAO traineeDAO = new TraineeDAO();

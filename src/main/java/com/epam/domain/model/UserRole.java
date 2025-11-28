@@ -1,6 +1,6 @@
 package com.epam.domain.model;
 
-public enum Role {
+public enum UserRole {
 
 	TRAINER, TRAINEE
 

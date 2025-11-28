@@ -1,6 +1,6 @@
 package com.epam.infrastructure.persistence.dao;
 
-import com.epam.domain.model.Role;
+import com.epam.domain.model.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -43,7 +43,7 @@ public class UserDAO {
 
 	@Column(name = "role")
 	@Enumerated(EnumType.STRING)
-	private Role role;
+	private UserRole userRole;
 
 	@OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
 	private TraineeDAO traineeDAO;

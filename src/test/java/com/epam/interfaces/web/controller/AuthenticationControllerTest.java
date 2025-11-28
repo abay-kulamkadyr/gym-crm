@@ -195,11 +195,7 @@ class AuthenticationControllerTest {
 	@DisplayName("PUT /api/auth/password - Should return 400 for short new password")
 	void testChangePassword_ShortNewPassword() throws Exception {
 		// Given
-		ChangeLoginRequest request = new ChangeLoginRequest("john.doe", "oldPassword123", "short" // Less
-																									// than
-																									// 10
-																									// characters
-		);
+		ChangeLoginRequest request = new ChangeLoginRequest("john.doe", "oldPassword123", "short");
 
 		// When & Then
 		mockMvc

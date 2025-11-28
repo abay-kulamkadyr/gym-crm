@@ -103,11 +103,7 @@ class TrainerControllerTest {
 	@DisplayName("POST /api/trainers - Should return 400 for invalid input")
 	void testRegisterTrainer_InvalidInput() throws Exception {
 		// Given
-		TrainerRegistrationRequest request = new TrainerRegistrationRequest("", // Invalid:
-																				// blank
-																				// first
-																				// name
-				"Smith", TrainingTypeEnum.CARDIO);
+		TrainerRegistrationRequest request = new TrainerRegistrationRequest("", "Smith", TrainingTypeEnum.CARDIO);
 
 		// When & Then
 		mockMvc

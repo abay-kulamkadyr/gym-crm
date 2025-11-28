@@ -86,13 +86,8 @@ class GymFacadeImplIntegrationTest {
 		Trainee trainee = gymFacade.createTraineeProfile(createRequest);
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
-		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(//
-				credentials, //
-				Optional.empty(), //
-				Optional.empty(), //
-				Optional.empty(), //
-				Optional.empty(), //
-				Optional.of(LocalDate.of(1991, 2, 2)), //
+		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(credentials, Optional.empty(),
+				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(LocalDate.of(1991, 2, 2)),
 				Optional.of("999 New Address"));
 
 		// When
