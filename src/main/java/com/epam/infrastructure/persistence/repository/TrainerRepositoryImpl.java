@@ -1,9 +1,11 @@
 package com.epam.infrastructure.persistence.repository;
 
+import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
-import com.epam.domain.repository.TrainerRepository;
+import com.epam.domain.port.TrainerRepository;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
+import com.epam.infrastructure.persistence.mapper.TraineeMapper;
 import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import com.epam.infrastructure.persistence.util.UsernameFinder;
 import jakarta.persistence.EntityManager;
@@ -82,6 +84,26 @@ public class TrainerRepositoryImpl implements TrainerRepository {
 			.getResultList();
 
 		return UsernameFinder.findLatestUsername(userDAOS, prefix, UserDAO::getUsername);
+	}
+
+	@Override
+	public List<Trainee> getTrainees(String trainerUsername) {
+		if (findByUsername(trainerUsername).isEmpty()) {
+			throw new EntityNotFoundException(String.format("Trainer with username '%s' not found", trainerUsername));
+		}
+
+		String jpql = """
+				SELECT tr
+				FROM TrainerDAO tr
+				LEFT JOIN FETCH tr.traineeDAOS
+				WHERE tr.userDAO.username = :username
+				""";
+
+		TrainerDAO trainerDAO = entityManager.createQuery(jpql, TrainerDAO.class)
+			.setParameter("username", trainerUsername)
+			.getSingleResult();
+
+		return trainerDAO.getTraineeDAOS().stream().map(TraineeMapper::toDomain).toList();
 	}
 
 	@Override

@@ -15,7 +15,8 @@ import com.epam.application.service.impl.TraineeServiceImpl;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
-import com.epam.domain.repository.TraineeRepository;
+import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.domain.port.TraineeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -146,13 +147,16 @@ class TraineeServiceImplTest {
 	@Test
 	void updateProfile_shouldUpdateAllProvidedFields() {
 		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, Optional.of("Jane"),
-				Optional.of("Smith"), Optional.of("Jane.Smith"), Optional.of("newpassword123"), Optional.of(false),
-				Optional.of(LocalDate.of(1992, 3, 15)), Optional.of("789 Elm St"));
+		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, //
+				Optional.of("Jane"), //
+				Optional.of("Smith"), //
+				Optional.of("newpassword123"), //
+				Optional.of(false), //
+				Optional.of(LocalDate.of(1992, 3, 15)), //
+				Optional.of("789 Elm St"));
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
-		when(traineeRepository.findByUsername("Jane.Smith")).thenReturn(Optional.empty());
 
 		Trainee updatedTrainee = new Trainee("Jane", "Smith", false);
 		updatedTrainee.setUsername("Jane.Smith");
@@ -174,42 +178,27 @@ class TraineeServiceImplTest {
 	void updateProfile_shouldThrowAuthenticationException_whenCredentialsInvalid() {
 		// Given
 		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, Optional.of("Jane"),
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-				Optional.empty());
+				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> traineeService.updateProfile(request)).isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test
-	void updateProfile_shouldThrowValidationException_whenNewUsernameAlreadyExists() {
-		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, Optional.empty(),
-				Optional.empty(), Optional.of("Jane.Smith"), Optional.empty(), Optional.empty(), Optional.empty(),
-				Optional.empty());
-
-		Trainee existingTrainee = new Trainee("Jane", "Smith", true);
-		existingTrainee.setUsername("Jane.Smith");
-
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
-		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
-		when(traineeRepository.findByUsername("Jane.Smith")).thenReturn(Optional.of(existingTrainee));
-
-		// When/Then
-		assertThatThrownBy(() -> traineeService.updateProfile(request)).isInstanceOf(ValidationException.class)
-			.hasMessageContaining("already exists");
-	}
-
-	@Test
 	void updateProfile_shouldThrowValidationException_whenNewUsernameSameAsCurrent() {
 		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, Optional.empty(),
-				Optional.empty(), Optional.of("John.Doe"), // Same as current
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, //
+				Optional.empty(), //
+				Optional.empty(), //
+				Optional.of("John.Doe"), //
+				Optional.empty(), //
+				Optional.empty(), //
+				Optional.empty() //
+		);
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
 		// When/Then
@@ -220,7 +209,7 @@ class TraineeServiceImplTest {
 	void updatePassword_shouldUpdatePassword() {
 		// Given
 		String newPassword = "newSecurePass123";
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
 
@@ -234,7 +223,7 @@ class TraineeServiceImplTest {
 	@Test
 	void updatePassword_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> traineeService.updatePassword(testCredentials, "newPassword"))
@@ -252,7 +241,7 @@ class TraineeServiceImplTest {
 	@Test
 	void toggleActiveStatus_shouldToggleFromTrueToFalse() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
 
@@ -266,7 +255,7 @@ class TraineeServiceImplTest {
 	@Test
 	void toggleActiveStatus_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> traineeService.toggleActiveStatus(testCredentials))
@@ -276,7 +265,7 @@ class TraineeServiceImplTest {
 	@Test
 	void deleteProfile_shouldDeleteTrainee() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		doNothing().when(traineeRepository).deleteByUsername("John.Doe");
 
 		// When
@@ -289,7 +278,7 @@ class TraineeServiceImplTest {
 	@Test
 	void deleteProfile_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> traineeService.deleteProfile(testCredentials))
@@ -299,7 +288,7 @@ class TraineeServiceImplTest {
 	@Test
 	void findProfileByUsername_shouldReturnTrainee() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
 		// When
@@ -313,7 +302,7 @@ class TraineeServiceImplTest {
 	@Test
 	void findProfileByUsername_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(false);
+		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
 
 		// When/Then
 		assertThatThrownBy(() -> traineeService.findProfileByUsername(testCredentials))
@@ -323,8 +312,8 @@ class TraineeServiceImplTest {
 	@Test
 	void getUnassignedTrainers_shouldReturnListOfTrainers() {
 		// Given
-		TrainingType yogaType = new TrainingType("Yoga");
-		TrainingType boxingType = new TrainingType("Boxing");
+		TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxingType = new TrainingType(TrainingTypeEnum.BOXING);
 
 		Trainer trainer1 = new Trainer("Alice", "Trainer", true, yogaType);
 		trainer1.setUsername("Alice.Trainer");
@@ -332,7 +321,7 @@ class TraineeServiceImplTest {
 		Trainer trainer2 = new Trainer("Bob", "Coach", true, boxingType);
 		trainer2.setUsername("Bob.Coach");
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.getUnassignedTrainers("John.Doe")).thenReturn(List.of(trainer1, trainer2));
 
@@ -349,7 +338,7 @@ class TraineeServiceImplTest {
 		// Given
 		List<String> trainerUsernames = List.of("Trainer1.Smith", "Trainer2.Jones");
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		doNothing().when(traineeRepository).updateTrainersList("John.Doe", trainerUsernames);
 
 		// When
@@ -364,7 +353,7 @@ class TraineeServiceImplTest {
 		// Given
 		List<String> emptyList = new ArrayList<>();
 
-		when(authenticationService.authenticateTrainee(testCredentials)).thenReturn(true);
+		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		doNothing().when(traineeRepository).updateTrainersList("John.Doe", emptyList);
 
 		// When

@@ -1,4 +1,4 @@
-package com.epam.domain.repository;
+package com.epam.domain.port;
 
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Training;

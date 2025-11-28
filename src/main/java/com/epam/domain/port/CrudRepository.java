@@ -1,4 +1,4 @@
-package com.epam.domain.repository;
+package com.epam.domain.port;
 
 import java.util.Optional;
 import org.springframework.lang.NonNull;

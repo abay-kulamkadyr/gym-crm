@@ -1,18 +1,18 @@
 [
   {
     "username": "John.Smith",
-    "specialization": "Cardio"
+    "specialization": "CARDIO"
   },
   {
     "username": "Emma.Johnson",
-    "specialization": "Strength Training"
+    "specialization": "STRENGTH"
   },
   {
     "username": "Michael.Williams",
-    "specialization": "Yoga"
+    "specialization": "YOGA"
   },
   {
     "username": "Sarah.Brown",
-    "specialization": "CrossFit"
+    "specialization": "CROSSFIT"
   }
 ]

@@ -2,7 +2,7 @@ package com.epam.infrastructure.persistence.repository;
 
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Training;
-import com.epam.domain.repository.TrainingRepository;
+import com.epam.domain.port.TrainingRepository;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingDAO;

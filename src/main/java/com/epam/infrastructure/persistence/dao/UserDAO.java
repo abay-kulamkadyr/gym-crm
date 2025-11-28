@@ -1,11 +1,16 @@
 package com.epam.infrastructure.persistence.dao;
 
+import com.epam.domain.model.UserRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,6 +40,16 @@ public class UserDAO {
 
 	@Column(name = "password", nullable = false)
 	private String password;
+
+	@Column(name = "role")
+	@Enumerated(EnumType.STRING)
+	private UserRole userRole;
+
+	@OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
+	private TraineeDAO traineeDAO;
+
+	@OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
+	private TrainerDAO trainerDAO;
 
 	@Column(name = "is_active", nullable = false)
 	private Boolean active;

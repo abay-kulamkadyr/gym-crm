@@ -12,13 +12,11 @@ public class CredentialsUtil {
 
 	private static final int MIN_PASSWORD_LENGTH = 10;
 
-	private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z\\s'-]*$"); // letters,
-																								// spaces,
-																								// hyphens,
-																								// apostrophes
+	// letter, hyphens, apostrophes
+	private static final Pattern NAME_PATTERN = Pattern.compile("^[a-zA-Z][a-zA-Z\\s'-]*$");
 
-	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z]+\\.[A-Za-z]+(\\d+)?$"); // FirstName.LastName{number}
-																										// pattern
+	// FirstName.LastName{number} pattern
+	private static final Pattern USERNAME_PATTERN = Pattern.compile("^[A-Za-z]+\\.[A-Za-z]+(\\d+)?$");
 
 	private static final SecureRandom RANDOM = new SecureRandom();
 

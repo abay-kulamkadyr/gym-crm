@@ -7,19 +7,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
 import com.epam.application.request.CreateTrainingRequest;
-import com.epam.application.service.impl.AuthenticationServiceImpl;
 import com.epam.application.service.impl.TrainingServiceImpl;
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
-import com.epam.domain.repository.TraineeRepository;
-import com.epam.domain.repository.TrainerRepository;
-import com.epam.domain.repository.TrainingRepository;
-import com.epam.domain.repository.TrainingTypeRepository;
+import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.domain.port.TraineeRepository;
+import com.epam.domain.port.TrainerRepository;
+import com.epam.domain.port.TrainingRepository;
+import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,9 +36,6 @@ class TrainingServiceImplTest {
 
 	@Mock
 	private TrainingRepository trainingRepository;
-
-	@Mock
-	private AuthenticationServiceImpl authenticationService;
 
 	@Mock
 	private TrainerRepository trainerRepository;
@@ -78,7 +74,7 @@ class TrainingServiceImplTest {
 		testTrainee.setPassword("password123");
 
 		// Setup training type
-		cardioType = new TrainingType("Cardio");
+		cardioType = new TrainingType(TrainingTypeEnum.CARDIO);
 		cardioType.setTrainingTypeId(1L);
 
 		// Setup trainer
@@ -102,13 +98,14 @@ class TrainingServiceImplTest {
 	@Test
 	void create_shouldCreateTraining_whenAllEntitiesExist() {
 		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(traineeCredentials, "Morning Cardio Session",
-				LocalDateTime.of(2024, 1, 15, 9, 0), 60, "Cardio", "John.Doe", "Alice.Johnson");
+		CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session",
+				LocalDateTime.of(2024, 1, 15, 9, 0), 60, Optional.of(TrainingTypeEnum.CARDIO), "John.Doe",
+				"Alice.Johnson");
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
-		when(trainingTypeRepository.findByTrainingTypeName("Cardio")).thenReturn(Optional.of(cardioType));
+		when(trainingTypeRepository.findByTrainingTypeName(TrainingTypeEnum.CARDIO))
+			.thenReturn(Optional.of(cardioType));
 		when(trainingRepository.save(any(Training.class))).thenReturn(testTraining);
 
 		// When
@@ -121,25 +118,11 @@ class TrainingServiceImplTest {
 	}
 
 	@Test
-	void create_shouldThrowAuthenticationException_whenCredentialsInvalid() {
-		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(traineeCredentials, "Morning Cardio Session",
-				LocalDateTime.now(), 60, "Cardio", "John.Doe", "Alice.Johnson");
-
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(false);
-		when(authenticationService.authenticateTrainer(traineeCredentials)).thenReturn(false);
-
-		// When/Then
-		assertThatThrownBy(() -> trainingService.create(request)).isInstanceOf(AuthenticationException.class);
-	}
-
-	@Test
 	void create_shouldThrowEntityNotFoundException_whenTraineeNotFound() {
 		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(traineeCredentials, "Morning Cardio Session",
-				LocalDateTime.now(), 60, "Cardio", "NonExistent.Trainee", "Alice.Johnson");
+		CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session", LocalDateTime.now(), 60,
+				Optional.of(TrainingTypeEnum.CARDIO), "NonExistent.Trainee", "Alice.Johnson");
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
 		when(traineeRepository.findByUsername("NonExistent.Trainee")).thenReturn(Optional.empty());
 
 		// When/Then
@@ -149,10 +132,9 @@ class TrainingServiceImplTest {
 	@Test
 	void create_shouldThrowEntityNotFoundException_whenTrainerNotFound() {
 		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(traineeCredentials, "Morning Cardio Session",
-				LocalDateTime.now(), 60, "Cardio", "John.Doe", "NonExistent.Trainer");
+		CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session", LocalDateTime.now(), 60,
+				Optional.of(TrainingTypeEnum.CARDIO), "John.Doe", "NonExistent.Trainer");
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(trainerRepository.findByUsername("NonExistent.Trainer")).thenReturn(Optional.empty());
 
@@ -161,18 +143,12 @@ class TrainingServiceImplTest {
 	}
 
 	@Test
-	void create_shouldThrowEntityNotFoundException_whenTrainingTypeNotFound() {
+	void create_shouldThrowIllegalArgumentExceptionException_whenTrainingTypeNotFound() {
 		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(traineeCredentials, "Morning Cardio Session",
-				LocalDateTime.now(), 60, "NonExistentType", "John.Doe", "Alice.Johnson");
+		assertThatThrownBy(() -> new CreateTrainingRequest("Morning Cardio Session", LocalDateTime.now(), 60,
+				Optional.of(TrainingTypeEnum.valueOf("NonExistentTYpe")), "John.Doe", "Alice.Johnson"))
+			.isInstanceOf(IllegalArgumentException.class);
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
-		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
-		when(trainingTypeRepository.findByTrainingTypeName("NonExistentType")).thenReturn(Optional.empty());
-
-		// When/Then
-		assertThatThrownBy(() -> trainingService.create(request)).isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
@@ -181,7 +157,6 @@ class TrainingServiceImplTest {
 		TrainingFilter filter = TrainingFilter.empty();
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
 		when(trainingRepository.getTraineeTrainings("John.Doe", filter)).thenReturn(expectedTrainings);
 
 		// When
@@ -194,29 +169,15 @@ class TrainingServiceImplTest {
 	}
 
 	@Test
-	void getTraineeTrainings_shouldThrowAuthenticationException_whenNotAuthenticated() {
-		// Given
-		TrainingFilter filter = TrainingFilter.empty();
-
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(false);
-		when(authenticationService.authenticateTrainer(traineeCredentials)).thenReturn(false);
-
-		// When/Then
-		assertThatThrownBy(() -> trainingService.getTraineeTrainings(traineeCredentials, filter))
-			.isInstanceOf(AuthenticationException.class);
-	}
-
-	@Test
 	void getTraineeTrainings_shouldApplyFilter_whenProvided() {
 		// Given
 		LocalDateTime fromDate = LocalDateTime.of(2024, 1, 1, 0, 0);
 		LocalDateTime toDate = LocalDateTime.of(2024, 12, 31, 23, 59);
 		TrainingFilter filter = TrainingFilter.forTrainee(Optional.of(fromDate), Optional.of(toDate),
-				Optional.of("Alice.Johnson"), Optional.of("Cardio"));
+				Optional.of("Alice.Johnson"), Optional.of(TrainingTypeEnum.CARDIO));
 
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(authenticationService.authenticateTrainee(traineeCredentials)).thenReturn(true);
 		when(trainingRepository.getTraineeTrainings("John.Doe", filter)).thenReturn(expectedTrainings);
 
 		// When
@@ -233,7 +194,6 @@ class TrainingServiceImplTest {
 		TrainingFilter filter = TrainingFilter.empty();
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(authenticationService.authenticateTrainer(trainerCredentials)).thenReturn(true);
 		when(trainingRepository.getTrainerTrainings("Alice.Johnson", filter)).thenReturn(expectedTrainings);
 
 		// When
@@ -246,19 +206,6 @@ class TrainingServiceImplTest {
 	}
 
 	@Test
-	void getTrainerTrainings_shouldThrowAuthenticationException_whenNotAuthenticated() {
-		// Given
-		TrainingFilter filter = TrainingFilter.empty();
-
-		when(authenticationService.authenticateTrainee(trainerCredentials)).thenReturn(false);
-		when(authenticationService.authenticateTrainer(trainerCredentials)).thenReturn(false);
-
-		// When/Then
-		assertThatThrownBy(() -> trainingService.getTrainerTrainings(trainerCredentials, filter))
-			.isInstanceOf(AuthenticationException.class);
-	}
-
-	@Test
 	void getTrainerTrainings_shouldApplyFilter_whenProvided() {
 		// Given
 		LocalDateTime fromDate = LocalDateTime.of(2024, 1, 1, 0, 0);
@@ -268,7 +215,6 @@ class TrainingServiceImplTest {
 
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(authenticationService.authenticateTrainer(trainerCredentials)).thenReturn(true);
 		when(trainingRepository.getTrainerTrainings("Alice.Johnson", filter)).thenReturn(expectedTrainings);
 
 		// When
@@ -277,28 +223,6 @@ class TrainingServiceImplTest {
 		// Then
 		assertThat(trainings).hasSize(1);
 		verify(trainingRepository).getTrainerTrainings("Alice.Johnson", filter);
-	}
-
-	@Test
-	void create_shouldAuthenticate_asTrainer_whenTraineeAuthFails() {
-		// Given
-		CreateTrainingRequest request = new CreateTrainingRequest(trainerCredentials, "Morning Cardio Session",
-				LocalDateTime.of(2024, 1, 15, 9, 0), 60, "Cardio", "John.Doe", "Alice.Johnson");
-
-		when(authenticationService.authenticateTrainee(trainerCredentials)).thenReturn(false);
-		when(authenticationService.authenticateTrainer(trainerCredentials)).thenReturn(true);
-		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
-		when(trainingTypeRepository.findByTrainingTypeName("Cardio")).thenReturn(Optional.of(cardioType));
-		when(trainingRepository.save(any(Training.class))).thenReturn(testTraining);
-
-		// When
-		Training created = trainingService.create(request);
-
-		// Then
-		assertThat(created).isNotNull();
-		verify(authenticationService).authenticateTrainee(trainerCredentials);
-		verify(authenticationService).authenticateTrainer(trainerCredentials);
 	}
 
 }

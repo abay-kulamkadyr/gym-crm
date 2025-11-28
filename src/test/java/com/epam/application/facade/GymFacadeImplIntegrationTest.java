@@ -15,7 +15,7 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
-import com.epam.infrastructure.config.TestConfig;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
@@ -28,15 +28,14 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@SpringBootTest
 @Transactional
+@ActiveProfiles("test")
 class GymFacadeImplIntegrationTest {
 
 	private GymFacadeImpl gymFacade;
@@ -88,8 +87,8 @@ class GymFacadeImplIntegrationTest {
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(credentials, Optional.empty(),
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-				Optional.of(LocalDate.of(1991, 2, 2)), Optional.of("999 New Address"));
+				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(LocalDate.of(1991, 2, 2)),
+				Optional.of("999 New Address"));
 
 		// When
 		Trainee updated = gymFacade.updateTraineeProfile(updateRequest);
@@ -142,26 +141,25 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void findTraineeTrainings_shouldWork() {
 		// Given
-		TrainingType specialization = createOrGetTestTrainingType("Pilates");
+		TrainingType specialization = createOrGetTestTrainingType(TrainingTypeEnum.PILATES);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
 		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Test", "Trainer", true,
-				specialization);
+				specialization.getTrainingTypeName());
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
-		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest(traineeCredentials, "Training 1",
-				LocalDateTime.now(), 60, specialization.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1", LocalDateTime.now(), 60,
+				Optional.of(specialization.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest1);
 
-		CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest(traineeCredentials, "Training 2",
-				LocalDateTime.now().plusDays(1), 45, specialization.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest("Training 2",
+				LocalDateTime.now().plusDays(1), 45, Optional.of(specialization.getTrainingTypeName()),
+				trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest2);
 
 		// When
@@ -175,8 +173,9 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void createTrainer_shouldCreateTrainerWithGeneratedCredentials() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Cardio");
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Emma", "Taylor", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Emma", "Taylor", true,
+				TrainingTypeEnum.CARDIO);
 
 		// When
 		Trainer trainer = gymFacade.createTrainerProfile(request);
@@ -195,14 +194,14 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void updateTrainer_shouldUpdateExistingTrainer() {
 		// Given
-		TrainingType originalType = createOrGetTestTrainingType("Mobility");
+		createOrGetTestTrainingType(TrainingTypeEnum.CROSSFIT);
 		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest("David", "Martinez", true,
-				originalType);
+				TrainingTypeEnum.CROSSFIT);
 		Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
 		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 
-		TrainingType newType = createOrGetTestTrainingType("Pilates");
+		TrainingType newType = createOrGetTestTrainingType(TrainingTypeEnum.PILATES);
 		UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(credentials, Optional.empty(),
 				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false),
 				Optional.of(newType.getTrainingTypeName()));
@@ -212,14 +211,15 @@ class GymFacadeImplIntegrationTest {
 
 		// Then
 		assertThat(updated.getActive()).isFalse();
-		assertThat(updated.getSpecialization().getTrainingTypeName()).isEqualTo("Pilates");
+		assertThat(updated.getSpecialization().getTrainingTypeName()).isEqualTo(TrainingTypeEnum.PILATES);
 	}
 
 	@Test
 	void deleteTrainer_shouldRemoveTrainer() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Cardio");
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Henry", "Cavill", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Henry", "Cavill", true,
+				TrainingTypeEnum.CARDIO);
 		Trainer trainer = gymFacade.createTrainerProfile(request);
 
 		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
@@ -237,9 +237,11 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void createTrainer_withDuplicateName_shouldGenerateUniqueUsername() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Functional");
-		CreateTrainerProfileRequest request1 = new CreateTrainerProfileRequest("Same", "Person", true, type);
-		CreateTrainerProfileRequest request2 = new CreateTrainerProfileRequest("Same", "Person", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.CROSSFIT);
+		CreateTrainerProfileRequest request1 = new CreateTrainerProfileRequest("Same", "Person", true,
+				TrainingTypeEnum.CROSSFIT);
+		CreateTrainerProfileRequest request2 = new CreateTrainerProfileRequest("Same", "Person", true,
+				TrainingTypeEnum.CROSSFIT);
 
 		// When
 		Trainer trainer1 = gymFacade.createTrainerProfile(request1);
@@ -257,9 +259,10 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void createTraining_shouldCreateTraining() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Yoga");
+		TrainingType type = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("John", "Trainer", true, type);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("John", "Trainer", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("Jane", "Trainee", true,
@@ -267,8 +270,8 @@ class GymFacadeImplIntegrationTest {
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-		CreateTrainingRequest trainingRequest = new CreateTrainingRequest(credentials, "Morning Cardio",
-				LocalDateTime.now(), 60, type.getTrainingTypeName(), trainee.getUsername(), trainer.getUsername());
+		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Cardio", LocalDateTime.now(), 60,
+				Optional.of(type.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 
 		// When
 		gymFacade.createTraining(trainingRequest);
@@ -288,9 +291,10 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void deleteTrainee_shouldCascadeDeleteTrainings() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Cardio");
+		TrainingType type = createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Shared", "Trainer", true, type);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Shared", "Trainer", true,
+				TrainingTypeEnum.CARDIO);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("Test", "Trainee", true,
@@ -300,12 +304,12 @@ class GymFacadeImplIntegrationTest {
 		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 
-		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest(traineeCredentials, "Training 1",
-				LocalDateTime.now(), 60, type.getTrainingTypeName(), trainee.getUsername(), trainer.getUsername());
+		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1", LocalDateTime.now(), 60,
+				Optional.of(type.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest1);
 
-		CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest(traineeCredentials, "Training 2",
-				LocalDateTime.now().plusDays(1), 45, type.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest("Training 2",
+				LocalDateTime.now().plusDays(1), 45, Optional.of(type.getTrainingTypeName()), trainee.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(trainingRequest2);
 
@@ -319,26 +323,24 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainings_shouldFindTrainingsByDateRangeAndTrainerName() {
 		// Given
-		TrainingType specialization = createOrGetTestTrainingType("Yoga");
+		TrainingType specialization = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("Test", "Trainee", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
 		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Test", "Trainer", true,
-				specialization);
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
-		CreateTrainingRequest t1Request = new CreateTrainingRequest(credentials, "Morning Run",
-				LocalDateTime.now().minusDays(1), 60, specialization.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Run", LocalDateTime.now().minusDays(1), 60,
+				Optional.of(specialization.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(t1Request);
 
-		CreateTrainingRequest t2Request = new CreateTrainingRequest(credentials, "Evening Yoga",
-				LocalDateTime.now().minusDays(5), 45, specialization.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest t2Request = new CreateTrainingRequest("Evening Yoga", LocalDateTime.now().minusDays(5),
+				45, Optional.of(specialization.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(t2Request);
 
 		// When
@@ -358,26 +360,26 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainings_shouldFindAllTrainingsWithinDateRange() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxing = createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest yogaRequest = new CreateTrainingRequest(credentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
+				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(yogaRequest);
 
-		CreateTrainingRequest boxingRequest = new CreateTrainingRequest(credentials, "Evening Boxing",
-				LocalDateTime.now().minusDays(10), 45, boxing.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+				LocalDateTime.now().minusDays(10), 45, Optional.of(boxing.getTrainingTypeName()), trainee.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(boxingRequest);
 
@@ -395,26 +397,25 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainings_shouldFilterByTrainerUsername() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest t1Request = new CreateTrainingRequest(credentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
+				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(t1Request);
 
-		CreateTrainingRequest t2Request = new CreateTrainingRequest(credentials, "Evening Yoga",
-				LocalDateTime.now().minusDays(10), 45, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest t2Request = new CreateTrainingRequest("Evening Yoga", LocalDateTime.now().minusDays(10),
+				45, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(t2Request);
 
 		// When
@@ -431,26 +432,26 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainings_shouldFilterByTrainingType() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxing = createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest yogaRequest = new CreateTrainingRequest(credentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
+				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(yogaRequest);
 
-		CreateTrainingRequest boxingRequest = new CreateTrainingRequest(credentials, "Evening Boxing",
-				LocalDateTime.now().minusDays(10), 45, boxing.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+				LocalDateTime.now().minusDays(10), 45, Optional.of(boxing.getTrainingTypeName()), trainee.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(boxingRequest);
 
@@ -462,32 +463,32 @@ class GymFacadeImplIntegrationTest {
 
 		// Then
 		assertThat(trainings).hasSize(1);
-		assertThat(trainings.get(0).getTrainingType().getTrainingTypeName()).isEqualTo("Yoga");
+		assertThat(trainings.get(0).getTrainingType().getTrainingTypeName()).isEqualTo(TrainingTypeEnum.YOGA);
 	}
 
 	@Test
 	void getTraineeTrainings_shouldReturnEmptyListWhenNoMatch() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxing = createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest yogaRequest = new CreateTrainingRequest(credentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
+				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(yogaRequest);
 
-		CreateTrainingRequest boxingRequest = new CreateTrainingRequest(credentials, "Evening Boxing",
-				LocalDateTime.now().minusDays(10), 45, boxing.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+				LocalDateTime.now().minusDays(10), 45, Optional.of(boxing.getTrainingTypeName()), trainee.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(boxingRequest);
 
@@ -505,26 +506,26 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainings_shouldFilterByAllCriteriaTogether() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		TrainingType boxing = createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
 		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest yogaRequest = new CreateTrainingRequest(credentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
-				trainer.getUsername());
+		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
+				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(yogaRequest);
 
-		CreateTrainingRequest boxingRequest = new CreateTrainingRequest(credentials, "Evening Boxing",
-				LocalDateTime.now().minusDays(10), 45, boxing.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+				LocalDateTime.now().minusDays(10), 45, Optional.of(boxing.getTrainingTypeName()), trainee.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(boxingRequest);
 
@@ -548,13 +549,15 @@ class GymFacadeImplIntegrationTest {
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
 		// Create trainers
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
-		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.BOXING);
 		Trainer trainer1 = gymFacade.createTrainerProfile(trainer1Request);
 
-		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true, boxing);
+		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true,
+				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
 		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
@@ -590,8 +593,9 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void toggleTrainerActiveStatus_shouldChangeActiveStatus() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Yoga");
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(request);
 
 		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
@@ -632,8 +636,9 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void updateTrainerPassword_shouldChangePassword() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Yoga");
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(request);
 
 		Credentials oldCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
@@ -649,16 +654,16 @@ class GymFacadeImplIntegrationTest {
 
 		// Old password should not work
 		assertThatThrownBy(() -> gymFacade.findTrainerByUsername(oldCredentials))
-			.isInstanceOf(AuthenticationException.class)
-			.hasMessageContaining("Invalid credentials for trainer");
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test
 	void getTrainerTrainings_shouldReturnTrainerSpecificTrainings() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		CreateTraineeProfileRequest trainee1Request = new CreateTraineeProfileRequest("John", "Doe", true,
@@ -669,18 +674,16 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
-		Credentials trainee1Credentials = new Credentials(trainee1.getUsername(), trainee1.getPassword());
-		Credentials trainee2Credentials = new Credentials(trainee2.getUsername(), trainee2.getPassword());
 		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest training1Request = new CreateTrainingRequest(trainee1Credentials, "Morning Session",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee1.getUsername(),
+		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(training1Request);
 
-		CreateTrainingRequest training2Request = new CreateTrainingRequest(trainee2Credentials, "Evening Session",
-				LocalDateTime.now().minusDays(2), 45, yoga.getTrainingTypeName(), trainee2.getUsername(),
+		CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+				LocalDateTime.now().minusDays(2), 45, Optional.of(yoga.getTrainingTypeName()), trainee2.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(training2Request);
 
@@ -698,9 +701,10 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTrainerTrainings_shouldFilterByTraineeName() {
 		// Given
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
-		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true, yoga);
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
 		CreateTraineeProfileRequest trainee1Request = new CreateTraineeProfileRequest("John", "Doe", true,
@@ -711,18 +715,16 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
-		Credentials trainee1Credentials = new Credentials(trainee1.getUsername(), trainee1.getPassword());
-		Credentials trainee2Credentials = new Credentials(trainee2.getUsername(), trainee2.getPassword());
 		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 
 		// Create trainings
-		CreateTrainingRequest training1Request = new CreateTrainingRequest(trainee1Credentials, "Morning Session",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee1.getUsername(),
+		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(training1Request);
 
-		CreateTrainingRequest training2Request = new CreateTrainingRequest(trainee2Credentials, "Evening Session",
-				LocalDateTime.now().minusDays(2), 45, yoga.getTrainingTypeName(), trainee2.getUsername(),
+		CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+				LocalDateTime.now().minusDays(2), 45, Optional.of(yoga.getTrainingTypeName()), trainee2.getUsername(),
 				trainer.getUsername());
 		gymFacade.createTraining(training2Request);
 
@@ -739,36 +741,11 @@ class GymFacadeImplIntegrationTest {
 	}
 
 	@Test
-	void updateTraineeProfile_shouldUpdateUsername() {
-		// Given
-		CreateTraineeProfileRequest createRequest = new CreateTraineeProfileRequest("John", "Doe", true,
-				Optional.empty(), Optional.empty());
-		Trainee trainee = gymFacade.createTraineeProfile(createRequest);
-
-		Credentials oldCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-		String newUsername = "John.Doe1";
-
-		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(oldCredentials, Optional.empty(),
-				Optional.empty(), Optional.of(newUsername), Optional.empty(), Optional.empty(), Optional.empty(),
-				Optional.empty());
-
-		// When
-		Trainee updated = gymFacade.updateTraineeProfile(updateRequest);
-
-		// Then
-		assertThat(updated.getUsername()).isEqualTo(newUsername);
-
-		Credentials newCredentials = new Credentials(newUsername, trainee.getPassword());
-		Optional<Trainee> retrieved = gymFacade.findTraineeByUsername(newCredentials);
-		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getUsername()).isEqualTo(newUsername);
-	}
-
-	@Test
 	void updateTrainerProfile_shouldUpdateUsername() {
 		// Given
-		TrainingType type = createOrGetTestTrainingType("Yoga");
-		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest("Jane", "Smith", true, type);
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
 		Credentials oldCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
@@ -800,29 +777,32 @@ class GymFacadeImplIntegrationTest {
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
 		// 2. Create Training Types
-		TrainingType yoga = createOrGetTestTrainingType("yoga");
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 
 		// 3. Create Trainer 1 (The assigned one)
-		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer1 = gymFacade.createTrainerProfile(trainer1Request);
 
 		// When
 
 		// Create trainers 2 and 3
-		TrainingType boxing = createOrGetTestTrainingType("boxing");
-		TrainingType cardio = createOrGetTestTrainingType("cardio");
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
+		createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
 
-		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true, boxing);
+		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true,
+				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
-		CreateTrainerProfileRequest trainer3Request = new CreateTrainerProfileRequest("Carol", "White", true, cardio);
+		CreateTrainerProfileRequest trainer3Request = new CreateTrainerProfileRequest("Carol", "White", true,
+				TrainingTypeEnum.CARDIO);
 		Trainer trainer3 = gymFacade.createTrainerProfile(trainer3Request);
 
 		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
 		// Assign trainer1 by creating a training
-		CreateTrainingRequest trainingRequest = new CreateTrainingRequest(traineeCredentials, "Morning Yoga",
-				LocalDateTime.now().minusDays(1), 60, yoga.getTrainingTypeName(), trainee.getUsername(),
+		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga",
+				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(),
 				trainer1.getUsername());
 		gymFacade.createTraining(trainingRequest);
 
@@ -839,17 +819,20 @@ class GymFacadeImplIntegrationTest {
 	void getUnassignedTrainers_shouldReturnAllTrainersWhenNoAssignedTrainers() {
 		// Given
 		// Create trainers
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
-		TrainingType cardio = createOrGetTestTrainingType("Cardio");
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
+		createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
 
-		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer1 = gymFacade.createTrainerProfile(trainer1Request);
 
-		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true, boxing);
+		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true,
+				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
-		CreateTrainerProfileRequest trainer3Request = new CreateTrainerProfileRequest("Carol", "White", true, cardio);
+		CreateTrainerProfileRequest trainer3Request = new CreateTrainerProfileRequest("Carol", "White", true,
+				TrainingTypeEnum.CARDIO);
 		Trainer trainer3 = gymFacade.createTrainerProfile(trainer3Request);
 
 		// Create new trainee with no trainers
@@ -877,12 +860,14 @@ class GymFacadeImplIntegrationTest {
 
 		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
-		TrainingType yoga = createOrGetTestTrainingType("Yoga");
-		TrainingType boxing = createOrGetTestTrainingType("Boxing");
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
-		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true, yoga);
+		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.YOGA);
 		Trainer trainer1 = gymFacade.createTrainerProfile(trainer1Request);
-		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Elon", "Musk", true, boxing);
+		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Elon", "Musk", true,
+				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
 		List<Trainer> trainers = List.of(trainer1, trainer2);
@@ -901,7 +886,7 @@ class GymFacadeImplIntegrationTest {
 		assertThat(retrievedTrainers).containsExactlyInAnyOrderElementsOf(trainers);
 	}
 
-	private TrainingType createOrGetTestTrainingType(String trainingTypeName) {
+	private TrainingType createOrGetTestTrainingType(TrainingTypeEnum trainingTypeName) {
 		String jpql = "SELECT t FROM TrainingTypeDAO t WHERE t.trainingTypeName = :name";
 		List<TrainingTypeDAO> results = entityManager.createQuery(jpql, TrainingTypeDAO.class)
 			.setParameter("name", trainingTypeName)

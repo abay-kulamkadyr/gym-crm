@@ -10,6 +10,7 @@ import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
+import com.epam.domain.model.TrainingType;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,6 +48,12 @@ public interface GymFacade {
 
 	List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter);
 
-	void createTraining(CreateTrainingRequest request);
+	Training createTraining(CreateTrainingRequest request);
+
+	List<Trainer> getTraineeTrainers(Credentials credentials);
+
+	List<Trainee> getTrainerTrainees(Credentials credentials);
+
+	List<TrainingType> getTrainingTypes();
 
 }

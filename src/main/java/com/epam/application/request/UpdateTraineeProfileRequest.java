@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public record UpdateTraineeProfileRequest(Credentials credentials, Optional<String> firstName,
-		Optional<String> lastName, Optional<String> username, Optional<String> password, Optional<Boolean> active,
-		Optional<LocalDate> dob, Optional<String> address) implements AuthenticatedRequest, UpdateProfileRequest {
+		Optional<String> lastName, Optional<String> password, Optional<Boolean> active, Optional<LocalDate> dob,
+		Optional<String> address) implements AuthenticatedRequest, UpdateProfileRequest {
 
 }

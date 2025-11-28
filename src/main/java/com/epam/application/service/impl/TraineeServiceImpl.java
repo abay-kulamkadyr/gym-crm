@@ -1,7 +1,6 @@
 package com.epam.application.service.impl;
 
 import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
@@ -10,7 +9,7 @@ import com.epam.application.service.TraineeService;
 import com.epam.application.util.CredentialsUtil;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
-import com.epam.domain.repository.TraineeRepository;
+import com.epam.domain.port.TraineeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,7 +60,7 @@ public class TraineeServiceImpl implements TraineeService {
 
 	@Override
 	public Trainee updateProfile(UpdateTraineeProfileRequest request) {
-		authenticateOrThrow(request.credentials());
+		authenticationService.authenticate(request.credentials());
 		Trainee trainee = findTraineeByUsernameOrThrow(request.credentials().username());
 
 		request.firstName().ifPresent(newFirstName -> {
@@ -72,11 +71,6 @@ public class TraineeServiceImpl implements TraineeService {
 		request.lastName().ifPresent(newLastName -> {
 			CredentialsUtil.validateName(newLastName, "Last name");
 			trainee.setLastName(newLastName);
-		});
-
-		request.username().ifPresent(newUsername -> {
-			validateUsernameChange(newUsername);
-			trainee.setUsername(newUsername);
 		});
 
 		request.password().ifPresent((password) -> {
@@ -97,7 +91,7 @@ public class TraineeServiceImpl implements TraineeService {
 	public void updatePassword(Credentials credentials, String newPassword) {
 		validateNewPassword(newPassword);
 
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		Trainee trainee = findTraineeByUsernameOrThrow(credentials.username());
 
 		trainee.setPassword(newPassword);
@@ -107,7 +101,7 @@ public class TraineeServiceImpl implements TraineeService {
 
 	@Override
 	public void toggleActiveStatus(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		Trainee trainee = findTraineeByUsernameOrThrow(credentials.username());
 
 		boolean oldStatus = trainee.getActive();
@@ -120,28 +114,35 @@ public class TraineeServiceImpl implements TraineeService {
 
 	@Override
 	public void deleteProfile(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		traineeRepository.deleteByUsername(credentials.username());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public Optional<Trainee> findProfileByUsername(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		return traineeRepository.findByUsername(credentials.username());
 	}
 
 	@Override
 	@Transactional(readOnly = true)
 	public List<Trainer> getUnassignedTrainers(Credentials credentials) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 		findTraineeByUsernameOrThrow(credentials.username());
 		return traineeRepository.getUnassignedTrainers(credentials.username());
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<Trainer> getTrainers(Credentials credentials) {
+		authenticationService.authenticate(credentials);
+		return traineeRepository.getTrainers(credentials.username());
+	}
+
+	@Override
 	public void updateTrainersList(Credentials credentials, List<String> trainerUsernames) {
-		authenticateOrThrow(credentials);
+		authenticationService.authenticate(credentials);
 
 		if (trainerUsernames.isEmpty()) {
 			log.warn("Empty trainer usernames list provided for trainee: {} - will clear all trainers",
@@ -149,14 +150,6 @@ public class TraineeServiceImpl implements TraineeService {
 		}
 
 		traineeRepository.updateTrainersList(credentials.username(), trainerUsernames);
-	}
-
-	private void authenticateOrThrow(Credentials credentials) {
-		if (!authenticationService.authenticateTrainee(credentials)) {
-			log.warn("Authentication failed for {}: {}", "trainee", credentials.username());
-			throw new AuthenticationException(
-					String.format("Invalid credentials for %s: %s", "trainee", credentials.username()));
-		}
 	}
 
 	private Trainee findTraineeByUsernameOrThrow(String username) {
@@ -171,15 +164,6 @@ public class TraineeServiceImpl implements TraineeService {
 			throw new ValidationException("New password cannot be null");
 		}
 		CredentialsUtil.validatePassword(password);
-	}
-
-	private void validateUsernameChange(String newUsername) {
-		CredentialsUtil.validateUsername(newUsername);
-
-		if (traineeRepository.findByUsername(newUsername).isPresent()) {
-			log.error("Username already exists: {}", newUsername);
-			throw new ValidationException(String.format("Username already exists: %s", newUsername));
-		}
 	}
 
 }

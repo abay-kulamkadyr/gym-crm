@@ -3,12 +3,12 @@ package com.epam.infrastructure.bootstrap;
 import com.epam.infrastructure.bootstrap.dto.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class JsonDataLoader {
 
+	@Autowired
 	private final ObjectMapper objectMapper;
 
 	private final String usersFile;
@@ -28,13 +29,12 @@ public class JsonDataLoader {
 
 	private final String trainingTypesFile;
 
-	public JsonDataLoader(@Value("${storage.init.users:/users.json}") String usersFile,
+	public JsonDataLoader(ObjectMapper objectMapper, @Value("${storage.init.users:/users.json}") String usersFile,
 			@Value("${storage.init.trainees:/trainees.json}") String traineesFile,
 			@Value("${storage.init.trainers:/trainers.json}") String trainersFile,
 			@Value("${storage.init.trainings:/trainings.json}") String trainingsFile,
 			@Value("${storage.init.trainingTypes:/trainingTypes.json}") String trainingTypesFile) {
-		this.objectMapper = new ObjectMapper();
-		this.objectMapper.registerModule(new JavaTimeModule());
+		this.objectMapper = objectMapper;
 		this.usersFile = usersFile;
 		this.traineesFile = traineesFile;
 		this.trainersFile = trainersFile;

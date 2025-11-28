@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-abstract class User {
+public abstract class User {
 
 	@EqualsAndHashCode.Include
 	private Long userId;
