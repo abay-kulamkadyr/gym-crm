@@ -37,14 +37,11 @@ class GlobalExceptionHandler {
 			errors.put(fieldName, errorMessage);
 		});
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
+		String formattedErrors = formatValidationErrors(errors);
+		logException(ex, request, "Errors: " + errors);
 
-		log.error("ValidationException | TransactionId: {} | Endpoint: {} | Errors: {}", transactionId, endpoint,
-				errors);
-
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-				"Validation Failed", formatValidationErrors(errors), endpoint, transactionId);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", formattedErrors,
+				request);
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
@@ -52,29 +49,22 @@ class GlobalExceptionHandler {
 	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
+		logException(ex, request, null);
 
-		log.error("AuthenticationException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
-				ex.getMessage());
-
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.UNAUTHORIZED.value(),
-				"Authentication Failed", ex.getMessage(), endpoint, transactionId);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Failed",
+				ex.getMessage(), request);
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
 	}
 
-	@ExceptionHandler(ValidationException.class)
-	public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, WebRequest request) {
+	@ExceptionHandler({ ValidationException.class, IllegalArgumentException.class })
+	public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex, WebRequest request) {
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
+		logException(ex, request, null);
 
-		log.error("ValidationException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
-				ex.getMessage());
+		String errorTitle = ex instanceof ValidationException ? "Validation Error" : "Invalid Request";
 
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-				"Validation Error", ex.getMessage(), endpoint, transactionId);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, errorTitle, ex.getMessage(), request);
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
@@ -82,46 +72,22 @@ class GlobalExceptionHandler {
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
+		logExceptionAsWarning(ex, request);
 
-		log.warn("EntityNotFoundException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
-				ex.getMessage());
-
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(),
-				"Resource Not Found", ex.getMessage(), endpoint, transactionId);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(),
+				request);
 
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-	}
-
-	@ExceptionHandler(IllegalArgumentException.class)
-	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex,
-			WebRequest request) {
-
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
-
-		log.error("IllegalArgumentException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
-				ex.getMessage());
-
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-				"Invalid Request", ex.getMessage(), endpoint, transactionId);
-
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
 
 	@ExceptionHandler(MissingRequestHeaderException.class)
 	public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException ex,
 			WebRequest request) {
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-		String endpoint = getRequestURI(request);
+		logException(ex, request, null);
 
-		log.error("MissingHeaderException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
-				ex.getMessage());
-
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(),
-				"Invalid Request", ex.getMessage(), endpoint, transactionId);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Request", ex.getMessage(),
+				request);
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
@@ -129,22 +95,55 @@ class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
 
-		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
+		String transactionId = getTransactionId();
 		String endpoint = getRequestURI(request);
 
 		log.error(
 				"UnexpectedException | TransactionId: {} | Endpoint: {} | ExceptionType: {} | Message: {} | StackTrace:",
 				transactionId, endpoint, ex.getClass().getSimpleName(), ex.getMessage(), ex);
 
-		ErrorResponse errorResponse = new ErrorResponse(LocalDateTime.now(), HttpStatus.INTERNAL_SERVER_ERROR.value(),
-				"Internal Server Error",
-				"An unexpected error occurred. Please contact support with transaction ID: " + transactionId, endpoint,
-				transactionId);
+		String userMessage = "An unexpected error occurred. Please contact support with transaction ID: "
+				+ transactionId;
+
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+				userMessage, request);
 
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
 	}
 
-	// Helper methods
+	private void logException(Exception ex, WebRequest request, String additionalInfo) {
+		String transactionId = getTransactionId();
+		String endpoint = getRequestURI(request);
+		String exceptionType = ex.getClass().getSimpleName();
+
+		if (additionalInfo != null && !additionalInfo.isEmpty()) {
+			log.error("{} | TransactionId: {} | Endpoint: {} | Message: {} | {}", exceptionType, transactionId,
+					endpoint, ex.getMessage(), additionalInfo);
+		}
+		else {
+			log.error("{} | TransactionId: {} | Endpoint: {} | Message: {}", exceptionType, transactionId, endpoint,
+					ex.getMessage());
+		}
+	}
+
+	private void logExceptionAsWarning(Exception ex, WebRequest request) {
+		String transactionId = getTransactionId();
+		String endpoint = getRequestURI(request);
+		String exceptionType = ex.getClass().getSimpleName();
+
+		log.warn("{} | TransactionId: {} | Endpoint: {} | Message: {}", exceptionType, transactionId, endpoint,
+				ex.getMessage());
+	}
+
+	private ErrorResponse buildErrorResponse(HttpStatus status, String error, String message, WebRequest request) {
+
+		return new ErrorResponse(LocalDateTime.now(), status.value(), error, message, getRequestURI(request),
+				getTransactionId());
+	}
+
+	private String getTransactionId() {
+		return MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
+	}
 
 	private String getRequestURI(WebRequest request) {
 		if (request instanceof ServletWebRequest) {
