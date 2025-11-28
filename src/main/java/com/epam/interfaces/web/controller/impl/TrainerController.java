@@ -1,4 +1,4 @@
-package com.epam.interfaces.web.controller;
+package com.epam.interfaces.web.controller.impl;
 
 import com.epam.application.Credentials;
 import com.epam.application.facade.GymFacade;
@@ -6,6 +6,7 @@ import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainer;
+import com.epam.interfaces.web.controller.api.TrainerControllerApi;
 import com.epam.interfaces.web.dto.request.TrainerRegistrationRequest;
 import com.epam.interfaces.web.dto.request.UpdateTrainerRequest;
 import com.epam.interfaces.web.dto.response.CredentialsResponse;
@@ -13,24 +14,28 @@ import com.epam.interfaces.web.dto.response.EmbeddedTraineeResponse;
 import com.epam.interfaces.web.dto.response.EmbeddedTrainerTrainingResponse;
 import com.epam.interfaces.web.dto.response.TrainerResponse;
 import com.epam.interfaces.web.util.AuthenticationHelper;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/trainers")
-@Tag(name = "Trainers", description = "Trainer management operations")
-public class TrainerController {
+public class TrainerController implements TrainerControllerApi {
 
 	private final GymFacade gymFacade;
 
@@ -45,9 +50,8 @@ public class TrainerController {
 	}
 
 	@PostMapping
-	@Operation(summary = "Register Trainer", description = "Create a new trainer profile")
+	@Override
 	public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TrainerRegistrationRequest request) {
-
 		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest(request.firstName(),
 				request.lastName(), true, request.specialization());
 
@@ -59,11 +63,9 @@ public class TrainerController {
 	}
 
 	@GetMapping("/{username}")
-	@Operation(summary = "Get Trainer Profile", description = "Retrieve trainer profile by username")
-	public ResponseEntity<TrainerResponse> getProfile(
-			@Parameter(description = "Trainer username", required = true) @PathVariable String username,
-			@Parameter(description = "Credentials in the format: username:password", required = true,
-					example = "john.doe:password123") @RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	@Override
+	public ResponseEntity<TrainerResponse> getProfile(@PathVariable String username,
+			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
 
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 
@@ -82,12 +84,10 @@ public class TrainerController {
 	}
 
 	@PutMapping("/{username}")
-	@Operation(summary = "Update Trainer Profile", description = "Update trainer profile information")
-	public ResponseEntity<TrainerResponse> updateProfile(
-			@Parameter(description = "Trainer username", required = true) @PathVariable String username,
+	@Override
+	public ResponseEntity<TrainerResponse> updateProfile(@PathVariable String username,
 			@Valid @RequestBody UpdateTrainerRequest request,
-			@Parameter(description = "Credentials in the format: username:password", required = true,
-					example = "john.doe:password123") @RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
 
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 
@@ -110,15 +110,11 @@ public class TrainerController {
 	}
 
 	@GetMapping("/{username}/trainings")
-	@Operation(summary = "Get Trainer Trainings",
-			description = "Retrieve trainer's training list with optional filters")
-	public ResponseEntity<List<EmbeddedTrainerTrainingResponse>> getTrainings(
-			@Parameter(description = "Trainer username", required = true) @PathVariable String username,
-			@Parameter(description = "Period start date") @RequestParam(required = false) LocalDateTime periodFrom,
-			@Parameter(description = "Period end date") @RequestParam(required = false) LocalDateTime periodTo,
-			@Parameter(description = "Trainee name filter") @RequestParam(required = false) String traineeName,
-			@Parameter(description = "Credentials in the format: username:password", required = true,
-					example = "john.doe:password123") @RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	@Override
+	public ResponseEntity<List<EmbeddedTrainerTrainingResponse>> getTrainings(@PathVariable String username,
+			@RequestParam(required = false) LocalDateTime periodFrom,
+			@RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String traineeName,
+			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
 
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 
@@ -134,11 +130,9 @@ public class TrainerController {
 	}
 
 	@PatchMapping("/{username}/activation")
-	@Operation(summary = "Activate/Deactivate Trainer", description = "Change trainer active status")
-	public ResponseEntity<Void> toggleActivation(
-			@Parameter(description = "Trainer username", required = true) @PathVariable String username,
-			@Parameter(description = "Credentials in the format: username:password", required = true,
-					example = "john.doe:password123") @RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	@Override
+	public ResponseEntity<Void> toggleActivation(@PathVariable String username,
+			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
 		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
 		gymFacade.toggleTrainerActiveStatus(credentials);
 		return ResponseEntity.ok().build();

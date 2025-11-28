@@ -8,6 +8,7 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.interfaces.web.controller.impl.AuthenticationController;
 import com.epam.interfaces.web.dto.request.ChangeLoginRequest;
 import com.epam.interfaces.web.dto.request.LoginRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;

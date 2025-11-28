@@ -9,6 +9,7 @@ import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.interfaces.web.controller.impl.TraineeController;
 import com.epam.interfaces.web.dto.request.TraineeRegistrationRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeTrainersRequest;

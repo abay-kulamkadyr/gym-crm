@@ -1,9 +1,8 @@
-package com.epam.interfaces.web.controller;
+package com.epam.interfaces.web.controller.impl;
 
 import com.epam.application.facade.GymFacade;
+import com.epam.interfaces.web.controller.api.TrainingTypeControllerApi;
 import com.epam.interfaces.web.dto.response.TrainingTypeResponse;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/training-types")
-@Tag(name = "Training Types", description = "Training type operations")
-public class TrainingTypeController {
+public class TrainingTypeController implements TrainingTypeControllerApi {
 
 	private final GymFacade gymFacade;
 
@@ -24,14 +22,12 @@ public class TrainingTypeController {
 	}
 
 	@GetMapping
-	@Operation(summary = "Get Training Types", description = "Retrieve all available training types")
+	@Override
 	public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
-
 		List<TrainingTypeResponse> response = gymFacade.getTrainingTypes()
 			.stream()
 			.map(type -> new TrainingTypeResponse(type.getTrainingTypeId(), type.getTrainingTypeName()))
 			.toList();
-
 		return ResponseEntity.ok(response);
 	}
 

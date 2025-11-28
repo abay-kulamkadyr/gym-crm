@@ -3,6 +3,7 @@ package com.epam.interfaces.web.controller;
 import com.epam.application.facade.GymFacade;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.interfaces.web.controller.impl.TrainingTypeController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
