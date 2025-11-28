@@ -22,7 +22,7 @@ public class RequestResponseLoggingInterceptor implements HandlerInterceptor {
 	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull Object handler) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 
 		log.info("=== Incoming Request === TransactionId: {} | Method: {} | URI: {} | Query: {} | RemoteAddr: {}",
 				transactionId, request.getMethod(), request.getRequestURI(),
@@ -37,7 +37,7 @@ public class RequestResponseLoggingInterceptor implements HandlerInterceptor {
 	public void afterCompletion(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
 			@NonNull Object handler, @Nullable Exception ex) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 
 		// Log response details
 		if (ex != null) {

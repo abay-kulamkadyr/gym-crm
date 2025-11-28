@@ -2,7 +2,7 @@ package com.epam.interfaces.web.advice;
 
 import com.epam.application.exception.AuthenticationException;
 import com.epam.application.exception.ValidationException;
-import com.epam.infrastructure.logging.TransactionIdFilter;
+import com.epam.infrastructure.logging.MdcConstants;
 import com.epam.interfaces.web.dto.response.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
-public class GlobalExceptionHandler {
+class GlobalExceptionHandler {
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 			errors.put(fieldName, errorMessage);
 		});
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error("ValidationException | TransactionId: {} | Endpoint: {} | Errors: {}", transactionId, endpoint,
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error("AuthenticationException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
@@ -67,7 +67,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ValidationException.class)
 	public ResponseEntity<ErrorResponse> handleValidationException(ValidationException ex, WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error("ValidationException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.warn("EntityNotFoundException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
@@ -98,7 +98,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex,
 			WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error("IllegalArgumentException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
@@ -114,7 +114,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException ex,
 			WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error("MissingHeaderException | TransactionId: {} | Endpoint: {} | Message: {}", transactionId, endpoint,
@@ -129,7 +129,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
 
-		String transactionId = MDC.get(TransactionIdFilter.TRANSACTION_ID_MDC_KEY);
+		String transactionId = MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
 		String endpoint = getRequestURI(request);
 
 		log.error(

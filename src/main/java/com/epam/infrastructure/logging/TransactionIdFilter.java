@@ -23,11 +23,7 @@ import java.util.UUID;
 @Component
 @Order(1)
 @Slf4j
-public class TransactionIdFilter implements Filter {
-
-	public static final String TRANSACTION_ID_HEADER = "X-Transaction-Id";
-
-	public static final String TRANSACTION_ID_MDC_KEY = "transactionId";
+class TransactionIdFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -38,7 +34,7 @@ public class TransactionIdFilter implements Filter {
 
 		try {
 			// Check if transaction ID exists in request header (from upstream services)
-			String transactionId = httpRequest.getHeader(TRANSACTION_ID_HEADER);
+			String transactionId = httpRequest.getHeader(MdcConstants.TRANSACTION_ID_HEADER);
 
 			// If not present, generate new transaction ID
 			if (transactionId == null || transactionId.isEmpty()) {
@@ -46,10 +42,10 @@ public class TransactionIdFilter implements Filter {
 			}
 
 			// Store in MDC
-			MDC.put(TRANSACTION_ID_MDC_KEY, transactionId);
+			MDC.put(MdcConstants.TRANSACTION_ID_MDC_KEY, transactionId);
 
 			// Add to response header so downstream services can use it
-			httpResponse.setHeader(TRANSACTION_ID_HEADER, transactionId);
+			httpResponse.setHeader(MdcConstants.TRANSACTION_ID_HEADER, transactionId);
 
 			log.info("Transaction started - Method: {}, URI: {}, TransactionId: {}", httpRequest.getMethod(),
 					httpRequest.getRequestURI(), transactionId);
