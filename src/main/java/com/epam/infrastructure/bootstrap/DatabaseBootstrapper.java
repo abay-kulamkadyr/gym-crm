@@ -9,7 +9,9 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.Map;
  * initialized
  */
 @Component
+@Profile("local")
 @Slf4j
 public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshedEvent> {
 
@@ -35,7 +38,7 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 
 	@Override
 	@Transactional
-	public void onApplicationEvent(ContextRefreshedEvent event) {
+	public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
 
 		try {
 			// Check if already initialized
