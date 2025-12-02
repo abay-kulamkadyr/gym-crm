@@ -5,16 +5,17 @@ import com.epam.interfaces.web.dto.request.TraineeRegistrationRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeTrainersRequest;
 import com.epam.interfaces.web.dto.response.CredentialsResponse;
-import com.epam.interfaces.web.dto.response.EmbeddedTrainerResponse;
 import com.epam.interfaces.web.dto.response.EmbeddedTraineeTrainingResponse;
+import com.epam.interfaces.web.dto.response.EmbeddedTrainerResponse;
 import com.epam.interfaces.web.dto.response.TraineeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Trainees", description = "Trainee management operations")
 public interface TraineeControllerApi {

@@ -1,9 +1,5 @@
 package com.epam.infrastructure.persistence.dao;
 
-import jakarta.persistence.OneToOne;
-import java.time.LocalDate;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -16,10 +12,15 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Setter;
 
 @Entity
 @Table(name = "trainees")

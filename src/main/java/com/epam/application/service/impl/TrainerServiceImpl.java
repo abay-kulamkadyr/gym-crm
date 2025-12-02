@@ -14,12 +14,12 @@ import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainerRepository;
 import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service

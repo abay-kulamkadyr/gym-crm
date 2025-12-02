@@ -1,11 +1,21 @@
 package com.epam.infrastructure.bootstrap;
 
-import com.epam.domain.model.UserRole;
 import com.epam.domain.model.TrainingTypeEnum;
-import com.epam.infrastructure.bootstrap.dto.*;
-import com.epam.infrastructure.persistence.dao.*;
+import com.epam.domain.model.UserRole;
+import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
+import com.epam.infrastructure.bootstrap.dto.TraineeDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainerDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainingDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainingTypeDTO;
+import com.epam.infrastructure.bootstrap.dto.UserDTO;
+import com.epam.infrastructure.persistence.dao.TraineeDAO;
+import com.epam.infrastructure.persistence.dao.TrainerDAO;
+import com.epam.infrastructure.persistence.dao.TrainingDAO;
+import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
+import com.epam.infrastructure.persistence.dao.UserDAO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
@@ -14,8 +24,10 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Database bootstrapper for loading initial data from JSON when application context is
@@ -26,7 +38,28 @@ import java.util.Map;
 @Slf4j
 public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshedEvent> {
 
+	// --- Health data for actuator ---
+	private final AtomicBoolean initialized = new AtomicBoolean(false);
+
 	private final JsonDataLoader dataLoader;
+
+	@Getter
+	private boolean isSkipped = false;
+
+	@Getter
+	private long trainingTypeCount = 0;
+
+	@Getter
+	private long userCount = 0;
+
+	@Getter
+	private long trainerCount = 0;
+
+	@Getter
+	private long traineeCount = 0;
+
+	@Getter
+	private Exception lastError = null;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -42,12 +75,17 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 
 		try {
 			// Check if already initialized
-			Long userCount = entityManager.createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class).getSingleResult();
+			Long existingUserCount = entityManager.createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
+				.getSingleResult();
 
-			if (userCount > 0) {
-				log.info("Database already initialized ({} users found), skipping bootstrap", userCount);
+			if (existingUserCount > 0) {
+				log.info("Database already initialized ({} users found), skipping bootstrap", existingUserCount);
+				this.userCount = existingUserCount;
+				this.isSkipped = true;
+				this.initialized.set(true);
 				return;
 			}
+			this.lastError = null;
 
 			// Load bootstrap data
 			InitialBootstrapData data = dataLoader.loadBootstrapData();
@@ -65,6 +103,14 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 			createTraineeTrainerRelationships(data, trainees, trainers);
 			persistTrainings(data, trainees, trainers, trainingTypes);
 
+			// --- UPDATE TRACKING FIELDS ---
+			this.trainingTypeCount = trainingTypes.size();
+			this.userCount = users.size();
+			this.trainerCount = trainers.size();
+			this.traineeCount = trainees.size();
+			this.initialized.set(true);
+			this.isSkipped = false;
+
 			log.info("Database initialization complete:");
 			log.info("{} Training Types", trainingTypes.size());
 			log.info("{} Users", users.size());
@@ -74,8 +120,14 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 		}
 		catch (Exception e) {
 			log.error("Database initialization failed", e);
+			this.lastError = e;
+			this.initialized.set(false);
 			throw new RuntimeException("Database bootstrap error", e);
 		}
+	}
+
+	public boolean isInitialized() {
+		return initialized.get();
 	}
 
 	private Map<String, TrainingTypeDAO> persistTrainingTypes(InitialBootstrapData data) {

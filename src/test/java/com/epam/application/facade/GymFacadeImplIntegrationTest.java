@@ -1,31 +1,16 @@
 package com.epam.application.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.epam.application.Credentials;
 import com.epam.application.exception.AuthenticationException;
-import com.epam.application.request.CreateTraineeProfileRequest;
-import com.epam.application.request.CreateTrainerProfileRequest;
-import com.epam.application.request.CreateTrainingRequest;
-import com.epam.application.request.UpdateTraineeProfileRequest;
-import com.epam.application.request.UpdateTrainerProfileRequest;
+import com.epam.application.request.*;
 import com.epam.domain.TrainingFilter;
-import com.epam.domain.model.Trainee;
-import com.epam.domain.model.Trainer;
-import com.epam.domain.model.Training;
-import com.epam.domain.model.TrainingType;
-import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.domain.model.*;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +18,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @TestPropertySource(properties = "spring.main.banner-mode=off")

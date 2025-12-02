@@ -1,7 +1,7 @@
 package com.epam.infrastructure.persistence.mapper;
 
-import com.epam.domain.model.UserRole;
 import com.epam.domain.model.Trainee;
+import com.epam.domain.model.UserRole;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
 import com.epam.infrastructure.persistence.exception.MappingException;

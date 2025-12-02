@@ -4,6 +4,7 @@ import com.epam.application.Credentials;
 import com.epam.application.request.CreateTrainingRequest;
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Training;
+
 import java.util.List;
 
 public interface TrainingService {

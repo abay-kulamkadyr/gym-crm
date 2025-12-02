@@ -5,13 +5,14 @@ import com.epam.application.request.CreateTrainingRequest;
 import com.epam.interfaces.web.controller.api.TrainingControllerApi;
 import com.epam.interfaces.web.dto.request.AddTrainingRequest;
 import jakarta.validation.Valid;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/trainings")

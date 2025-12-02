@@ -2,6 +2,7 @@ package com.epam.interfaces.web.dto.response;
 
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingTypeEnum;
+
 import java.time.LocalDateTime;
 
 public record EmbeddedTrainerTrainingResponse(String trainingName, LocalDateTime trainingDate,

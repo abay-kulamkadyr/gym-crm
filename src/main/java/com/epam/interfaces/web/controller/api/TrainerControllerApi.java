@@ -9,9 +9,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.http.ResponseEntity;
 
 @Tag(name = "Trainers", description = "Trainer management operations")
 public interface TrainerControllerApi {

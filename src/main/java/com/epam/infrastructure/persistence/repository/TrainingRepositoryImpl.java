@@ -16,22 +16,23 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 @Repository
 @Slf4j
 public class TrainingRepositoryImpl implements TrainingRepository {
 
+	private final TrainingMapper trainingMapper;
+
 	@PersistenceContext
 	private EntityManager entityManager;
-
-	private final TrainingMapper trainingMapper;
 
 	@Autowired
 	public TrainingRepositoryImpl(TrainingMapper trainingMapper) {

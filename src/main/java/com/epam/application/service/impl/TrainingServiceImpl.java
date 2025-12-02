@@ -1,9 +1,7 @@
 package com.epam.application.service.impl;
 
 import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
 import com.epam.application.request.CreateTrainingRequest;
-import com.epam.application.service.AuthenticationService;
 import com.epam.application.service.TrainingService;
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
@@ -16,12 +14,12 @@ import com.epam.domain.port.TrainerRepository;
 import com.epam.domain.port.TrainingRepository;
 import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
-import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @Transactional

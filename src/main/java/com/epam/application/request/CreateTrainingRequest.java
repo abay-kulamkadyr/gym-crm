@@ -1,6 +1,7 @@
 package com.epam.application.request;
 
 import com.epam.domain.model.TrainingTypeEnum;
+
 import java.time.LocalDateTime;
 import java.util.Optional;
 
