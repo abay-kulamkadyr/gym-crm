@@ -58,4 +58,10 @@ public class TrainerDAO {
 		trainingDAO.setTrainerDAO(this);
 	}
 
+	public void addTrainee(TraineeDAO traineeDAO) {
+		if (!traineeDAOS.contains(traineeDAO)) {
+			traineeDAOS.add(traineeDAO);
+		}
+	}
+
 }

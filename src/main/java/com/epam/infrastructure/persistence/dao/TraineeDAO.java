@@ -69,7 +69,6 @@ public class TraineeDAO {
 		if (!trainerDAOS.contains(trainerDAO)) {
 			trainerDAOS.add(trainerDAO);
 		}
-		trainerDAO.getTraineeDAOS().add(this);
 	}
 
 }

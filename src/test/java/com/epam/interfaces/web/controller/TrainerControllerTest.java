@@ -4,7 +4,11 @@ import com.epam.application.Credentials;
 import com.epam.application.facade.GymFacade;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.domain.TrainingFilter;
-import com.epam.domain.model.*;
+import com.epam.domain.model.Trainee;
+import com.epam.domain.model.Trainer;
+import com.epam.domain.model.Training;
+import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.interfaces.web.controller.impl.TrainerController;
 import com.epam.interfaces.web.dto.request.TrainerRegistrationRequest;
 import com.epam.interfaces.web.dto.request.UpdateTrainerRequest;
@@ -26,11 +30,20 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(TrainerController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
@@ -200,7 +213,7 @@ class TrainerControllerTest {
 	void testUpdateProfile_InvalidInput() throws Exception {
 		// Given
 		UpdateTrainerRequest request = new UpdateTrainerRequest("", // Invalid: blank
-																	// first name
+				// first name
 				"Smith", TrainingTypeEnum.CARDIO, true);
 
 		// When & Then

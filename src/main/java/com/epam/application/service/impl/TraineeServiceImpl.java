@@ -1,6 +1,7 @@
 package com.epam.application.service.impl;
 
 import com.epam.application.Credentials;
+import com.epam.application.event.TraineeRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
@@ -13,6 +14,7 @@ import com.epam.domain.port.TraineeRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,8 @@ public class TraineeServiceImpl implements TraineeService {
 
 	private AuthenticationService authenticationService;
 
+	private ApplicationEventPublisher applicationEventPublisher;
+
 	@Autowired
 	void setTraineeRepository(TraineeRepository traineeRepository) {
 		this.traineeRepository = traineeRepository;
@@ -36,6 +40,11 @@ public class TraineeServiceImpl implements TraineeService {
 	@Autowired
 	void setAuthenticationService(AuthenticationService authenticationService) {
 		this.authenticationService = authenticationService;
+	}
+
+	@Autowired
+	void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.applicationEventPublisher = publisher;
 	}
 
 	@Override
@@ -55,6 +64,7 @@ public class TraineeServiceImpl implements TraineeService {
 
 		request.address().ifPresent(trainee::setAddress);
 
+		applicationEventPublisher.publishEvent(new TraineeRegisteredEvent(trainee.getTraineeId()));
 		return traineeRepository.save(trainee);
 	}
 

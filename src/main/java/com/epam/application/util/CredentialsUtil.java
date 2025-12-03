@@ -138,10 +138,15 @@ public class CredentialsUtil {
 
 	public static void validateName(String name, String fieldName) {
 		if (name == null || name.trim().isEmpty()) {
-			throw new ValidationException(fieldName + " cannot be null or empty");
+			throw new ValidationException(fieldName + " cannot be null");
+		}
+		name = name.trim();
+
+		if (name.isEmpty()) {
+			throw new ValidationException(fieldName + " empty");
 		}
 
-		if (name.trim().length() < 2) {
+		if (name.length() < 2) {
 			throw new ValidationException(fieldName + " must be at least 2 characters long");
 		}
 

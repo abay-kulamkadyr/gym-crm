@@ -18,7 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,10 +97,10 @@ class TrainingControllerTest {
 	void testAddTraining_ShortTrainingName() throws Exception {
 		// Given
 		AddTrainingRequest request = new AddTrainingRequest("john.doe", "jane.smith", "AB", // Invalid:
-																							// less
-																							// than
-																							// 3
-																							// characters
+				// less
+				// than
+				// 3
+				// characters
 				LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
 		// When & Then
@@ -191,7 +194,7 @@ class TrainingControllerTest {
 		// Given
 		AddTrainingRequest request = new AddTrainingRequest("john.doe", "jane.smith", "Morning Workout",
 				LocalDateTime.of(2024, 12, 1, 9, 0), 500 // Invalid: more than 480 minutes
-															// (8 hours)
+		// (8 hours)
 		);
 
 		// When & Then
@@ -250,7 +253,7 @@ class TrainingControllerTest {
 		// Given
 		AddTrainingRequest request = new AddTrainingRequest("john.doe", "jane.smith", "All Day Training",
 				LocalDateTime.now().plusDays(7), 480 // Maximum valid: 480 minutes (8
-														// hours)
+		// hours)
 		);
 
 		when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
