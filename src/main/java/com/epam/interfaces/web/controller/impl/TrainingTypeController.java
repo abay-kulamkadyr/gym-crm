@@ -3,12 +3,13 @@ package com.epam.interfaces.web.controller.impl;
 import com.epam.application.facade.GymFacade;
 import com.epam.interfaces.web.controller.api.TrainingTypeControllerApi;
 import com.epam.interfaces.web.dto.response.TrainingTypeResponse;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/training-types")

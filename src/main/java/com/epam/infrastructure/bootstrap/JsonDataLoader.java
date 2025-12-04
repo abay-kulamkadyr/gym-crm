@@ -1,18 +1,26 @@
 package com.epam.infrastructure.bootstrap;
 
-import com.epam.infrastructure.bootstrap.dto.*;
+import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
+import com.epam.infrastructure.bootstrap.dto.TraineeDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainerDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainingDTO;
+import com.epam.infrastructure.bootstrap.dto.TrainingTypeDTO;
+import com.epam.infrastructure.bootstrap.dto.UserDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 @Component
+@Profile("local")
 @Slf4j
 public class JsonDataLoader {
 

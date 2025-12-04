@@ -1,13 +1,18 @@
 package com.epam.domain.model;
 
-import java.time.LocalDateTime;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Training {
+
+	private final Trainee trainee;
+
+	private final Trainer trainer;
 
 	@EqualsAndHashCode.Include
 	@Setter
@@ -25,10 +30,6 @@ public class Training {
 	@Setter
 	private TrainingType trainingType;
 
-	private final Trainee trainee;
-
-	private final Trainer trainer;
-
 	public Training(String trainingName, LocalDateTime trainingDate, Integer trainingDurationMin, Trainee trainee,
 			Trainer trainer, TrainingType trainingType) {
 		this.trainingName = trainingName;
@@ -37,6 +38,10 @@ public class Training {
 		this.trainee = trainee;
 		this.trainer = trainer;
 		this.trainingType = trainingType;
+	}
+
+	public static Builder builder() {
+		return new Builder();
 	}
 
 	public static class Builder {
@@ -97,10 +102,6 @@ public class Training {
 			return training;
 		}
 
-	}
-
-	public static Builder builder() {
-		return new Builder();
 	}
 
 }

@@ -1,8 +1,5 @@
 package com.epam.application.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.epam.application.Credentials;
 import com.epam.application.exception.AuthenticationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
@@ -21,19 +18,26 @@ import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 @SpringBootTest
+@TestPropertySource(properties = "spring.main.banner-mode=off")
 @Transactional
 @ActiveProfiles("test")
 class GymFacadeImplIntegrationTest {
@@ -909,6 +913,250 @@ class GymFacadeImplIntegrationTest {
 		TrainingType type = new TrainingType(trainingTypeName);
 		type.setTrainingTypeId(dao.getTrainingTypeId());
 		return type;
+	}
+
+	// Add these test methods to your GymFacadeImplIntegrationTest class
+
+	@Test
+	void getTraineeTrainers_shouldReturnAllAssignedTrainers() {
+		// Given
+		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
+
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
+
+		CreateTrainerProfileRequest trainer1Request = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.YOGA);
+		Trainer trainer1 = gymFacade.createTrainerProfile(trainer1Request);
+
+		CreateTrainerProfileRequest trainer2Request = new CreateTrainerProfileRequest("Bob", "Jones", true,
+				TrainingTypeEnum.BOXING);
+		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
+
+		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
+		List<String> trainerUsernames = List.of(trainer1.getUsername(), trainer2.getUsername());
+
+		gymFacade.updateTraineeTrainersList(traineeCredentials, trainerUsernames);
+
+		// When
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+
+		// Then
+		assertThat(trainers).hasSize(2);
+		assertThat(trainers).extracting(Trainer::getUsername)
+			.containsExactlyInAnyOrder(trainer1.getUsername(), trainer2.getUsername());
+	}
+
+	@Test
+	void getTraineeTrainers_shouldReturnEmptyListWhenNoTrainersAssigned() {
+		// Given
+		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
+
+		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
+
+		// When
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+
+		// Then
+		assertThat(trainers).isEmpty();
+	}
+
+	@Test
+	void getTraineeTrainers_shouldIncludeTrainerAssignedViaTraining() {
+		// Given
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+
+		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
+
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Alice", "Smith", true,
+				TrainingTypeEnum.YOGA);
+		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
+
+		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
+
+		// Assign trainer by creating a training
+		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now(), 60,
+				Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
+		gymFacade.createTraining(trainingRequest);
+
+		// When
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+
+		// Then
+		assertThat(trainers).hasSize(1);
+		assertThat(trainers.get(0).getUsername()).isEqualTo(trainer.getUsername());
+	}
+
+	@Test
+	void getTraineeTrainers_shouldThrowExceptionForInvalidCredentials() {
+		// Given
+		Credentials invalidCredentials = new Credentials("nonexistent.user", "wrongPassword");
+
+		// When & Then
+		assertThatThrownBy(() -> gymFacade.getTraineeTrainers(invalidCredentials))
+			.isInstanceOf(EntityNotFoundException.class);
+	}
+
+	@Test
+	void getTrainerTrainees_shouldReturnAllAssignedTrainees() {
+		// Given
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true,
+				TrainingTypeEnum.YOGA);
+		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
+
+		CreateTraineeProfileRequest trainee1Request = new CreateTraineeProfileRequest("John", "Doe", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee1 = gymFacade.createTraineeProfile(trainee1Request);
+
+		CreateTraineeProfileRequest trainee2Request = new CreateTraineeProfileRequest("Jane", "Smith", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
+
+		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
+
+		// Assign trainees by creating trainings
+		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session", LocalDateTime.now(), 60,
+				Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(), trainer.getUsername());
+		gymFacade.createTraining(training1Request);
+
+		CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+				LocalDateTime.now().plusDays(1), 45, Optional.of(yoga.getTrainingTypeName()), trainee2.getUsername(),
+				trainer.getUsername());
+		gymFacade.createTraining(training2Request);
+
+		// When
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+
+		// Then
+		assertThat(trainees).hasSize(2);
+		assertThat(trainees).extracting(Trainee::getUsername)
+			.containsExactlyInAnyOrder(trainee1.getUsername(), trainee2.getUsername());
+	}
+
+	@Test
+	void getTrainerTrainees_shouldReturnEmptyListWhenNoTraineesAssigned() {
+		// Given
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true,
+				TrainingTypeEnum.YOGA);
+		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
+
+		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
+
+		// When
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+
+		// Then
+		assertThat(trainees).isEmpty();
+	}
+
+	@Test
+	void getTrainerTrainees_shouldNotReturnDuplicateTrainees() {
+		// Given
+		TrainingType yoga = createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+
+		CreateTrainerProfileRequest trainerRequest = new CreateTrainerProfileRequest("Jane", "Trainer", true,
+				TrainingTypeEnum.YOGA);
+		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
+
+		CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John", "Doe", true,
+				Optional.empty(), Optional.empty());
+		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
+
+		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
+
+		// Create multiple trainings with the same trainee
+		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session", LocalDateTime.now(), 60,
+				Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
+		gymFacade.createTraining(training1Request);
+
+		CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+				LocalDateTime.now().plusDays(1), 45, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(),
+				trainer.getUsername());
+		gymFacade.createTraining(training2Request);
+
+		// When
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+
+		// Then
+		assertThat(trainees).hasSize(1);
+		assertThat(trainees.get(0).getUsername()).isEqualTo(trainee.getUsername());
+	}
+
+	@Test
+	void getTrainerTrainees_shouldThrowExceptionForInvalidCredentials() {
+		// Given
+		Credentials invalidCredentials = new Credentials("nonexistent.trainer", "wrongPassword");
+
+		// When & Then
+		assertThatThrownBy(() -> gymFacade.getTrainerTrainees(invalidCredentials))
+			.isInstanceOf(EntityNotFoundException.class);
+	}
+
+	@Test
+	void getTrainingTypes_shouldReturnAllAvailableTrainingTypes() {
+		// Given
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
+		createOrGetTestTrainingType(TrainingTypeEnum.CARDIO);
+
+		// When
+		List<TrainingType> trainingTypes = gymFacade.getTrainingTypes();
+
+		// Then
+		assertThat(trainingTypes).hasSize(3);
+		assertThat(trainingTypes).extracting(TrainingType::getTrainingTypeName)
+			.containsExactlyInAnyOrder(TrainingTypeEnum.YOGA, TrainingTypeEnum.BOXING, TrainingTypeEnum.CARDIO);
+	}
+
+	@Test
+	void getTrainingTypes_shouldReturnEmptyListWhenNoTypesExist() {
+		// Given - database is cleaned in @BeforeEach
+
+		// When
+		List<TrainingType> trainingTypes = gymFacade.getTrainingTypes();
+
+		// Then
+		assertThat(trainingTypes).isEmpty();
+	}
+
+	@Test
+	void getTrainingTypes_shouldReturnTypesWithValidIds() {
+		// Given
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
+
+		// When
+		List<TrainingType> trainingTypes = gymFacade.getTrainingTypes();
+
+		// Then
+		assertThat(trainingTypes).allMatch(type -> type.getTrainingTypeId() != null);
+		assertThat(trainingTypes).allMatch(type -> type.getTrainingTypeId() > 0);
+	}
+
+	@Test
+	void getTrainingTypes_shouldBeReadOnly() {
+		// Given
+		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
+
+		// When
+		List<TrainingType> trainingTypes1 = gymFacade.getTrainingTypes();
+		List<TrainingType> trainingTypes2 = gymFacade.getTrainingTypes();
+
+		// Then - should return consistent results
+		assertThat(trainingTypes1).hasSize(trainingTypes2.size());
+		assertThat(trainingTypes1).extracting(TrainingType::getTrainingTypeName)
+			.containsExactlyInAnyOrderElementsOf(
+					trainingTypes2.stream().map(TrainingType::getTrainingTypeName).toList());
 	}
 
 }

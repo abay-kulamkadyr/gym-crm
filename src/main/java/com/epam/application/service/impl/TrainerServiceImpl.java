@@ -1,6 +1,7 @@
 package com.epam.application.service.impl;
 
 import com.epam.application.Credentials;
+import com.epam.application.event.TrainerRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
@@ -14,12 +15,13 @@ import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainerRepository;
 import com.epam.domain.port.TrainingTypeRepository;
 import jakarta.persistence.EntityNotFoundException;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -32,6 +34,8 @@ public class TrainerServiceImpl implements TrainerService {
 	private TrainingTypeRepository trainingTypeRepository;
 
 	private AuthenticationService authenticationService;
+
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Autowired
 	void setTrainerRepository(TrainerRepository trainerRepository) {
@@ -48,6 +52,11 @@ public class TrainerServiceImpl implements TrainerService {
 		this.authenticationService = authenticationService;
 	}
 
+	@Autowired
+	void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+		this.applicationEventPublisher = publisher;
+	}
+
 	@Override
 	public Trainer createProfile(CreateTrainerProfileRequest request) {
 		TrainingType specialization = findTrainingTypeOrThrow(request.specialization());
@@ -61,6 +70,7 @@ public class TrainerServiceImpl implements TrainerService {
 		trainer.setUsername(username);
 		trainer.setPassword(password);
 
+		applicationEventPublisher.publishEvent(new TrainerRegisteredEvent(trainer.getUserId()));
 		return trainerRepository.save(trainer);
 	}
 

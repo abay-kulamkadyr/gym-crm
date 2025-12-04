@@ -3,6 +3,7 @@ package com.epam.application.request;
 import com.epam.application.Credentials;
 import com.epam.application.request.types.AuthenticatedRequest;
 import com.epam.application.request.types.UpdateProfileRequest;
+
 import java.time.LocalDate;
 import java.util.Optional;
 

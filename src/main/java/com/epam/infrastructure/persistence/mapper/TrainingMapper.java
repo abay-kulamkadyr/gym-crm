@@ -41,6 +41,7 @@ public class TrainingMapper {
 		traineeDAO.addTraining(trainingDAO);
 		trainerDAO.addTraining(trainingDAO);
 		traineeDAO.addTrainer(trainerDAO);
+		trainerDAO.addTrainee(traineeDAO);
 		trainingTypeDAO.addTraining(trainingDAO);
 
 		return trainingDAO;

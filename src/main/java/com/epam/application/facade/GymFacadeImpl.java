@@ -6,20 +6,21 @@ import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.CreateTrainingRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
-import com.epam.domain.TrainingFilter;
 import com.epam.application.service.TraineeService;
 import com.epam.application.service.TrainerService;
 import com.epam.application.service.TrainingService;
+import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.port.TrainingTypeRepository;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 @Component
 public class GymFacadeImpl implements GymFacade {

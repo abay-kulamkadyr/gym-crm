@@ -11,6 +11,7 @@ import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
+
 import java.util.List;
 import java.util.Optional;
 
