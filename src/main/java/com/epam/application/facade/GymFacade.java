@@ -1,6 +1,5 @@
 package com.epam.application.facade;
 
-import com.epam.application.Credentials;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.CreateTrainingRequest;
@@ -13,7 +12,6 @@ import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface GymFacade {
 
@@ -21,39 +19,39 @@ public interface GymFacade {
 
 	Trainee updateTraineeProfile(UpdateTraineeProfileRequest request);
 
-	void updateTraineePassword(Credentials credentials, String newPassword);
+	void updateTraineePassword(String traineeUsername, String newPassword);
 
-	void toggleTraineeActiveStatus(Credentials credentials);
+	void toggleTraineeActiveStatus(String traineeUsername);
 
-	void deleteTraineeProfile(Credentials credentials);
+	void deleteTraineeProfile(String traineeUsername);
 
-	Optional<Trainee> findTraineeByUsername(Credentials credentials);
+	Trainee getTraineeByUsername(String traineeUsername);
 
-	void updateTraineeTrainersList(Credentials credentials, List<String> usernames);
+	void updateTraineeTrainersList(String traineeUsername, List<String> usernames);
 
-	List<Trainer> getTraineeUnassignedTrainers(Credentials credentials);
+	List<Trainer> getTraineeUnassignedTrainers(String traineeUsername);
 
-	List<Training> getTraineeTrainings(Credentials credentials, TrainingFilter filter);
+	List<Training> getTraineeTrainings(String traineeUsername, TrainingFilter filter);
 
 	Trainer createTrainerProfile(CreateTrainerProfileRequest request);
 
 	Trainer updateTrainerProfile(UpdateTrainerProfileRequest request);
 
-	void updateTrainerPassword(Credentials credentials, String newPassword);
+	void updateTrainerPassword(String trainerUsername, String newPassword);
 
-	void toggleTrainerActiveStatus(Credentials credentials);
+	void toggleTrainerActiveStatus(String trainerUsername);
 
-	void deleteTrainerProfile(Credentials credentials);
+	void deleteTrainerProfile(String trainerUsername);
 
-	Optional<Trainer> findTrainerByUsername(Credentials credentials);
+	Trainer getTrainerByUsername(String trainerUsername);
 
-	List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter);
+	List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter);
 
 	Training createTraining(CreateTrainingRequest request);
 
-	List<Trainer> getTraineeTrainers(Credentials credentials);
+	List<Trainer> getTraineeTrainers(String traineeUsername);
 
-	List<Trainee> getTrainerTrainees(Credentials credentials);
+	List<Trainee> getTrainerTrainees(String trainerUsername);
 
 	List<TrainingType> getTrainingTypes();
 

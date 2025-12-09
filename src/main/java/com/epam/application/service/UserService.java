@@ -1,6 +1,5 @@
 package com.epam.application.service;
 
-import com.epam.application.Credentials;
 import com.epam.application.request.types.CreateProfileRequest;
 import com.epam.application.request.types.UpdateProfileRequest;
 
@@ -12,12 +11,12 @@ public interface UserService<T, C extends CreateProfileRequest, U extends Update
 
 	T updateProfile(U request);
 
-	void updatePassword(Credentials credentials, String newPassword);
+	void updatePassword(String username, String newPassword);
 
-	void toggleActiveStatus(Credentials credentials);
+	void toggleActiveStatus(String username);
 
-	void deleteProfile(Credentials credentials);
+	void deleteProfile(String username);
 
-	Optional<T> findProfileByUsername(Credentials credentials);
+	T getProfileByUsername(String username);
 
 }

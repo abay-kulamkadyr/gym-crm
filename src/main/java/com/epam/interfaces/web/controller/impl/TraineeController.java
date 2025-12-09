@@ -1,6 +1,5 @@
 package com.epam.interfaces.web.controller.impl;
 
-import com.epam.application.Credentials;
 import com.epam.application.facade.GymFacade;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
@@ -15,8 +14,6 @@ import com.epam.interfaces.web.dto.response.CredentialsResponse;
 import com.epam.interfaces.web.dto.response.EmbeddedTraineeTrainingResponse;
 import com.epam.interfaces.web.dto.response.EmbeddedTrainerResponse;
 import com.epam.interfaces.web.dto.response.TraineeResponse;
-import com.epam.interfaces.web.util.AuthenticationHelper;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -28,7 +25,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,14 +39,9 @@ public class TraineeController implements TraineeControllerApi {
 
 	private final GymFacade gymFacade;
 
-	private final AuthenticationHelper authenticationHelper;
-
-	private final String AUTHORIZATION_HEADER = "TemporaryAuthentication";
-
 	@Autowired
-	public TraineeController(GymFacade gymFacade, AuthenticationHelper authenticationHelper) {
+	public TraineeController(GymFacade gymFacade) {
 		this.gymFacade = gymFacade;
-		this.authenticationHelper = authenticationHelper;
 	}
 
 	@PostMapping
@@ -68,15 +59,11 @@ public class TraineeController implements TraineeControllerApi {
 
 	@GetMapping("/{username}")
 	@Override
-	public ResponseEntity<TraineeResponse> getProfile(@PathVariable String username,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	public ResponseEntity<TraineeResponse> getProfile(@PathVariable String username) {
 
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
+		Trainee trainee = gymFacade.getTraineeByUsername(username);
 
-		Trainee trainee = gymFacade.findTraineeByUsername(credentials)
-			.orElseThrow(() -> new EntityNotFoundException("Trainee not found with username: " + username));
-
-		List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(credentials)
+		List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(username)
 			.stream()
 			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
@@ -89,19 +76,16 @@ public class TraineeController implements TraineeControllerApi {
 	@PutMapping("/{username}")
 	@Override
 	public ResponseEntity<TraineeResponse> updateTraineeProfile(@PathVariable String username,
-			@Valid @RequestBody UpdateTraineeRequest request,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+			@Valid @RequestBody UpdateTraineeRequest request) {
 
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
-
-		UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(credentials,
+		UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(username,
 				Optional.of(request.firstName()), Optional.of(request.lastName()), Optional.empty(),
 				Optional.of(request.active()), Optional.ofNullable(request.dateOfBirth()),
 				Optional.ofNullable(request.address()));
 
 		Trainee trainee = gymFacade.updateTraineeProfile(updateProfileRequest);
 
-		List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(credentials)
+		List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(username)
 			.stream()
 			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
@@ -114,22 +98,16 @@ public class TraineeController implements TraineeControllerApi {
 
 	@DeleteMapping("/{username}")
 	@Override
-	public ResponseEntity<Void> deleteTraineeProfile(@PathVariable String username,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
-
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
-		gymFacade.deleteTraineeProfile(credentials);
+	public ResponseEntity<Void> deleteTraineeProfile(@PathVariable String username) {
+		gymFacade.deleteTraineeProfile(username);
 		return ResponseEntity.noContent().build();
 	}
 
 	@GetMapping("/{username}/available-trainers")
 	@Override
-	public ResponseEntity<List<EmbeddedTrainerResponse>> getAvailableTrainers(@PathVariable String username,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	public ResponseEntity<List<EmbeddedTrainerResponse>> getAvailableTrainers(@PathVariable String username) {
 
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
-
-		List<EmbeddedTrainerResponse> response = gymFacade.getTraineeUnassignedTrainers(credentials)
+		List<EmbeddedTrainerResponse> response = gymFacade.getTraineeUnassignedTrainers(username)
 			.stream()
 			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
@@ -140,13 +118,10 @@ public class TraineeController implements TraineeControllerApi {
 	@PutMapping("/{username}/trainers")
 	@Override
 	public ResponseEntity<List<EmbeddedTrainerResponse>> updateTrainers(@PathVariable String username,
-			@Valid @RequestBody UpdateTraineeTrainersRequest request,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+			@Valid @RequestBody UpdateTraineeTrainersRequest request) {
 
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
-
-		gymFacade.updateTraineeTrainersList(credentials, request.trainerUsernames());
-		List<EmbeddedTrainerResponse> response = gymFacade.getTraineeTrainers(credentials)
+		gymFacade.updateTraineeTrainersList(username, request.trainerUsernames());
+		List<EmbeddedTrainerResponse> response = gymFacade.getTraineeTrainers(username)
 			.stream()
 			.map(EmbeddedTrainerResponse::toEmbeddedTrainer)
 			.toList();
@@ -159,15 +134,12 @@ public class TraineeController implements TraineeControllerApi {
 	public ResponseEntity<List<EmbeddedTraineeTrainingResponse>> getTrainings(@PathVariable String username,
 			@RequestParam(required = false) LocalDateTime periodFrom,
 			@RequestParam(required = false) LocalDateTime periodTo, @RequestParam(required = false) String trainerName,
-			@RequestParam(required = false) TrainingTypeEnum trainingType,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
-
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
+			@RequestParam(required = false) TrainingTypeEnum trainingType) {
 
 		TrainingFilter filter = TrainingFilter.forTrainee(Optional.ofNullable(periodFrom),
 				Optional.ofNullable(periodTo), Optional.ofNullable(trainerName), Optional.ofNullable(trainingType));
 
-		List<EmbeddedTraineeTrainingResponse> response = gymFacade.getTraineeTrainings(credentials, filter)
+		List<EmbeddedTraineeTrainingResponse> response = gymFacade.getTraineeTrainings(username, filter)
 			.stream()
 			.map(EmbeddedTraineeTrainingResponse::toEmbeddedTraining)
 			.toList();
@@ -177,11 +149,9 @@ public class TraineeController implements TraineeControllerApi {
 
 	@PatchMapping("/{username}/activation")
 	@Override
-	public ResponseEntity<Void> toggleActivation(@PathVariable String username,
-			@RequestHeader(value = AUTHORIZATION_HEADER) String auth) {
+	public ResponseEntity<Void> toggleActivation(@PathVariable String username) {
 
-		Credentials credentials = authenticationHelper.extractAndValidateCredentials(auth, username);
-		gymFacade.toggleTraineeActiveStatus(credentials);
+		gymFacade.toggleTraineeActiveStatus(username);
 		return ResponseEntity.ok().build();
 	}
 

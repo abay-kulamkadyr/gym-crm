@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface AuthenticationControllerApi {
 
 	@Operation(summary = "Login", description = "Authenticate user with username and password")
-	ResponseEntity<Void> login(@Valid @RequestBody LoginRequest request);
+	ResponseEntity<String> login(@Valid @RequestBody LoginRequest request);
 
 	@Operation(summary = "Change Password", description = "Change user password")
 	ResponseEntity<Void> changePassword(@Valid @RequestBody ChangeLoginRequest request);

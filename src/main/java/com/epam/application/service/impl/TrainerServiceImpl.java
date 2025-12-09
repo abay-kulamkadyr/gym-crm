@@ -1,11 +1,9 @@
 package com.epam.application.service.impl;
 
-import com.epam.application.Credentials;
 import com.epam.application.event.TrainerRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
-import com.epam.application.service.AuthenticationService;
 import com.epam.application.service.TrainerService;
 import com.epam.application.util.CredentialsUtil;
 import com.epam.domain.model.Trainee;
@@ -33,8 +31,6 @@ public class TrainerServiceImpl implements TrainerService {
 
 	private TrainingTypeRepository trainingTypeRepository;
 
-	private AuthenticationService authenticationService;
-
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Autowired
@@ -45,11 +41,6 @@ public class TrainerServiceImpl implements TrainerService {
 	@Autowired
 	void setTrainingTypeRepository(TrainingTypeRepository trainingTypeRepository) {
 		this.trainingTypeRepository = trainingTypeRepository;
-	}
-
-	@Autowired
-	void setAuthenticationService(AuthenticationService authenticationService) {
-		this.authenticationService = authenticationService;
 	}
 
 	@Autowired
@@ -76,8 +67,7 @@ public class TrainerServiceImpl implements TrainerService {
 
 	@Override
 	public Trainer updateProfile(UpdateTrainerProfileRequest request) {
-		authenticationService.authenticate(request.credentials());
-		Trainer trainer = findTrainerByUsernameOrThrow(request.credentials().username());
+		Trainer trainer = findTrainerByUsernameOrThrow(request.username());
 
 		request.firstName().ifPresent(newFirstName -> {
 			CredentialsUtil.validateName(newFirstName, "First name");
@@ -87,11 +77,6 @@ public class TrainerServiceImpl implements TrainerService {
 		request.lastName().ifPresent(newLastName -> {
 			CredentialsUtil.validateName(newLastName, "Last name");
 			trainer.setLastName(newLastName);
-		});
-
-		request.username().ifPresent(newUsername -> {
-			validateUsernameChange(newUsername, trainer.getUsername());
-			trainer.setUsername(newUsername);
 		});
 
 		request.password().ifPresent(newPassword -> {
@@ -116,22 +101,18 @@ public class TrainerServiceImpl implements TrainerService {
 	}
 
 	@Override
-	public void updatePassword(Credentials credentials, String newPassword) {
+	public void updatePassword(String username, String newPassword) {
 		validateNewPassword(newPassword);
 
-		authenticationService.authenticate(credentials);
-		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
-
-		validateNewPassword(newPassword);
+		Trainer trainer = findTrainerByUsernameOrThrow(username);
 
 		trainer.setPassword(newPassword);
 		trainerRepository.save(trainer);
 	}
 
 	@Override
-	public void toggleActiveStatus(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
+	public void toggleActiveStatus(String username) {
+		Trainer trainer = findTrainerByUsernameOrThrow(username);
 
 		boolean oldStatus = trainer.getActive();
 		boolean newStatus = !oldStatus;
@@ -141,16 +122,21 @@ public class TrainerServiceImpl implements TrainerService {
 	}
 
 	@Override
-	public void deleteProfile(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		trainerRepository.deleteByUsername(credentials.username());
+	public void deleteProfile(String username) {
+		findTrainerByUsernameOrThrow(username);
+		trainerRepository.deleteByUsername(username);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Trainer> findProfileByUsername(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return trainerRepository.findByUsername(credentials.username());
+	public Trainer getProfileByUsername(String username) {
+		return findTrainerByUsernameOrThrow(username);
+	}
+
+	@Override
+	public List<Trainee> getTrainees(String username) {
+		findTrainerByUsernameOrThrow(username);
+		return trainerRepository.getTrainees(username);
 	}
 
 	private Trainer findTrainerByUsernameOrThrow(String username) {
@@ -172,26 +158,6 @@ public class TrainerServiceImpl implements TrainerService {
 			throw new ValidationException("New password cannot be null");
 		}
 		CredentialsUtil.validatePassword(password);
-	}
-
-	private void validateUsernameChange(String newUsername, String currentUsername) {
-		CredentialsUtil.validateUsername(newUsername);
-
-		if (newUsername.equals(currentUsername)) {
-			log.warn("New username is the same as current username: {}", newUsername);
-			throw new ValidationException("New username must be different from current username");
-		}
-
-		if (trainerRepository.findByUsername(newUsername).isPresent()) {
-			log.error("Username already exists: {}", newUsername);
-			throw new ValidationException(String.format("Username already exists: %s", newUsername));
-		}
-	}
-
-	@Override
-	public List<Trainee> getTrainees(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return trainerRepository.getTrainees(credentials.username());
 	}
 
 }

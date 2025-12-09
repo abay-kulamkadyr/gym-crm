@@ -1,11 +1,9 @@
 package com.epam.application.service.impl;
 
-import com.epam.application.Credentials;
 import com.epam.application.event.TraineeRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
-import com.epam.application.service.AuthenticationService;
 import com.epam.application.service.TraineeService;
 import com.epam.application.util.CredentialsUtil;
 import com.epam.domain.model.Trainee;
@@ -28,18 +26,11 @@ public class TraineeServiceImpl implements TraineeService {
 
 	private TraineeRepository traineeRepository;
 
-	private AuthenticationService authenticationService;
-
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Autowired
 	void setTraineeRepository(TraineeRepository traineeRepository) {
 		this.traineeRepository = traineeRepository;
-	}
-
-	@Autowired
-	void setAuthenticationService(AuthenticationService authenticationService) {
-		this.authenticationService = authenticationService;
 	}
 
 	@Autowired
@@ -70,8 +61,7 @@ public class TraineeServiceImpl implements TraineeService {
 
 	@Override
 	public Trainee updateProfile(UpdateTraineeProfileRequest request) {
-		authenticationService.authenticate(request.credentials());
-		Trainee trainee = findTraineeByUsernameOrThrow(request.credentials().username());
+		Trainee trainee = findTraineeByUsernameOrThrow(request.username());
 
 		request.firstName().ifPresent(newFirstName -> {
 			CredentialsUtil.validateName(newFirstName, "First name");
@@ -98,11 +88,10 @@ public class TraineeServiceImpl implements TraineeService {
 	}
 
 	@Override
-	public void updatePassword(Credentials credentials, String newPassword) {
+	public void updatePassword(String username, String newPassword) {
 		validateNewPassword(newPassword);
 
-		authenticationService.authenticate(credentials);
-		Trainee trainee = findTraineeByUsernameOrThrow(credentials.username());
+		Trainee trainee = findTraineeByUsernameOrThrow(username);
 
 		trainee.setPassword(newPassword);
 		traineeRepository.save(trainee);
@@ -110,9 +99,8 @@ public class TraineeServiceImpl implements TraineeService {
 	}
 
 	@Override
-	public void toggleActiveStatus(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		Trainee trainee = findTraineeByUsernameOrThrow(credentials.username());
+	public void toggleActiveStatus(String username) {
+		Trainee trainee = findTraineeByUsernameOrThrow(username);
 
 		boolean oldStatus = trainee.getActive();
 		boolean newStatus = !oldStatus;
@@ -123,43 +111,39 @@ public class TraineeServiceImpl implements TraineeService {
 	}
 
 	@Override
-	public void deleteProfile(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		traineeRepository.deleteByUsername(credentials.username());
+	public void deleteProfile(String username) {
+		findTraineeByUsernameOrThrow(username);
+		traineeRepository.deleteByUsername(username);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Trainee> findProfileByUsername(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return traineeRepository.findByUsername(credentials.username());
+	public Trainee getProfileByUsername(String username) {
+		return findTraineeByUsernameOrThrow(username);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Trainer> getUnassignedTrainers(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		findTraineeByUsernameOrThrow(credentials.username());
-		return traineeRepository.getUnassignedTrainers(credentials.username());
+	public List<Trainer> getUnassignedTrainers(String username) {
+		findTraineeByUsernameOrThrow(username);
+		return traineeRepository.getUnassignedTrainers(username);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<Trainer> getTrainers(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return traineeRepository.getTrainers(credentials.username());
+	public List<Trainer> getTrainers(String username) {
+		findTraineeByUsernameOrThrow(username);
+		return traineeRepository.getTrainers(username);
 	}
 
 	@Override
-	public void updateTrainersList(Credentials credentials, List<String> trainerUsernames) {
-		authenticationService.authenticate(credentials);
-
+	public void updateTrainersList(String username, List<String> trainerUsernames) {
 		if (trainerUsernames.isEmpty()) {
-			log.warn("Empty trainer usernames list provided for trainee: {} - will clear all trainers",
-					credentials.username());
+			log.warn("Empty trainer usernames list provided for trainee: {} - will clear all trainers", username);
 		}
 
-		traineeRepository.updateTrainersList(credentials.username(), trainerUsernames);
+		findTraineeByUsernameOrThrow(username);
+		traineeRepository.updateTrainersList(username, trainerUsernames);
 	}
 
 	private Trainee findTraineeByUsernameOrThrow(String username) {

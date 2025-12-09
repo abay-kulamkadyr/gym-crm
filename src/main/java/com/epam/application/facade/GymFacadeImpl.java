@@ -1,6 +1,5 @@
 package com.epam.application.facade;
 
-import com.epam.application.Credentials;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.CreateTrainingRequest;
@@ -53,38 +52,38 @@ public class GymFacadeImpl implements GymFacade {
 	}
 
 	@Override
-	public void updateTraineePassword(Credentials credentials, String newPassword) {
-		traineeService.updatePassword(credentials, newPassword);
+	public void updateTraineePassword(String traineeUsername, String newPassword) {
+		traineeService.updatePassword(traineeUsername, newPassword);
 	}
 
 	@Override
-	public void toggleTraineeActiveStatus(Credentials credentials) {
-		traineeService.toggleActiveStatus(credentials);
+	public void toggleTraineeActiveStatus(String traineeUsername) {
+		traineeService.toggleActiveStatus(traineeUsername);
 	}
 
 	@Override
-	public void deleteTraineeProfile(Credentials credentials) {
-		traineeService.deleteProfile(credentials);
+	public void deleteTraineeProfile(String traineeUsername) {
+		traineeService.deleteProfile(traineeUsername);
 	}
 
 	@Override
-	public Optional<Trainee> findTraineeByUsername(Credentials credentials) {
-		return traineeService.findProfileByUsername(credentials);
+	public Trainee getTraineeByUsername(String traineeUsername) {
+		return traineeService.getProfileByUsername(traineeUsername);
 	}
 
 	@Override
-	public void updateTraineeTrainersList(Credentials credentials, List<String> usernames) {
-		traineeService.updateTrainersList(credentials, usernames);
+	public void updateTraineeTrainersList(String traineeUsername, List<String> usernames) {
+		traineeService.updateTrainersList(traineeUsername, usernames);
 	}
 
 	@Override
-	public List<Trainer> getTraineeUnassignedTrainers(Credentials credentials) {
-		return traineeService.getUnassignedTrainers(credentials);
+	public List<Trainer> getTraineeUnassignedTrainers(String traineeUsername) {
+		return traineeService.getUnassignedTrainers(traineeUsername);
 	}
 
 	@Override
-	public List<Training> getTraineeTrainings(Credentials credentials, TrainingFilter filter) {
-		return trainingService.getTraineeTrainings(credentials, filter);
+	public List<Training> getTraineeTrainings(String traineeUsername, TrainingFilter filter) {
+		return trainingService.getTraineeTrainings(traineeUsername, filter);
 	}
 
 	@Override
@@ -98,28 +97,28 @@ public class GymFacadeImpl implements GymFacade {
 	}
 
 	@Override
-	public void updateTrainerPassword(Credentials credentials, String newPassword) {
-		trainerService.updatePassword(credentials, newPassword);
+	public void updateTrainerPassword(String trainerUsername, String newPassword) {
+		trainerService.updatePassword(trainerUsername, newPassword);
 	}
 
 	@Override
-	public void toggleTrainerActiveStatus(Credentials credentials) {
-		trainerService.toggleActiveStatus(credentials);
+	public void toggleTrainerActiveStatus(String trainerUsername) {
+		trainerService.toggleActiveStatus(trainerUsername);
 	}
 
 	@Override
-	public void deleteTrainerProfile(Credentials credentials) {
-		trainerService.deleteProfile(credentials);
+	public void deleteTrainerProfile(String trainerUsername) {
+		trainerService.deleteProfile(trainerUsername);
 	}
 
 	@Override
-	public Optional<Trainer> findTrainerByUsername(Credentials credentials) {
-		return trainerService.findProfileByUsername(credentials);
+	public Trainer getTrainerByUsername(String trainerUsername) {
+		return trainerService.getProfileByUsername(trainerUsername);
 	}
 
 	@Override
-	public List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter) {
-		return trainingService.getTrainerTrainings(credentials, filter);
+	public List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter) {
+		return trainingService.getTrainerTrainings(trainerUsername, filter);
 	}
 
 	@Override
@@ -128,13 +127,13 @@ public class GymFacadeImpl implements GymFacade {
 	}
 
 	@Override
-	public List<Trainer> getTraineeTrainers(Credentials credentials) {
-		return traineeService.getTrainers(credentials);
+	public List<Trainer> getTraineeTrainers(String traineeUsername) {
+		return traineeService.getTrainers(traineeUsername);
 	}
 
 	@Override
-	public List<Trainee> getTrainerTrainees(Credentials credentials) {
-		return trainerService.getTrainees(credentials);
+	public List<Trainee> getTrainerTrainees(String trainerUsername) {
+		return trainerService.getTrainees(trainerUsername);
 	}
 
 	@Override

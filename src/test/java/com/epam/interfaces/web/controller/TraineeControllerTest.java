@@ -1,6 +1,5 @@
 package com.epam.interfaces.web.controller;
 
-import com.epam.application.Credentials;
 import com.epam.application.facade.GymFacade;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.domain.TrainingFilter;
@@ -13,12 +12,15 @@ import com.epam.interfaces.web.controller.impl.TraineeController;
 import com.epam.interfaces.web.dto.request.TraineeRegistrationRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeRequest;
 import com.epam.interfaces.web.dto.request.UpdateTraineeTrainersRequest;
-import com.epam.interfaces.web.util.AuthenticationHelper;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -32,7 +34,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
@@ -40,15 +41,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @WebMvcTest(TraineeController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
+@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
 @ActiveProfiles("test")
 class TraineeControllerTest {
 
@@ -61,21 +63,12 @@ class TraineeControllerTest {
 	@MockitoBean
 	private GymFacade gymFacade;
 
-	@MockitoBean
-	private AuthenticationHelper authHelper;
-
-	private final String AUTHORIZATION_HEADER = "TemporaryAuthentication";
-
 	private Trainee testTrainee;
-
-	private Credentials testCredentials;
 
 	private Trainer testTrainer;
 
 	@BeforeEach
 	void setUp() {
-		testCredentials = new Credentials("john.doe", "password123");
-
 		testTrainee = new Trainee("John", "Doe", true);
 		testTrainee.setUsername("john.doe");
 		testTrainee.setPassword("password123");
@@ -144,12 +137,11 @@ class TraineeControllerTest {
 	@DisplayName("GET /api/trainees/{username} - Should return trainee profile")
 	void testGetProfile_Success() throws Exception {
 		// Given
-		when(authHelper.extractAndValidateCredentials("john.doe:password123", "john.doe")).thenReturn(testCredentials);
-		when(gymFacade.findTraineeByUsername(testCredentials)).thenReturn(Optional.of(testTrainee));
-		when(gymFacade.getTraineeTrainers(testCredentials)).thenReturn(List.of(testTrainer));
+		when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenReturn(testTrainee);
+		when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
 		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe").header(AUTHORIZATION_HEADER, "john.doe:password123"))
+		mockMvc.perform(get("/api/trainees/john.doe"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.firstName").value("John"))
 			.andExpect(jsonPath("$.lastName").value("Doe"))
@@ -158,22 +150,21 @@ class TraineeControllerTest {
 			.andExpect(jsonPath("$.trainers").isArray())
 			.andExpect(jsonPath("$.trainers[0].username").value("jane.smith"));
 
-		verify(authHelper).extractAndValidateCredentials("john.doe:password123", "john.doe");
-		verify(gymFacade).findTraineeByUsername(testCredentials);
+		verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
 	}
 
 	@Test
 	@DisplayName("GET /api/trainees/{username} - Should return 404 when trainee not found")
 	void testGetProfile_NotFound() throws Exception {
 		// Given
-		when(authHelper.extractAndValidateCredentials(anyString(), anyString())).thenReturn(testCredentials);
-		when(gymFacade.findTraineeByUsername(testCredentials)).thenReturn(Optional.empty());
+		when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenThrow(EntityNotFoundException.class);
 
 		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe").header(AUTHORIZATION_HEADER, "john.doe:password123"))
-			.andExpect(status().isNotFound()); // Will throw IllegalArgumentException
+		mockMvc.perform(get("/api/trainees/john.doe")).andExpect(status().isNotFound()); // Will
+																							// throw
+																							// IllegalArgumentException
 
-		verify(gymFacade).findTraineeByUsername(testCredentials);
+		verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
 	}
 
 	@Test
@@ -187,14 +178,12 @@ class TraineeControllerTest {
 		testTrainee.setAddress("456 New St");
 		testTrainee.setActive(false);
 
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
 		when(gymFacade.updateTraineeProfile(any())).thenReturn(testTrainee);
-		when(gymFacade.getTraineeTrainers(testCredentials)).thenReturn(List.of());
+		when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of());
 
 		// When & Then
 		mockMvc
-			.perform(put("/api/trainees/john.doe").header(AUTHORIZATION_HEADER, "john.doe:password123")
-				.contentType(MediaType.APPLICATION_JSON)
+			.perform(put("/api/trainees/john.doe").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.username").value("john.doe"))
@@ -209,33 +198,28 @@ class TraineeControllerTest {
 	@DisplayName("DELETE /api/trainees/{username} - Should delete trainee profile")
 	void testDeleteProfile_Success() throws Exception {
 		// Given
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
-		doNothing().when(gymFacade).deleteTraineeProfile(testCredentials);
+		doNothing().when(gymFacade).deleteTraineeProfile(testTrainee.getUsername());
 
 		// When & Then
-		mockMvc.perform(delete("/api/trainees/john.doe").header(AUTHORIZATION_HEADER, "john.doe:password123"))
-			.andExpect(status().isNoContent());
+		mockMvc.perform(delete("/api/trainees/john.doe")).andExpect(status().isNoContent());
 
-		verify(gymFacade).deleteTraineeProfile(testCredentials);
+		verify(gymFacade).deleteTraineeProfile(testTrainee.getUsername());
 	}
 
 	@Test
 	@DisplayName("GET /api/trainees/{username}/available-trainers - Should return available trainers")
 	void testGetAvailableTrainers_Success() throws Exception {
 		// Given
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
-		when(gymFacade.getTraineeUnassignedTrainers(testCredentials)).thenReturn(List.of(testTrainer));
+		when(gymFacade.getTraineeUnassignedTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
 		// When & Then
-		mockMvc
-			.perform(get("/api/trainees/john.doe/available-trainers").header(AUTHORIZATION_HEADER,
-					"john.doe:password123"))
+		mockMvc.perform(get("/api/trainees/john.doe/available-trainers"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$").isArray())
 			.andExpect(jsonPath("$[0].username").value("jane.smith"))
 			.andExpect(jsonPath("$[0].specialization").value("BOXING"));
 
-		verify(gymFacade).getTraineeUnassignedTrainers(testCredentials);
+		verify(gymFacade).getTraineeUnassignedTrainers(testTrainee.getUsername());
 	}
 
 	@Test
@@ -245,18 +229,16 @@ class TraineeControllerTest {
 		UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest(List.of("jane.smith", "bob.jones"));
 
 		// When
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
-		when(gymFacade.getTraineeTrainers(testCredentials)).thenReturn(List.of(testTrainer));
+		when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
 		// Then
 		mockMvc
-			.perform(put("/api/trainees/john.doe/trainers").header(AUTHORIZATION_HEADER, "john.doe:password123")
-				.contentType(MediaType.APPLICATION_JSON)
+			.perform(put("/api/trainees/john.doe/trainers").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$").isArray());
 
-		verify(gymFacade).updateTraineeTrainersList(testCredentials, request.trainerUsernames());
+		verify(gymFacade).updateTraineeTrainersList(testTrainee.getUsername(), request.trainerUsernames());
 	}
 
 	@Test
@@ -267,8 +249,7 @@ class TraineeControllerTest {
 
 		// When & Then
 		mockMvc
-			.perform(put("/api/trainees/john.doe/trainers").header(AUTHORIZATION_HEADER, "john.doe:password123")
-				.contentType(MediaType.APPLICATION_JSON)
+			.perform(put("/api/trainees/john.doe/trainers").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 			.andExpect(status().isBadRequest());
 
@@ -290,45 +271,30 @@ class TraineeControllerTest {
 			.build();
 
 		// When
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
-		when(gymFacade.getTraineeTrainings(eq(testCredentials), any(TrainingFilter.class)))
+		when(gymFacade.getTraineeTrainings(eq(testTrainee.getUsername()), any(TrainingFilter.class)))
 			.thenReturn(List.of(training));
 
 		// Then
 		mockMvc
-			.perform(get("/api/trainees/john.doe/trainings").header(AUTHORIZATION_HEADER, "john.doe:password123")
-				.param("trainerName", "jane.smith")
+			.perform(get("/api/trainees/john.doe/trainings").param("trainerName", "jane.smith")
 				.param("trainingType", "CARDIO"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$").isArray())
 			.andExpect(jsonPath("$[0].trainingName").value("Morning Workout"));
 
-		verify(gymFacade).getTraineeTrainings(eq(testCredentials), any(TrainingFilter.class));
+		verify(gymFacade).getTraineeTrainings(eq(testTrainee.getUsername()), any(TrainingFilter.class));
 	}
 
 	@Test
 	@DisplayName("PATCH /api/trainees/{username}/activation - Should toggle activation status")
 	void testToggleActivation_Success() throws Exception {
 		// Given
-		when(authHelper.extractAndValidateCredentials(anyString(), eq("john.doe"))).thenReturn(testCredentials);
-		doNothing().when(gymFacade).toggleTraineeActiveStatus(testCredentials);
+		doNothing().when(gymFacade).toggleTraineeActiveStatus(testTrainee.getUsername());
 
 		// When & Then
-		mockMvc.perform(patch("/api/trainees/john.doe/activation").header(AUTHORIZATION_HEADER, "john.doe:password123"))
-			.andExpect(status().isOk());
+		mockMvc.perform(patch("/api/trainees/john.doe/activation")).andExpect(status().isOk());
 
-		verify(gymFacade).toggleTraineeActiveStatus(testCredentials);
-	}
-
-	@Test
-	@DisplayName("Should return 401 when Authorization header is missing")
-	void testMissingAuthorizationHeader() throws Exception {
-		// Given
-		when(authHelper.extractAndValidateCredentials(null, "john.doe"))
-			.thenThrow(new IllegalArgumentException("Authorization header is required"));
-
-		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe")).andExpect(status().isBadRequest());
+		verify(gymFacade).toggleTraineeActiveStatus(testTrainee.getUsername());
 	}
 
 }

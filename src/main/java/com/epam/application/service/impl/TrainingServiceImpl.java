@@ -1,6 +1,5 @@
 package com.epam.application.service.impl;
 
-import com.epam.application.Credentials;
 import com.epam.application.request.CreateTrainingRequest;
 import com.epam.application.service.TrainingService;
 import com.epam.domain.TrainingFilter;
@@ -46,8 +45,8 @@ public class TrainingServiceImpl implements TrainingService {
 	@Override
 	public Training create(CreateTrainingRequest request) {
 
-		Trainee trainee = findTrainee(request.traineeUsername());
-		Trainer trainer = findTrainer(request.trainerUsername());
+		Trainee trainee = findTraineeOrThrow(request.traineeUsername());
+		Trainer trainer = findTrainerOrThrow(request.trainerUsername());
 
 		TrainingType trainingType;
 		if (request.trainingType().isEmpty()) {
@@ -70,23 +69,25 @@ public class TrainingServiceImpl implements TrainingService {
 	}
 
 	@Override
-	public List<Training> getTraineeTrainings(Credentials credentials, TrainingFilter filter) {
-		return trainingRepository.getTraineeTrainings(credentials.username(), filter);
+	public List<Training> getTraineeTrainings(String username, TrainingFilter filter) {
+		findTraineeOrThrow(username);
+		return trainingRepository.getTraineeTrainings(username, filter);
 	}
 
 	@Override
-	public List<Training> getTrainerTrainings(Credentials credentials, TrainingFilter filter) {
-		return trainingRepository.getTrainerTrainings(credentials.username(), filter);
+	public List<Training> getTrainerTrainings(String username, TrainingFilter filter) {
+		findTrainerOrThrow(username);
+		return trainingRepository.getTrainerTrainings(username, filter);
 	}
 
-	private Trainee findTrainee(String username) {
+	private Trainee findTraineeOrThrow(String username) {
 		return traineeRepository.findByUsername(username).orElseThrow(() -> {
 			log.warn("Trainee not found with username: {}", username);
 			return new EntityNotFoundException("Trainee not found: " + username);
 		});
 	}
 
-	private Trainer findTrainer(String username) {
+	private Trainer findTrainerOrThrow(String username) {
 		return trainerRepository.findByUsername(username).orElseThrow(() -> {
 			log.warn("Trainer not found with username: {}", username);
 			return new EntityNotFoundException("Trainer not found: " + username);
