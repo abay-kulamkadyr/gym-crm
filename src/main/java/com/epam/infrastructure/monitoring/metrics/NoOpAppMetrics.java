@@ -7,24 +7,24 @@ import org.springframework.stereotype.Component;
 @ConditionalOnMissingBean(AppMetrics.class)
 class NoOpAppMetrics implements AppMetrics {
 
-	@Override
-	public void incrementTraineeRegistered() {
+    @Override
+    public void incrementTraineeRegistered() {
 
-	}
+    }
 
-	@Override
-	public void incrementTrainerRegistered() {
+    @Override
+    public void incrementTrainerRegistered() {
 
-	}
+    }
 
-	@Override
-	public void incrementUserLoginAttempts() {
+    @Override
+    public void incrementUserLoginAttempts() {
 
-	}
+    }
 
-	@Override
-	public void incrementUserLoginFailed() {
+    @Override
+    public void incrementUserLoginFailed() {
 
-	}
+    }
 
 }

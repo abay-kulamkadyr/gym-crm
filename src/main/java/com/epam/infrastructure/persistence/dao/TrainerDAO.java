@@ -1,5 +1,8 @@
 package com.epam.infrastructure.persistence.dao;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,9 +20,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Entity
 @Table(name = "trainers")
 @Getter
@@ -27,41 +27,41 @@ import java.util.List;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class TrainerDAO {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@Column(name = "trainer_id")
-	@EqualsAndHashCode.Include
-	private Long trainerId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "trainer_id")
+    @EqualsAndHashCode.Include
+    private Long trainerId;
 
-	@OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
-	@JoinColumn(name = "user_id", nullable = false, unique = true)
-	private UserDAO userDAO;
+    @OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private UserDAO userDAO;
 
-	@ManyToOne
-	@JoinColumn(name = "training_type_id")
-	private TrainingTypeDAO trainingTypeDAO;
+    @ManyToOne
+    @JoinColumn(name = "training_type_id")
+    private TrainingTypeDAO trainingTypeDAO;
 
-	@OneToMany(mappedBy = "trainerDAO", fetch = FetchType.EAGER)
-	private List<TrainingDAO> trainingDAOS = new ArrayList<>();
+    @OneToMany(mappedBy = "trainerDAO", fetch = FetchType.EAGER)
+    private List<TrainingDAO> trainingDAOS = new ArrayList<>();
 
-	@ManyToMany(mappedBy = "trainerDAOS", fetch = FetchType.LAZY)
-	private List<TraineeDAO> traineeDAOS = new ArrayList<>();
+    @ManyToMany(mappedBy = "trainerDAOS", fetch = FetchType.LAZY)
+    private List<TraineeDAO> traineeDAOS = new ArrayList<>();
 
-	public TrainerDAO() {
+    public TrainerDAO() {
 
-	}
+    }
 
-	public void addTraining(TrainingDAO trainingDAO) {
-		if (!trainingDAOS.contains(trainingDAO)) {
-			trainingDAOS.add(trainingDAO);
-		}
-		trainingDAO.setTrainerDAO(this);
-	}
+    public void addTraining(TrainingDAO trainingDAO) {
+        if (!trainingDAOS.contains(trainingDAO)) {
+            trainingDAOS.add(trainingDAO);
+        }
+        trainingDAO.setTrainerDAO(this);
+    }
 
-	public void addTrainee(TraineeDAO traineeDAO) {
-		if (!traineeDAOS.contains(traineeDAO)) {
-			traineeDAOS.add(traineeDAO);
-		}
-	}
+    public void addTrainee(TraineeDAO traineeDAO) {
+        if (!traineeDAOS.contains(traineeDAO)) {
+            traineeDAOS.add(traineeDAO);
+        }
+    }
 
 }

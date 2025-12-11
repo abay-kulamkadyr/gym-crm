@@ -1,5 +1,15 @@
 package com.epam.interfaces.web.controller;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
+
 import com.epam.application.facade.GymFacade;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
@@ -9,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,54 +27,44 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 @WebMvcTest(TrainingTypeController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
-@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class, ManagementWebSecurityAutoConfiguration.class })
+@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class })
 @ActiveProfiles("test")
 class TrainingTypeControllerTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-	@Autowired
-	private ObjectMapper objectMapper;
+    @Autowired
+    private ObjectMapper objectMapper;
 
-	@MockitoBean
-	private GymFacade gymFacade;
+    @MockitoBean
+    private GymFacade gymFacade;
 
-	private List<TrainingType> trainingTypes;
+    private List<TrainingType> trainingTypes;
 
-	@BeforeEach
-	void setUp() {
-		TrainingType fitnessType = new TrainingType(TrainingTypeEnum.CROSSFIT);
-		fitnessType.setTrainingTypeId(1L);
+    @BeforeEach
+    void setUp() {
+        TrainingType fitnessType = new TrainingType(TrainingTypeEnum.CROSSFIT);
+        fitnessType.setTrainingTypeId(1L);
 
-		TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
-		yogaType.setTrainingTypeId(2L);
+        TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
+        yogaType.setTrainingTypeId(2L);
 
-		TrainingType boxingType = new TrainingType(TrainingTypeEnum.BOXING);
-		boxingType.setTrainingTypeId(3L);
+        TrainingType boxingType = new TrainingType(TrainingTypeEnum.BOXING);
+        boxingType.setTrainingTypeId(3L);
 
-		TrainingType cardioType = new TrainingType(TrainingTypeEnum.CARDIO);
-		cardioType.setTrainingTypeId(4L);
+        TrainingType cardioType = new TrainingType(TrainingTypeEnum.CARDIO);
+        cardioType.setTrainingTypeId(4L);
 
-		TrainingType strengthType = new TrainingType(TrainingTypeEnum.STRENGTH);
-		strengthType.setTrainingTypeId(5L);
+        TrainingType strengthType = new TrainingType(TrainingTypeEnum.STRENGTH);
+        strengthType.setTrainingTypeId(5L);
 
-		trainingTypes = List.of(fitnessType, yogaType, boxingType, cardioType, strengthType);
-	}
+        trainingTypes = List.of(fitnessType, yogaType, boxingType, cardioType, strengthType);
+    }
 
-	@Test
+    @Test
 	@DisplayName("GET /api/training-types - Should return all training types")
 	void testGetTrainingTypes_Success() throws Exception {
 		// Given
@@ -90,7 +89,7 @@ class TrainingTypeControllerTest {
 		verify(gymFacade, times(1)).getTrainingTypes();
 	}
 
-	@Test
+    @Test
 	@DisplayName("GET /api/training-types - Should return empty list when no types exist")
 	void testGetTrainingTypes_EmptyList() throws Exception {
 		// Given
@@ -105,27 +104,28 @@ class TrainingTypeControllerTest {
 		verify(gymFacade, times(1)).getTrainingTypes();
 	}
 
-	@Test
-	@DisplayName("GET /api/training-types - Should return single training type")
-	void testGetTrainingTypes_SingleType() throws Exception {
-		// Given
-		TrainingType singleType = new TrainingType(TrainingTypeEnum.CARDIO);
-		singleType.setTrainingTypeId(1L);
+    @Test
+    @DisplayName("GET /api/training-types - Should return single training type")
+    void testGetTrainingTypes_SingleType() throws Exception {
+        // Given
+        TrainingType singleType = new TrainingType(TrainingTypeEnum.CARDIO);
+        singleType.setTrainingTypeId(1L);
 
-		when(gymFacade.getTrainingTypes()).thenReturn(List.of(singleType));
+        when(gymFacade.getTrainingTypes()).thenReturn(List.of(singleType));
 
-		// When & Then
-		mockMvc.perform(get("/api/training-types"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$").isArray())
-			.andExpect(jsonPath("$.length()").value(1))
-			.andExpect(jsonPath("$[0].id").value(1))
-			.andExpect(jsonPath("$[0].trainingType").value("CARDIO"));
+        // When & Then
+        mockMvc
+                .perform(get("/api/training-types"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].trainingType").value("CARDIO"));
 
-		verify(gymFacade, times(1)).getTrainingTypes();
-	}
+        verify(gymFacade, times(1)).getTrainingTypes();
+    }
 
-	@Test
+    @Test
 	@DisplayName("GET /api/training-types - Should handle facade exception gracefully")
 	void testGetTrainingTypes_FacadeException() throws Exception {
 		// Given
@@ -139,7 +139,7 @@ class TrainingTypeControllerTest {
 		verify(gymFacade, times(1)).getTrainingTypes();
 	}
 
-	@Test
+    @Test
 	@DisplayName("GET /api/training-types - Should verify response format")
 	void testGetTrainingTypes_ResponseFormat() throws Exception {
 		// Given

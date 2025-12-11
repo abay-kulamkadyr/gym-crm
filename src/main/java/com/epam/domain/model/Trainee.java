@@ -1,25 +1,25 @@
 package com.epam.domain.model;
 
+import java.time.LocalDate;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Trainee extends User {
 
-	@EqualsAndHashCode.Include
-	private Long traineeId;
+    @EqualsAndHashCode.Include
+    private Long traineeId;
 
-	private LocalDate dob;
+    private LocalDate dob;
 
-	private String address;
+    private String address;
 
-	public Trainee(String firstName, String lastName, Boolean active) {
-		super(firstName, lastName, active);
-	}
+    public Trainee(String firstName, String lastName, Boolean active) {
+        super(firstName, lastName, active);
+    }
 
 }

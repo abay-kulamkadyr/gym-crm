@@ -9,23 +9,23 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public abstract class User {
 
-	@EqualsAndHashCode.Include
-	private Long userId;
+    @EqualsAndHashCode.Include
+    private Long userId;
 
-	private String firstName;
+    private String firstName;
 
-	private String lastName;
+    private String lastName;
 
-	private String username;
+    private String username;
 
-	private String password;
+    private String password;
 
-	private Boolean active;
+    private Boolean active;
 
-	protected User(String firstName, String lastName, Boolean active) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.active = active;
-	}
+    protected User(String firstName, String lastName, Boolean active) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.active = active;
+    }
 
 }

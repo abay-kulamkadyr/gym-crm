@@ -1,5 +1,7 @@
 package com.epam.application.service.impl;
 
+import java.util.List;
+
 import com.epam.application.event.TrainerRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTrainerProfileRequest;
@@ -16,148 +18,158 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
 @Slf4j
 public class TrainerServiceImpl implements TrainerService {
 
-	private TrainerRepository trainerRepository;
+    private TrainerRepository trainerRepository;
 
-	private TrainingTypeRepository trainingTypeRepository;
+    private TrainingTypeRepository trainingTypeRepository;
 
-	private ApplicationEventPublisher applicationEventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
 
-	@Autowired
-	void setTrainerRepository(TrainerRepository trainerRepository) {
-		this.trainerRepository = trainerRepository;
-	}
+    private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	void setTrainingTypeRepository(TrainingTypeRepository trainingTypeRepository) {
-		this.trainingTypeRepository = trainingTypeRepository;
-	}
+    @Autowired
+    void setTrainerRepository(TrainerRepository trainerRepository) {
+        this.trainerRepository = trainerRepository;
+    }
 
-	@Autowired
-	void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-		this.applicationEventPublisher = publisher;
-	}
+    @Autowired
+    void setTrainingTypeRepository(TrainingTypeRepository trainingTypeRepository) {
+        this.trainingTypeRepository = trainingTypeRepository;
+    }
 
-	@Override
-	public Trainer createProfile(CreateTrainerProfileRequest request) {
-		TrainingType specialization = findTrainingTypeOrThrow(request.specialization());
+    @Autowired
+    void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
-		Trainer trainer = new Trainer(request.firstName(), request.lastName(), request.active(), specialization);
+    @Autowired
+    void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.applicationEventPublisher = publisher;
+    }
 
-		String username = CredentialsUtil.generateUniqueUsername(trainer.getFirstName(), trainer.getLastName(),
-				trainerRepository::findLatestUsername);
-		String password = CredentialsUtil.generateRandomPassword(10);
+    @Override
+    public Trainer createProfile(CreateTrainerProfileRequest request) {
+        TrainingType specialization = findTrainingTypeOrThrow(request.specialization());
 
-		trainer.setUsername(username);
-		trainer.setPassword(password);
+        Trainer trainer = new Trainer(request.firstName(), request.lastName(), request.active(), specialization);
 
-		applicationEventPublisher.publishEvent(new TrainerRegisteredEvent(trainer.getUserId()));
-		return trainerRepository.save(trainer);
-	}
+        String username = CredentialsUtil
+                .generateUniqueUsername(
+                    trainer.getFirstName(),
+                    trainer.getLastName(),
+                    trainerRepository::findLatestUsername);
+        String password = CredentialsUtil.generateRandomPassword(10);
 
-	@Override
-	public Trainer updateProfile(UpdateTrainerProfileRequest request) {
-		Trainer trainer = findTrainerByUsernameOrThrow(request.username());
+        trainer.setUsername(username);
+        trainer.setPassword(passwordEncoder.encode(password));
 
-		request.firstName().ifPresent(newFirstName -> {
-			CredentialsUtil.validateName(newFirstName, "First name");
-			trainer.setFirstName(newFirstName);
-		});
+        applicationEventPublisher.publishEvent(new TrainerRegisteredEvent(trainer.getUserId()));
+        Trainer savedTrainer = trainerRepository.save(trainer);
+        savedTrainer.setPassword(password);
+        return savedTrainer;
+    }
 
-		request.lastName().ifPresent(newLastName -> {
-			CredentialsUtil.validateName(newLastName, "Last name");
-			trainer.setLastName(newLastName);
-		});
+    @Override
+    public Trainer updateProfile(UpdateTrainerProfileRequest request) {
+        Trainer trainer = findTrainerByUsernameOrThrow(request.username());
 
-		request.password().ifPresent(newPassword -> {
-			validateNewPassword(newPassword);
-			trainer.setPassword(newPassword);
-		});
+        request.firstName().ifPresent(newFirstName -> {
+            CredentialsUtil.validateName(newFirstName, "First name");
+            trainer.setFirstName(newFirstName);
+        });
 
-		request.active().ifPresent(trainer::setActive);
+        request.lastName().ifPresent(newLastName -> {
+            CredentialsUtil.validateName(newLastName, "Last name");
+            trainer.setLastName(newLastName);
+        });
 
-		request.specialization().ifPresent(newSpecialization -> {
-			TrainingType trainingType = trainingTypeRepository.findByTrainingTypeName(newSpecialization)
-				.orElseThrow(() -> {
-					log.error("TrainingType not found: {}", newSpecialization);
-					return new EntityNotFoundException(
-							String.format("TrainingType with name '%s' not found", newSpecialization));
-				});
+        request.password().ifPresent(newPassword -> {
+            validateNewPassword(newPassword);
+            trainer.setPassword(passwordEncoder.encode(newPassword));
+        });
 
-			trainer.setSpecialization(trainingType);
-		});
+        request.active().ifPresent(trainer::setActive);
 
-		return trainerRepository.save(trainer);
-	}
+        request.specialization().ifPresent(newSpecialization -> {
+            TrainingType trainingType =
+                    trainingTypeRepository.findByTrainingTypeName(newSpecialization).orElseThrow(() -> {
+                        log.error("TrainingType not found: {}", newSpecialization);
+                        return new EntityNotFoundException(
+                                String.format("TrainingType with name '%s' not found", newSpecialization));
+                    });
 
-	@Override
-	public void updatePassword(String username, String newPassword) {
-		validateNewPassword(newPassword);
+            trainer.setSpecialization(trainingType);
+        });
 
-		Trainer trainer = findTrainerByUsernameOrThrow(username);
+        Trainer savedTrainer = trainerRepository.save(trainer);
+        request.password().ifPresent(savedTrainer::setPassword);
+        return savedTrainer;
+    }
 
-		trainer.setPassword(newPassword);
-		trainerRepository.save(trainer);
-	}
+    @Override
+    public void updatePassword(String username, String newPassword) {
+        validateNewPassword(newPassword);
+        Trainer trainer = findTrainerByUsernameOrThrow(username);
+        trainer.setPassword(passwordEncoder.encode(newPassword));
+        trainerRepository.save(trainer);
+    }
 
-	@Override
-	public void toggleActiveStatus(String username) {
-		Trainer trainer = findTrainerByUsernameOrThrow(username);
+    @Override
+    public void toggleActiveStatus(String username) {
+        Trainer trainer = findTrainerByUsernameOrThrow(username);
 
-		boolean oldStatus = trainer.getActive();
-		boolean newStatus = !oldStatus;
-		trainer.setActive(newStatus);
+        boolean oldStatus = trainer.getActive();
+        boolean newStatus = !oldStatus;
+        trainer.setActive(newStatus);
 
-		trainerRepository.save(trainer);
-	}
+        trainerRepository.save(trainer);
+    }
 
-	@Override
-	public void deleteProfile(String username) {
-		findTrainerByUsernameOrThrow(username);
-		trainerRepository.deleteByUsername(username);
-	}
+    @Override
+    public void deleteProfile(String username) {
+        findTrainerByUsernameOrThrow(username);
+        trainerRepository.deleteByUsername(username);
+    }
 
-	@Override
-	@Transactional(readOnly = true)
-	public Trainer getProfileByUsername(String username) {
-		return findTrainerByUsernameOrThrow(username);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public Trainer getProfileByUsername(String username) {
+        return findTrainerByUsernameOrThrow(username);
+    }
 
-	@Override
-	public List<Trainee> getTrainees(String username) {
-		findTrainerByUsernameOrThrow(username);
-		return trainerRepository.getTrainees(username);
-	}
+    @Override
+    public List<Trainee> getTrainees(String username) {
+        findTrainerByUsernameOrThrow(username);
+        return trainerRepository.getTrainees(username);
+    }
 
-	private Trainer findTrainerByUsernameOrThrow(String username) {
-		return trainerRepository.findByUsername(username).orElseThrow(() -> {
-			log.error("Trainer not found with username: {}", username);
-			return new EntityNotFoundException(String.format("Trainer not found with username: %s", username));
-		});
-	}
+    private Trainer findTrainerByUsernameOrThrow(String username) {
+        return trainerRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("Trainer not found with username: {}", username);
+            return new EntityNotFoundException(String.format("Trainer not found with username: %s", username));
+        });
+    }
 
-	private TrainingType findTrainingTypeOrThrow(TrainingTypeEnum trainingType) {
-		return trainingTypeRepository.findByTrainingTypeName(trainingType).orElseThrow(() -> {
-			log.error("TrainingType not found with type: {}", trainingType);
-			return new EntityNotFoundException(String.format("TrainingType not found with type: %s", trainingType));
-		});
-	}
+    private TrainingType findTrainingTypeOrThrow(TrainingTypeEnum trainingType) {
+        return trainingTypeRepository.findByTrainingTypeName(trainingType).orElseThrow(() -> {
+            log.error("TrainingType not found with type: {}", trainingType);
+            return new EntityNotFoundException(String.format("TrainingType not found with type: %s", trainingType));
+        });
+    }
 
-	private void validateNewPassword(String password) {
-		if (password == null) {
-			throw new ValidationException("New password cannot be null");
-		}
-		CredentialsUtil.validatePassword(password);
-	}
+    private void validateNewPassword(String password) {
+        if (password == null) {
+            throw new ValidationException("New password cannot be null");
+        }
+        CredentialsUtil.validatePassword(password);
+    }
 
 }

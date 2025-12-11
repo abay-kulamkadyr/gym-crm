@@ -1,5 +1,7 @@
 package com.epam.application.service.impl;
 
+import java.util.List;
+
 import com.epam.application.event.TraineeRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
@@ -13,151 +15,160 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
 @Slf4j
 public class TraineeServiceImpl implements TraineeService {
 
-	private TraineeRepository traineeRepository;
+    private TraineeRepository traineeRepository;
 
-	private ApplicationEventPublisher applicationEventPublisher;
+    private ApplicationEventPublisher applicationEventPublisher;
 
-	@Autowired
-	void setTraineeRepository(TraineeRepository traineeRepository) {
-		this.traineeRepository = traineeRepository;
-	}
+    private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
-		this.applicationEventPublisher = publisher;
-	}
+    @Autowired
+    void setTraineeRepository(TraineeRepository traineeRepository) {
+        this.traineeRepository = traineeRepository;
+    }
 
-	@Override
-	public Trainee createProfile(CreateTraineeProfileRequest request) {
-		CredentialsUtil.validateFullName(request.firstName(), request.lastName());
+    @Autowired
+    void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
+        this.applicationEventPublisher = publisher;
+    }
 
-		Trainee trainee = new Trainee(request.firstName(), request.lastName(), request.active());
+    @Autowired
+    void setPasswordEncoder(PasswordEncoder encoder) {
+        this.passwordEncoder = encoder;
+    }
 
-		String username = CredentialsUtil.generateUniqueUsername(trainee.getFirstName(), trainee.getLastName(),
-				traineeRepository::findLatestUsername);
-		String password = CredentialsUtil.generateRandomPassword(10);
+    @Override
+    public Trainee createProfile(CreateTraineeProfileRequest request) {
+        CredentialsUtil.validateFullName(request.firstName(), request.lastName());
 
-		trainee.setUsername(username);
-		trainee.setPassword(password);
+        Trainee trainee = new Trainee(request.firstName(), request.lastName(), request.active());
 
-		request.dob().ifPresent(trainee::setDob);
+        String username = CredentialsUtil
+                .generateUniqueUsername(
+                    trainee.getFirstName(),
+                    trainee.getLastName(),
+                    traineeRepository::findLatestUsername);
+        String password = CredentialsUtil.generateRandomPassword(10);
 
-		request.address().ifPresent(trainee::setAddress);
+        trainee.setUsername(username);
+        trainee.setPassword(passwordEncoder.encode(password));
 
-		applicationEventPublisher.publishEvent(new TraineeRegisteredEvent(trainee.getTraineeId()));
-		return traineeRepository.save(trainee);
-	}
+        request.dob().ifPresent(trainee::setDob);
 
-	@Override
-	public Trainee updateProfile(UpdateTraineeProfileRequest request) {
-		Trainee trainee = findTraineeByUsernameOrThrow(request.username());
+        request.address().ifPresent(trainee::setAddress);
 
-		request.firstName().ifPresent(newFirstName -> {
-			CredentialsUtil.validateName(newFirstName, "First name");
-			trainee.setFirstName(newFirstName);
-		});
+        applicationEventPublisher.publishEvent(new TraineeRegisteredEvent(trainee.getTraineeId()));
+        Trainee savedTrainee = traineeRepository.save(trainee);
+        savedTrainee.setPassword(password);
+        return savedTrainee;
+    }
 
-		request.lastName().ifPresent(newLastName -> {
-			CredentialsUtil.validateName(newLastName, "Last name");
-			trainee.setLastName(newLastName);
-		});
+    @Override
+    public Trainee updateProfile(UpdateTraineeProfileRequest request) {
+        Trainee trainee = findTraineeByUsernameOrThrow(request.username());
 
-		request.password().ifPresent((password) -> {
-			validateNewPassword(password);
-			trainee.setPassword(password);
-		});
+        request.firstName().ifPresent(newFirstName -> {
+            CredentialsUtil.validateName(newFirstName, "First name");
+            trainee.setFirstName(newFirstName);
+        });
 
-		request.active().ifPresent(trainee::setActive);
+        request.lastName().ifPresent(newLastName -> {
+            CredentialsUtil.validateName(newLastName, "Last name");
+            trainee.setLastName(newLastName);
+        });
 
-		request.dob().ifPresent(trainee::setDob);
+        request.password().ifPresent((password) -> {
+            validateNewPassword(password);
+            trainee.setPassword(passwordEncoder.encode(password));
+        });
 
-		request.address().ifPresent(trainee::setAddress);
+        request.active().ifPresent(trainee::setActive);
 
-		return traineeRepository.save(trainee);
-	}
+        request.dob().ifPresent(trainee::setDob);
 
-	@Override
-	public void updatePassword(String username, String newPassword) {
-		validateNewPassword(newPassword);
+        request.address().ifPresent(trainee::setAddress);
 
-		Trainee trainee = findTraineeByUsernameOrThrow(username);
+        Trainee savedTrainee = traineeRepository.save(trainee);
+        request.password().ifPresent(savedTrainee::setPassword);
+        return savedTrainee;
+    }
 
-		trainee.setPassword(newPassword);
-		traineeRepository.save(trainee);
+    @Override
+    public void updatePassword(String username, String newPassword) {
+        validateNewPassword(newPassword);
+        Trainee trainee = findTraineeByUsernameOrThrow(username);
+        trainee.setPassword(passwordEncoder.encode(newPassword));
+        traineeRepository.save(trainee);
+    }
 
-	}
+    @Override
+    public void toggleActiveStatus(String username) {
+        Trainee trainee = findTraineeByUsernameOrThrow(username);
 
-	@Override
-	public void toggleActiveStatus(String username) {
-		Trainee trainee = findTraineeByUsernameOrThrow(username);
+        boolean oldStatus = trainee.getActive();
+        boolean newStatus = !oldStatus;
+        trainee.setActive(newStatus);
 
-		boolean oldStatus = trainee.getActive();
-		boolean newStatus = !oldStatus;
-		trainee.setActive(newStatus);
+        traineeRepository.save(trainee);
 
-		traineeRepository.save(trainee);
+    }
 
-	}
+    @Override
+    public void deleteProfile(String username) {
+        findTraineeByUsernameOrThrow(username);
+        traineeRepository.deleteByUsername(username);
+    }
 
-	@Override
-	public void deleteProfile(String username) {
-		findTraineeByUsernameOrThrow(username);
-		traineeRepository.deleteByUsername(username);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public Trainee getProfileByUsername(String username) {
+        return findTraineeByUsernameOrThrow(username);
+    }
 
-	@Override
-	@Transactional(readOnly = true)
-	public Trainee getProfileByUsername(String username) {
-		return findTraineeByUsernameOrThrow(username);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public List<Trainer> getUnassignedTrainers(String username) {
+        findTraineeByUsernameOrThrow(username);
+        return traineeRepository.getUnassignedTrainers(username);
+    }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<Trainer> getUnassignedTrainers(String username) {
-		findTraineeByUsernameOrThrow(username);
-		return traineeRepository.getUnassignedTrainers(username);
-	}
+    @Override
+    @Transactional(readOnly = true)
+    public List<Trainer> getTrainers(String username) {
+        findTraineeByUsernameOrThrow(username);
+        return traineeRepository.getTrainers(username);
+    }
 
-	@Override
-	@Transactional(readOnly = true)
-	public List<Trainer> getTrainers(String username) {
-		findTraineeByUsernameOrThrow(username);
-		return traineeRepository.getTrainers(username);
-	}
+    @Override
+    public void updateTrainersList(String username, List<String> trainerUsernames) {
+        if (trainerUsernames.isEmpty()) {
+            log.warn("Empty trainer usernames list provided for trainee: {} - will clear all trainers", username);
+        }
 
-	@Override
-	public void updateTrainersList(String username, List<String> trainerUsernames) {
-		if (trainerUsernames.isEmpty()) {
-			log.warn("Empty trainer usernames list provided for trainee: {} - will clear all trainers", username);
-		}
+        findTraineeByUsernameOrThrow(username);
+        traineeRepository.updateTrainersList(username, trainerUsernames);
+    }
 
-		findTraineeByUsernameOrThrow(username);
-		traineeRepository.updateTrainersList(username, trainerUsernames);
-	}
+    private Trainee findTraineeByUsernameOrThrow(String username) {
+        return traineeRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("Trainee not found with username: {}", username);
+            return new EntityNotFoundException(String.format("Trainee not found with username: %s", username));
+        });
+    }
 
-	private Trainee findTraineeByUsernameOrThrow(String username) {
-		return traineeRepository.findByUsername(username).orElseThrow(() -> {
-			log.error("Trainee not found with username: {}", username);
-			return new EntityNotFoundException(String.format("Trainee not found with username: %s", username));
-		});
-	}
-
-	private void validateNewPassword(String password) {
-		if (password == null) {
-			throw new ValidationException("New password cannot be null");
-		}
-		CredentialsUtil.validatePassword(password);
-	}
+    private void validateNewPassword(String password) {
+        if (password == null) {
+            throw new ValidationException("New password cannot be null");
+        }
+        CredentialsUtil.validatePassword(password);
+    }
 
 }

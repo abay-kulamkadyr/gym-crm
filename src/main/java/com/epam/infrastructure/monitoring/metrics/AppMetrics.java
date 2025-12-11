@@ -2,12 +2,12 @@ package com.epam.infrastructure.monitoring.metrics;
 
 public interface AppMetrics {
 
-	void incrementTraineeRegistered();
+    void incrementTraineeRegistered();
 
-	void incrementTrainerRegistered();
+    void incrementTrainerRegistered();
 
-	void incrementUserLoginAttempts();
+    void incrementUserLoginAttempts();
 
-	void incrementUserLoginFailed();
+    void incrementUserLoginFailed();
 
 }
