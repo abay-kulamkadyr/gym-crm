@@ -145,7 +145,6 @@ class PasswordManagementServiceServiceTest {
         verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
     }
 
-
     @Test
     @DisplayName("Should throw IllegalStateException for unsupported user type")
     void testChangePassword_UnsupportedUserType() {
