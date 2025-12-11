@@ -8,14 +8,14 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class TrainingType {
 
-    private final TrainingTypeEnum trainingTypeName;
+	private final TrainingTypeEnum trainingTypeName;
 
-    @Setter
-    @EqualsAndHashCode.Include
-    private Long trainingTypeId;
+	@Setter
+	@EqualsAndHashCode.Include
+	private Long trainingTypeId;
 
-    public TrainingType(TrainingTypeEnum trainingTypeName) {
-        this.trainingTypeName = trainingTypeName;
-    }
+	public TrainingType(TrainingTypeEnum trainingTypeName) {
+		this.trainingTypeName = trainingTypeName;
+	}
 
 }

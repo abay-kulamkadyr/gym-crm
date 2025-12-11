@@ -15,17 +15,15 @@ import org.springframework.web.bind.annotation.RequestHeader;
 @Tag(name = "Authentication", description = "Authentication operations")
 public interface UserControllerApi {
 
-    @Operation(summary = "Login", description = "Authenticate user with username and password")
-    ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request);
+	@Operation(summary = "Login", description = "Authenticate user with username and password")
+	ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request);
 
-    @Operation(summary = "Change Password", description = "Change user password")
-    ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody ChangePasswordRequest request);
+	@Operation(summary = "Change Password", description = "Change user password")
+	ResponseEntity<Void> changePassword(@AuthenticationPrincipal UserDetails userDetails,
+			@Valid @RequestBody ChangePasswordRequest request);
 
-    @Operation(
-            summary = "Logout",
-            description = "Revoke the current JWT token. Token will be blacklisted and cannot be used again.")
-    ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authHeader);
+	@Operation(summary = "Logout",
+			description = "Revoke the current JWT token. Token will be blacklisted and cannot be used again.")
+	ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authHeader);
 
 }

@@ -11,31 +11,31 @@ import org.springframework.stereotype.Component;
 @Component
 class ApplicationMetricsEventListener {
 
-    private final AppMetrics metrics;
+	private final AppMetrics metrics;
 
-    @Autowired
-    ApplicationMetricsEventListener(AppMetrics metrics) {
-        this.metrics = metrics;
-    }
+	@Autowired
+	ApplicationMetricsEventListener(AppMetrics metrics) {
+		this.metrics = metrics;
+	}
 
-    @EventListener
-    public void onTraineeRegistered(TraineeRegisteredEvent event) {
-        metrics.incrementTraineeRegistered();
-    }
+	@EventListener
+	public void onTraineeRegistered(TraineeRegisteredEvent event) {
+		metrics.incrementTraineeRegistered();
+	}
 
-    @EventListener
-    public void onTrainerRegistered(TrainerRegisteredEvent event) {
-        metrics.incrementTrainerRegistered();
-    }
+	@EventListener
+	public void onTrainerRegistered(TrainerRegisteredEvent event) {
+		metrics.incrementTrainerRegistered();
+	}
 
-    @EventListener
-    public void onUserLoginAttempt(UserLoginAttemptEvent event) {
-        metrics.incrementUserLoginAttempts();
-    }
+	@EventListener
+	public void onUserLoginAttempt(UserLoginAttemptEvent event) {
+		metrics.incrementUserLoginAttempts();
+	}
 
-    @EventListener
-    public void onUserLoginFailed(UserLoginFailedEvent event) {
-        metrics.incrementUserLoginFailed();
-    }
+	@EventListener
+	public void onUserLoginFailed(UserLoginFailedEvent event) {
+		metrics.incrementUserLoginFailed();
+	}
 
 }

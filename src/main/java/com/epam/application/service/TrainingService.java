@@ -8,10 +8,10 @@ import com.epam.domain.model.Training;
 
 public interface TrainingService {
 
-    Training create(CreateTrainingRequest request);
+	Training create(CreateTrainingRequest request);
 
-    List<Training> getTraineeTrainings(String username, TrainingFilter filter);
+	List<Training> getTraineeTrainings(String username, TrainingFilter filter);
 
-    List<Training> getTrainerTrainings(String username, TrainingFilter filter);
+	List<Training> getTrainerTrainings(String username, TrainingFilter filter);
 
 }

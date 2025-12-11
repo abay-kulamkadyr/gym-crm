@@ -9,16 +9,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final RequestResponseLoggingInterceptor loggingInterceptor;
+	private final RequestResponseLoggingInterceptor loggingInterceptor;
 
-    @Autowired
-    public WebConfig(RequestResponseLoggingInterceptor interceptor) {
-        this.loggingInterceptor = interceptor;
-    }
+	@Autowired
+	public WebConfig(RequestResponseLoggingInterceptor interceptor) {
+		this.loggingInterceptor = interceptor;
+	}
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loggingInterceptor).addPathPatterns("/api/**").order(2);
-    }
+	@Override
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(loggingInterceptor).addPathPatterns("/api/**").order(2);
+	}
 
 }

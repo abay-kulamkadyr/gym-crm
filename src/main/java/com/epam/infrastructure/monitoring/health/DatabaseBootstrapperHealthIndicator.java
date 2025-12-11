@@ -11,39 +11,38 @@ import org.springframework.stereotype.Component;
 @Profile("local")
 class DatabaseBootstrapperHealthIndicator implements HealthIndicator {
 
-    private final DatabaseBootstrapper bootstrapper;
+	private final DatabaseBootstrapper bootstrapper;
 
-    @Autowired
-    DatabaseBootstrapperHealthIndicator(DatabaseBootstrapper bootstrapper) {
-        this.bootstrapper = bootstrapper;
-    }
+	@Autowired
+	DatabaseBootstrapperHealthIndicator(DatabaseBootstrapper bootstrapper) {
+		this.bootstrapper = bootstrapper;
+	}
 
-    @Override
-    public Health health() {
-        if (bootstrapper.getLastError() != null) {
-            return Health.down().withDetail("status", "FAILED").withException(bootstrapper.getLastError()).build();
-        }
+	@Override
+	public Health health() {
+		if (bootstrapper.getLastError() != null) {
+			return Health.down().withDetail("status", "FAILED").withException(bootstrapper.getLastError()).build();
+		}
 
-        if (bootstrapper.isInitialized()) {
-            Health.Builder builder = Health.up();
+		if (bootstrapper.isInitialized()) {
+			Health.Builder builder = Health.up();
 
-            if (bootstrapper.isSkipped()) {
-                builder.withDetail("status", "SKIPPED_ALREADY_POPULATED");
-            }
-            else {
-                builder.withDetail("status", "BOOTSTRAP_COMPLETED");
-            }
+			if (bootstrapper.isSkipped()) {
+				builder.withDetail("status", "SKIPPED_ALREADY_POPULATED");
+			}
+			else {
+				builder.withDetail("status", "BOOTSTRAP_COMPLETED");
+			}
 
-            return builder
-                    .withDetail("loadedUsers", bootstrapper.getUserCount())
-                    .withDetail("loadedTrainers", bootstrapper.getTrainerCount())
-                    .withDetail("loadedTrainees", bootstrapper.getTraineeCount())
-                    .withDetail("loadedTrainingTypes", bootstrapper.getTrainingTypeCount())
-                    .build();
-        }
+			return builder.withDetail("loadedUsers", bootstrapper.getUserCount())
+				.withDetail("loadedTrainers", bootstrapper.getTrainerCount())
+				.withDetail("loadedTrainees", bootstrapper.getTraineeCount())
+				.withDetail("loadedTrainingTypes", bootstrapper.getTrainingTypeCount())
+				.build();
+		}
 
-        return Health.unknown().withDetail("status", "INITIALIZATION_PENDING").build();
-    }
+		return Health.unknown().withDetail("status", "INITIALIZATION_PENDING").build();
+	}
 
 }
 
@@ -51,13 +50,12 @@ class DatabaseBootstrapperHealthIndicator implements HealthIndicator {
 @Profile("!local")
 class BootstrapDisabledHealthIndicator implements HealthIndicator {
 
-    @Override
-    public Health health() {
-        return Health
-                .outOfService()
-                .withDetail("status", "BOOTSTRAP_DISABLED")
-                .withDetail("reason", "The DatabaseBootstrapper component is not loaded in this profile.")
-                .build();
-    }
+	@Override
+	public Health health() {
+		return Health.outOfService()
+			.withDetail("status", "BOOTSTRAP_DISABLED")
+			.withDetail("reason", "The DatabaseBootstrapper component is not loaded in this profile.")
+			.build();
+	}
 
 }

@@ -18,31 +18,31 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
-    private final TokenService tokenService;
+	private final TokenService tokenService;
 
-    @Autowired
-    JwtAuthenticationProvider(TokenService tokenService) {
-        this.tokenService = tokenService;
-    }
+	@Autowired
+	JwtAuthenticationProvider(TokenService tokenService) {
+		this.tokenService = tokenService;
+	}
 
-    @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String token = (String) authentication.getPrincipal();
-        log.debug("JwtAuthenticationProvider: Validating token");
-        try {
-            TokenData tokenData = tokenService.validateToken(token);
-            log.debug("Token successfully validated for user: {}", tokenData.username());
-            return new UsernamePasswordAuthenticationToken(tokenData.username(), null, Collections.emptyList());
-        }
-        catch (IllegalArgumentException e) {
-            log.warn("Token parsing failed: {}", e.getMessage());
-            throw new BadCredentialsException("Invalid token", e);
-        }
-    }
+	@Override
+	public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+		String token = (String) authentication.getPrincipal();
+		log.debug("JwtAuthenticationProvider: Validating token");
+		try {
+			TokenData tokenData = tokenService.validateToken(token);
+			log.debug("Token successfully validated for user: {}", tokenData.username());
+			return new UsernamePasswordAuthenticationToken(tokenData.username(), null, Collections.emptyList());
+		}
+		catch (IllegalArgumentException e) {
+			log.warn("Token parsing failed: {}", e.getMessage());
+			throw new BadCredentialsException("Invalid token", e);
+		}
+	}
 
-    @Override
-    public boolean supports(Class<?> authentication) {
-        return JwtAuthenticationToken.class.isAssignableFrom(authentication);
-    }
+	@Override
+	public boolean supports(Class<?> authentication) {
+		return JwtAuthenticationToken.class.isAssignableFrom(authentication);
+	}
 
 }

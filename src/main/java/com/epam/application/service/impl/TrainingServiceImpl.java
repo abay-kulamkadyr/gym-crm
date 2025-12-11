@@ -25,84 +25,80 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class TrainingServiceImpl implements TrainingService {
 
-    private final TrainingRepository trainingRepository;
+	private final TrainingRepository trainingRepository;
 
-    private final TrainerRepository trainerRepository;
+	private final TrainerRepository trainerRepository;
 
-    private final TraineeRepository traineeRepository;
+	private final TraineeRepository traineeRepository;
 
-    private final TrainingTypeRepository trainingTypeRepository;
+	private final TrainingTypeRepository trainingTypeRepository;
 
-    @Autowired
-    public TrainingServiceImpl(
-            TrainingRepository trainingRepository,
-            TrainerRepository trainerRepository,
-            TraineeRepository traineeRepository,
-            TrainingTypeRepository trainingTypeRepository) {
-        this.trainingRepository = trainingRepository;
-        this.trainerRepository = trainerRepository;
-        this.traineeRepository = traineeRepository;
-        this.trainingTypeRepository = trainingTypeRepository;
-    }
+	@Autowired
+	public TrainingServiceImpl(TrainingRepository trainingRepository, TrainerRepository trainerRepository,
+			TraineeRepository traineeRepository, TrainingTypeRepository trainingTypeRepository) {
+		this.trainingRepository = trainingRepository;
+		this.trainerRepository = trainerRepository;
+		this.traineeRepository = traineeRepository;
+		this.trainingTypeRepository = trainingTypeRepository;
+	}
 
-    @Override
-    public Training create(CreateTrainingRequest request) {
+	@Override
+	public Training create(CreateTrainingRequest request) {
 
-        Trainee trainee = findTraineeOrThrow(request.traineeUsername());
-        Trainer trainer = findTrainerOrThrow(request.trainerUsername());
+		Trainee trainee = findTraineeOrThrow(request.traineeUsername());
+		Trainer trainer = findTrainerOrThrow(request.trainerUsername());
 
-        TrainingType trainingType;
-        if (request.trainingType().isEmpty()) {
-            trainingType = trainer.getSpecialization();
-        }
-        else {
-            trainingType = findTrainingType(request.trainingType().get());
-        }
+		TrainingType trainingType;
+		if (request.trainingType().isEmpty()) {
+			trainingType = trainer.getSpecialization();
+		}
+		else {
+			trainingType = findTrainingType(request.trainingType().get());
+		}
 
-        Training training = Training
-                .builder()
-                .trainingName(request.trainingName())
-                .trainingDate(request.trainingDate())
-                .trainingDurationMin(request.trainingDurationMin())
-                .trainee(trainee)
-                .trainer(trainer)
-                .trainingType(trainingType)
-                .build();
+		Training training = Training.builder()
+			.trainingName(request.trainingName())
+			.trainingDate(request.trainingDate())
+			.trainingDurationMin(request.trainingDurationMin())
+			.trainee(trainee)
+			.trainer(trainer)
+			.trainingType(trainingType)
+			.build();
 
-        return trainingRepository.save(training);
-    }
+		return trainingRepository.save(training);
+	}
 
-    @Override
-    public List<Training> getTraineeTrainings(String username, TrainingFilter filter) {
-        findTraineeOrThrow(username);
-        return trainingRepository.getTraineeTrainings(username, filter);
-    }
+	@Override
+	public List<Training> getTraineeTrainings(String username, TrainingFilter filter) {
+		findTraineeOrThrow(username);
+		return trainingRepository.getTraineeTrainings(username, filter);
+	}
 
-    @Override
-    public List<Training> getTrainerTrainings(String username, TrainingFilter filter) {
-        findTrainerOrThrow(username);
-        return trainingRepository.getTrainerTrainings(username, filter);
-    }
+	@Override
+	public List<Training> getTrainerTrainings(String username, TrainingFilter filter) {
+		findTrainerOrThrow(username);
+		return trainingRepository.getTrainerTrainings(username, filter);
+	}
 
-    private Trainee findTraineeOrThrow(String username) {
-        return traineeRepository.findByUsername(username).orElseThrow(() -> {
-            log.warn("Trainee not found with username: {}", username);
-            return new EntityNotFoundException("Trainee not found: " + username);
-        });
-    }
+	private Trainee findTraineeOrThrow(String username) {
+		return traineeRepository.findByUsername(username).orElseThrow(() -> {
+			log.warn("Trainee not found with username: {}", username);
+			return new EntityNotFoundException("Trainee not found: " + username);
+		});
+	}
 
-    private Trainer findTrainerOrThrow(String username) {
-        return trainerRepository.findByUsername(username).orElseThrow(() -> {
-            log.warn("Trainer not found with username: {}", username);
-            return new EntityNotFoundException("Trainer not found: " + username);
-        });
-    }
+	private Trainer findTrainerOrThrow(String username) {
+		return trainerRepository.findByUsername(username).orElseThrow(() -> {
+			log.warn("Trainer not found with username: {}", username);
+			return new EntityNotFoundException("Trainer not found: " + username);
+		});
+	}
 
-    private TrainingType findTrainingType(TrainingTypeEnum name) {
-        return trainingTypeRepository.findByTrainingTypeName(name).orElseThrow(() -> {
-            log.warn("TrainingType not found with name: {}", name);
-            return new EntityNotFoundException("TrainingType not found: " + name);
-        });
-    }
+	private TrainingType findTrainingType(TrainingTypeEnum name) {
+		return trainingTypeRepository.findByTrainingTypeName(name).orElseThrow(() -> {
+			log.warn("TrainingType not found with name: {}", name);
+			return new EntityNotFoundException("TrainingType not found: " + name);
+		});
+	}
 
 }

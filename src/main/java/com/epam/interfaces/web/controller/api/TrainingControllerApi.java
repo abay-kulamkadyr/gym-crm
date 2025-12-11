@@ -9,9 +9,8 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "Trainings", description = "Training management operations")
 public interface TrainingControllerApi {
 
-    @Operation(
-            summary = "Add Training",
-            description = "Create a new training session, training type is determined by the trainer's specialization")
-    ResponseEntity<Void> addTraining(@Valid AddTrainingRequest request);
+	@Operation(summary = "Add Training",
+			description = "Create a new training session, training type is determined by the trainer's specialization")
+	ResponseEntity<Void> addTraining(@Valid AddTrainingRequest request);
 
 }

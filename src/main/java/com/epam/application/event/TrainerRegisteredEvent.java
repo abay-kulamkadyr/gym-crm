@@ -1,3 +1,4 @@
 package com.epam.application.event;
 
-public record TrainerRegisteredEvent(Long trainerId) {}
+public record TrainerRegisteredEvent(Long trainerId) {
+}

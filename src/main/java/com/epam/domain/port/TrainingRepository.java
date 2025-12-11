@@ -7,8 +7,8 @@ import com.epam.domain.model.Training;
 
 public interface TrainingRepository extends CrudRepository<Training> {
 
-    List<Training> getTraineeTrainings(String traineeUsername, TrainingFilter filter);
+	List<Training> getTraineeTrainings(String traineeUsername, TrainingFilter filter);
 
-    List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter);
+	List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter);
 
 }

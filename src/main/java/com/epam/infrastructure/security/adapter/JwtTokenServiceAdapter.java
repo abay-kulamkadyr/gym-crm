@@ -22,81 +22,76 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenServiceAdapter implements TokenService {
 
-    private final Duration tokenLifetime;
+	private final Duration tokenLifetime;
 
-    private final SecretKey signingKey;
+	private final SecretKey signingKey;
 
-    private final Clock clock;
+	private final Clock clock;
 
-    @Autowired
-    JwtTokenServiceAdapter(
-            @Value("${security.jwt.secret}") String secret,
-            @Value("${security.jwt.lifetime}") Duration tokenLifetime,
-            Clock clock) {
-        this.tokenLifetime = tokenLifetime;
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.clock = clock;
-    }
+	@Autowired
+	JwtTokenServiceAdapter(@Value("${security.jwt.secret}") String secret,
+			@Value("${security.jwt.lifetime}") Duration tokenLifetime, Clock clock) {
+		this.tokenLifetime = tokenLifetime;
+		this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+		this.clock = clock;
+	}
 
-    @Override
-    public String generateToken(String username) {
-        Instant now = clock.instant();
-        Instant expiration = now.plus(tokenLifetime);
+	@Override
+	public String generateToken(String username) {
+		Instant now = clock.instant();
+		Instant expiration = now.plus(tokenLifetime);
 
-        String token = Jwts
-                .builder()
-                .subject(username)
-                .issuedAt(Date.from(now))
-                .expiration(Date.from(expiration))
-                .signWith(signingKey)
-                .compact();
+		String token = Jwts.builder()
+			.subject(username)
+			.issuedAt(Date.from(now))
+			.expiration(Date.from(expiration))
+			.signWith(signingKey)
+			.compact();
 
-        log.debug("Generated JWT token for user: {}, expires at: {}", username, expiration);
-        return token;
-    }
+		log.debug("Generated JWT token for user: {}, expires at: {}", username, expiration);
+		return token;
+	}
 
-    @Override
-    public TokenData parseToken(String token) throws IllegalArgumentException {
-        try {
-            Claims claims = parseClaims(token);
-            return new TokenData(claims.getSubject(),
-                    claims.getIssuedAt().toInstant(),
-                    claims.getExpiration().toInstant());
-        }
-        catch (JwtException | IllegalArgumentException e) {
-            log.error("Failed to parse token: {}", e.getMessage());
-            throw new IllegalArgumentException("Invalid token", e);
-        }
-    }
+	@Override
+	public TokenData parseToken(String token) throws IllegalArgumentException {
+		try {
+			Claims claims = parseClaims(token);
+			return new TokenData(claims.getSubject(), claims.getIssuedAt().toInstant(),
+					claims.getExpiration().toInstant());
+		}
+		catch (JwtException | IllegalArgumentException e) {
+			log.error("Failed to parse token: {}", e.getMessage());
+			throw new IllegalArgumentException("Invalid token", e);
+		}
+	}
 
-    @Override
-    public TokenData validateToken(String token) throws IllegalArgumentException {
-        try {
-            TokenData tokenData = parseToken(token);
-            boolean expired = tokenData.isExpired(clock.instant());
+	@Override
+	public TokenData validateToken(String token) throws IllegalArgumentException {
+		try {
+			TokenData tokenData = parseToken(token);
+			boolean expired = tokenData.isExpired(clock.instant());
 
-            if (expired) {
-                log.debug("Token validation failed: token expired");
-                throw new IllegalArgumentException("Token validation failed: token expired");
-            }
+			if (expired) {
+				log.debug("Token validation failed: token expired");
+				throw new IllegalArgumentException("Token validation failed: token expired");
+			}
 
-            log.trace("Token validation successful");
-            return tokenData;
-        }
-        catch (IllegalArgumentException e) {
-            log.debug("Token validation failed: {}", e.getMessage());
-            throw e;
-        }
-    }
+			log.trace("Token validation successful");
+			return tokenData;
+		}
+		catch (IllegalArgumentException e) {
+			log.debug("Token validation failed: {}", e.getMessage());
+			throw e;
+		}
+	}
 
-    private Claims parseClaims(String token) throws JwtException, IllegalArgumentException {
-        return Jwts
-                .parser()
-                .verifyWith(signingKey)
-                .clock(() -> Date.from(clock.instant()))
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
+	private Claims parseClaims(String token) throws JwtException, IllegalArgumentException {
+		return Jwts.parser()
+			.verifyWith(signingKey)
+			.clock(() -> Date.from(clock.instant()))
+			.build()
+			.parseSignedClaims(token)
+			.getPayload();
+	}
 
 }

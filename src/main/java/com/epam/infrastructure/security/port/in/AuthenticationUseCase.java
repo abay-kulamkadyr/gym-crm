@@ -5,8 +5,8 @@ import org.springframework.security.core.AuthenticationException;
 
 public interface AuthenticationUseCase {
 
-    AuthenticationResult authenticate(String username, String password) throws AuthenticationException;
+	AuthenticationResult authenticate(String username, String password) throws AuthenticationException;
 
-    void logout(String token);
+	void logout(String token);
 
 }

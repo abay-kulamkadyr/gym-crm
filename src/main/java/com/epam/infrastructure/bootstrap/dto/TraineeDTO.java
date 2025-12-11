@@ -13,12 +13,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TraineeDTO {
 
-    private String username; // Reference to User
+	private String username; // Reference to User
 
-    private LocalDate dateOfBirth;
+	private LocalDate dateOfBirth;
 
-    private String address;
+	private String address;
 
-    private List<String> trainerUsernames = new ArrayList<>(); // References to Trainers
+	private List<String> trainerUsernames = new ArrayList<>(); // References to Trainers
 
 }

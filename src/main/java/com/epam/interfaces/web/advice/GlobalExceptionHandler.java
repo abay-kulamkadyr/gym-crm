@@ -28,172 +28,148 @@ import org.springframework.web.context.request.WebRequest;
 @Slf4j
 class GlobalExceptionHandler {
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(
-            MethodArgumentNotValidException ex,
-            WebRequest request) {
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
+			WebRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach(error -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+		Map<String, String> errors = new HashMap<>();
+		ex.getBindingResult().getAllErrors().forEach(error -> {
+			String fieldName = ((FieldError) error).getField();
+			String errorMessage = error.getDefaultMessage();
+			errors.put(fieldName, errorMessage);
+		});
 
-        String formattedErrors = formatValidationErrors(errors);
-        logException(ex, request, "Errors: " + errors);
+		String formattedErrors = formatValidationErrors(errors);
+		logException(ex, request, "Errors: " + errors);
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", formattedErrors, request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, "Validation Failed", formattedErrors,
+				request);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
 
-    @ExceptionHandler(LockedException.class)
-    public ResponseEntity<ErrorResponse> handleLockedException(LockedException ex, WebRequest request) {
+	@ExceptionHandler(LockedException.class)
+	public ResponseEntity<ErrorResponse> handleLockedException(LockedException ex, WebRequest request) {
 
-        logException(ex, request, null);
+		logException(ex, request, null);
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Account is locked", ex.getMessage(), request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Account is locked",
+				ex.getMessage(), request);
 
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+	}
 
-    @ExceptionHandler({ AuthenticationException.class, AuthorizationDeniedException.class })
-    public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
+	@ExceptionHandler({ AuthenticationException.class, AuthorizationDeniedException.class })
+	public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
 
-        logException(ex, request, null);
+		logException(ex, request, null);
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Failed", ex.getMessage(), request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.UNAUTHORIZED, "Authentication Failed",
+				ex.getMessage(), request);
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+	}
 
-    @ExceptionHandler({ ValidationException.class, IllegalArgumentException.class })
-    public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex, WebRequest request) {
+	@ExceptionHandler({ ValidationException.class, IllegalArgumentException.class })
+	public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex, WebRequest request) {
 
-        logException(ex, request, null);
+		logException(ex, request, null);
 
-        String errorTitle = ex instanceof ValidationException ? "Validation Error" : "Invalid Request";
+		String errorTitle = ex instanceof ValidationException ? "Validation Error" : "Invalid Request";
 
-        ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, errorTitle, ex.getMessage(), request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, errorTitle, ex.getMessage(), request);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
+	@ExceptionHandler(EntityNotFoundException.class)
+	public ResponseEntity<ErrorResponse> handleEntityNotFoundException(EntityNotFoundException ex, WebRequest request) {
 
-        logExceptionAsWarning(ex, request);
+		logExceptionAsWarning(ex, request);
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(), request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(),
+				request);
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+	}
 
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(
-            MissingRequestHeaderException ex,
-            WebRequest request) {
+	@ExceptionHandler(MissingRequestHeaderException.class)
+	public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(MissingRequestHeaderException ex,
+			WebRequest request) {
 
-        logException(ex, request, null);
+		logException(ex, request, null);
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Request", ex.getMessage(), request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.BAD_REQUEST, "Invalid Request", ex.getMessage(),
+				request);
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+	}
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
+	@ExceptionHandler(Exception.class)
+	public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex, WebRequest request) {
 
-        String transactionId = getTransactionId();
-        String endpoint = getRequestURI(request);
+		String transactionId = getTransactionId();
+		String endpoint = getRequestURI(request);
 
-        log
-                .error(
-                    "UnexpectedException | TransactionId: {} | Endpoint: {} | ExceptionType: {} | Message: {} | StackTrace:",
-                    transactionId,
-                    endpoint,
-                    ex.getClass().getSimpleName(),
-                    ex.getMessage(),
-                    ex);
+		log.error(
+				"UnexpectedException | TransactionId: {} | Endpoint: {} | ExceptionType: {} | Message: {} | StackTrace:",
+				transactionId, endpoint, ex.getClass().getSimpleName(), ex.getMessage(), ex);
 
-        String userMessage =
-                "An unexpected error occurred. Please contact support with transaction ID: " + transactionId;
+		String userMessage = "An unexpected error occurred. Please contact support with transaction ID: "
+				+ transactionId;
 
-        ErrorResponse errorResponse =
-                buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", userMessage, request);
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+				userMessage, request);
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-    }
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+	}
 
-    private void logException(Exception ex, WebRequest request, String additionalInfo) {
-        String transactionId = getTransactionId();
-        String endpoint = getRequestURI(request);
-        String exceptionType = ex.getClass().getSimpleName();
+	private void logException(Exception ex, WebRequest request, String additionalInfo) {
+		String transactionId = getTransactionId();
+		String endpoint = getRequestURI(request);
+		String exceptionType = ex.getClass().getSimpleName();
 
-        if (additionalInfo != null && !additionalInfo.isEmpty()) {
-            log
-                    .error(
-                        "{} | TransactionId: {} | Endpoint: {} | Message: {} | {}",
-                        exceptionType,
-                        transactionId,
-                        endpoint,
-                        ex.getMessage(),
-                        additionalInfo);
-        }
-        else {
-            log
-                    .error(
-                        "{} | TransactionId: {} | Endpoint: {} | Message: {}",
-                        exceptionType,
-                        transactionId,
-                        endpoint,
-                        ex.getMessage());
-        }
-    }
+		if (additionalInfo != null && !additionalInfo.isEmpty()) {
+			log.error("{} | TransactionId: {} | Endpoint: {} | Message: {} | {}", exceptionType, transactionId,
+					endpoint, ex.getMessage(), additionalInfo);
+		}
+		else {
+			log.error("{} | TransactionId: {} | Endpoint: {} | Message: {}", exceptionType, transactionId, endpoint,
+					ex.getMessage());
+		}
+	}
 
-    private void logExceptionAsWarning(Exception ex, WebRequest request) {
-        String transactionId = getTransactionId();
-        String endpoint = getRequestURI(request);
-        String exceptionType = ex.getClass().getSimpleName();
+	private void logExceptionAsWarning(Exception ex, WebRequest request) {
+		String transactionId = getTransactionId();
+		String endpoint = getRequestURI(request);
+		String exceptionType = ex.getClass().getSimpleName();
 
-        log
-                .warn(
-                    "{} | TransactionId: {} | Endpoint: {} | Message: {}",
-                    exceptionType,
-                    transactionId,
-                    endpoint,
-                    ex.getMessage());
-    }
+		log.warn("{} | TransactionId: {} | Endpoint: {} | Message: {}", exceptionType, transactionId, endpoint,
+				ex.getMessage());
+	}
 
-    private ErrorResponse buildErrorResponse(HttpStatus status, String error, String message, WebRequest request) {
+	private ErrorResponse buildErrorResponse(HttpStatus status, String error, String message, WebRequest request) {
 
-        return new ErrorResponse(LocalDateTime
-                .now(), status.value(), error, message, getRequestURI(request), getTransactionId());
-    }
+		return new ErrorResponse(LocalDateTime.now(), status.value(), error, message, getRequestURI(request),
+				getTransactionId());
+	}
 
-    private String getTransactionId() {
-        return MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
-    }
+	private String getTransactionId() {
+		return MDC.get(MdcConstants.TRANSACTION_ID_MDC_KEY);
+	}
 
-    private String getRequestURI(WebRequest request) {
-        if (request instanceof ServletWebRequest) {
-            return ((ServletWebRequest) request).getRequest().getRequestURI();
-        }
-        return request.getDescription(false).replace("uri=", "");
-    }
+	private String getRequestURI(WebRequest request) {
+		if (request instanceof ServletWebRequest) {
+			return ((ServletWebRequest) request).getRequest().getRequestURI();
+		}
+		return request.getDescription(false).replace("uri=", "");
+	}
 
-    private String formatValidationErrors(Map<String, String> errors) {
-        return errors
-                .entrySet()
-                .stream()
-                .map(entry -> entry.getKey() + ": " + entry.getValue())
-                .collect(Collectors.joining(", "));
-    }
+	private String formatValidationErrors(Map<String, String> errors) {
+		return errors.entrySet()
+			.stream()
+			.map(entry -> entry.getKey() + ": " + entry.getValue())
+			.collect(Collectors.joining(", "));
+	}
 
 }

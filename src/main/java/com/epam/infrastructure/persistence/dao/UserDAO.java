@@ -23,39 +23,39 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserDAO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    @Column(name = "user_id")
-    @EqualsAndHashCode.Include
-    private Long userId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.SEQUENCE)
+	@Column(name = "user_id")
+	@EqualsAndHashCode.Include
+	private Long userId;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+	@Column(name = "first_name", nullable = false)
+	private String firstName;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+	@Column(name = "last_name", nullable = false)
+	private String lastName;
 
-    @Column(name = "username", nullable = false, unique = true)
-    private String username;
+	@Column(name = "username", nullable = false, unique = true)
+	private String username;
 
-    @Column(name = "password", nullable = false)
-    private String password;
+	@Column(name = "password", nullable = false)
+	private String password;
 
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    private UserRole userRole;
+	@Column(name = "role")
+	@Enumerated(EnumType.STRING)
+	private UserRole userRole;
 
-    @OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
-    private TraineeDAO traineeDAO;
+	@OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
+	private TraineeDAO traineeDAO;
 
-    @OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
-    private TrainerDAO trainerDAO;
+	@OneToOne(mappedBy = "userDAO", fetch = FetchType.LAZY)
+	private TrainerDAO trainerDAO;
 
-    @Column(name = "is_active", nullable = false)
-    private Boolean active;
+	@Column(name = "is_active", nullable = false)
+	private Boolean active;
 
-    public UserDAO() {
+	public UserDAO() {
 
-    }
+	}
 
 }

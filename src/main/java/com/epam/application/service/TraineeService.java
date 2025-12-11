@@ -9,10 +9,10 @@ import com.epam.domain.model.Trainer;
 
 public interface TraineeService extends UserService<Trainee, CreateTraineeProfileRequest, UpdateTraineeProfileRequest> {
 
-    List<Trainer> getUnassignedTrainers(String username);
+	List<Trainer> getUnassignedTrainers(String username);
 
-    List<Trainer> getTrainers(String username);
+	List<Trainer> getTrainers(String username);
 
-    void updateTrainersList(String username, List<String> trainerUsernames);
+	void updateTrainersList(String username, List<String> trainerUsernames);
 
 }
