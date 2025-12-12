@@ -1,17 +1,27 @@
 package com.epam.application.service;
 
-import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
-import com.epam.application.service.impl.AuthenticationServiceImpl;
 import com.epam.application.service.impl.TraineeServiceImpl;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TraineeRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,18 +29,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class TraineeServiceImplTest {
@@ -39,17 +38,15 @@ class TraineeServiceImplTest {
 	private TraineeRepository traineeRepository;
 
 	@Mock
-	private AuthenticationServiceImpl authenticationService;
+	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Mock
-	private ApplicationEventPublisher applicationEventPublisher;
+	PasswordEncoder passwordEncoder;
 
 	@InjectMocks
 	private TraineeServiceImpl traineeService;
 
 	private Trainee testTrainee;
-
-	private Credentials testCredentials;
 
 	@BeforeEach
 	void setUp() {
@@ -60,8 +57,6 @@ class TraineeServiceImplTest {
 		testTrainee.setPassword("password123");
 		testTrainee.setDob(LocalDate.of(1990, 1, 1));
 		testTrainee.setAddress("123 Main St");
-
-		testCredentials = new Credentials("John.Doe", "password123");
 	}
 
 	@Test
@@ -153,7 +148,7 @@ class TraineeServiceImplTest {
 	@Test
 	void updateProfile_shouldUpdateAllProvidedFields() {
 		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, //
+		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(), //
 				Optional.of("Jane"), //
 				Optional.of("Smith"), //
 				Optional.of("newpassword123"), //
@@ -161,7 +156,6 @@ class TraineeServiceImplTest {
 				Optional.of(LocalDate.of(1992, 3, 15)), //
 				Optional.of("789 Elm St"));
 
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
 		Trainee updatedTrainee = new Trainee("Jane", "Smith", false);
@@ -181,21 +175,20 @@ class TraineeServiceImplTest {
 	}
 
 	@Test
-	void updateProfile_shouldThrowAuthenticationException_whenCredentialsInvalid() {
+	void updateProfile_shouldThrowEntityNotFoundException_whenCredentialsInvalid() {
 		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, Optional.of("Jane"),
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-
-		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
+		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(),
+				Optional.of("Jane"), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+				Optional.empty());
 
 		// When/Then
-		assertThatThrownBy(() -> traineeService.updateProfile(request)).isInstanceOf(AuthenticationException.class);
+		assertThatThrownBy(() -> traineeService.updateProfile(request)).isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
 	void updateProfile_shouldThrowValidationException_whenNewUsernameSameAsCurrent() {
 		// Given
-		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testCredentials, //
+		UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(), //
 				Optional.empty(), //
 				Optional.empty(), //
 				Optional.of("John.Doe"), //
@@ -204,7 +197,6 @@ class TraineeServiceImplTest {
 				Optional.empty() //
 		);
 
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
 		// When/Then
@@ -215,31 +207,27 @@ class TraineeServiceImplTest {
 	void updatePassword_shouldUpdatePassword() {
 		// Given
 		String newPassword = "newSecurePass123";
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
 
 		// When
-		traineeService.updatePassword(testCredentials, newPassword);
+		traineeService.updatePassword(testTrainee.getUsername(), newPassword);
 
 		// Then
 		verify(traineeRepository).save(any(Trainee.class));
 	}
 
 	@Test
-	void updatePassword_shouldThrowAuthenticationException_whenInvalidCredentials() {
-		// Given
-		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
-
+	void updatePassword_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
 		// When/Then
-		assertThatThrownBy(() -> traineeService.updatePassword(testCredentials, "newPassword"))
-			.isInstanceOf(AuthenticationException.class);
+		assertThatThrownBy(() -> traineeService.updatePassword(testTrainee.getUsername(), "newPassword"))
+			.isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
 	void updatePassword_shouldThrowValidationException_whenNewPasswordTooShort() {
 		// Give/When/Then
-		assertThatThrownBy(() -> traineeService.updatePassword(testCredentials, "short"))
+		assertThatThrownBy(() -> traineeService.updatePassword(testTrainee.getUsername(), "short"))
 			.isInstanceOf(ValidationException.class)
 			.hasMessageContaining("10 characters");
 	}
@@ -247,72 +235,63 @@ class TraineeServiceImplTest {
 	@Test
 	void toggleActiveStatus_shouldToggleFromTrueToFalse() {
 		// Given
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
 
 		// When
-		traineeService.toggleActiveStatus(testCredentials);
+		traineeService.toggleActiveStatus(testTrainee.getUsername());
 
 		// Then
 		verify(traineeRepository).save(any(Trainee.class));
 	}
 
 	@Test
-	void toggleActiveStatus_shouldThrowAuthenticationException_whenInvalidCredentials() {
-		// Given
-		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
-
+	void toggleActiveStatus_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
 		// When/Then
-		assertThatThrownBy(() -> traineeService.toggleActiveStatus(testCredentials))
-			.isInstanceOf(AuthenticationException.class);
+		assertThatThrownBy(() -> traineeService.toggleActiveStatus(testTrainee.getUsername()))
+			.isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
 	void deleteProfile_shouldDeleteTrainee() {
 		// Given
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		doNothing().when(traineeRepository).deleteByUsername("John.Doe");
+		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.ofNullable(testTrainee));
 
 		// When
-		traineeService.deleteProfile(testCredentials);
+		traineeService.deleteProfile(testTrainee.getUsername());
 
 		// Then
 		verify(traineeRepository).deleteByUsername("John.Doe");
 	}
 
 	@Test
-	void deleteProfile_shouldThrowAuthenticationException_whenInvalidCredentials() {
-		// Given
-		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
-
+	void deleteProfile_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
 		// When/Then
-		assertThatThrownBy(() -> traineeService.deleteProfile(testCredentials))
-			.isInstanceOf(AuthenticationException.class);
+		assertThatThrownBy(() -> traineeService.deleteProfile(testTrainee.getUsername()))
+			.isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
 	void findProfileByUsername_shouldReturnTrainee() {
 		// Given
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
 		// When
-		Optional<Trainee> found = traineeService.findProfileByUsername(testCredentials);
+		Trainee found = traineeService.getProfileByUsername(testTrainee.getUsername());
 
 		// Then
-		assertThat(found).isPresent();
-		assertThat(found.get().getUsername()).isEqualTo("John.Doe");
+		assertThat(found).isNotNull();
+		assertThat(found.getUsername()).isEqualTo("John.Doe");
 	}
 
 	@Test
 	void findProfileByUsername_shouldThrowAuthenticationException_whenInvalidCredentials() {
 		// Given
-		when(authenticationService.authenticate(testCredentials)).thenThrow(AuthenticationException.class);
-
+		String invalidUsername = "invalid.username";
 		// When/Then
-		assertThatThrownBy(() -> traineeService.findProfileByUsername(testCredentials))
-			.isInstanceOf(AuthenticationException.class);
+		assertThatThrownBy(() -> traineeService.getProfileByUsername(invalidUsername))
+			.isInstanceOf(EntityNotFoundException.class);
 	}
 
 	@Test
@@ -327,12 +306,11 @@ class TraineeServiceImplTest {
 		Trainer trainer2 = new Trainer("Bob", "Coach", true, boxingType);
 		trainer2.setUsername("Bob.Coach");
 
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
 		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 		when(traineeRepository.getUnassignedTrainers("John.Doe")).thenReturn(List.of(trainer1, trainer2));
 
 		// When
-		List<Trainer> trainers = traineeService.getUnassignedTrainers(testCredentials);
+		List<Trainer> trainers = traineeService.getUnassignedTrainers(testTrainee.getUsername());
 
 		// Then
 		assertThat(trainers).hasSize(2);
@@ -344,11 +322,11 @@ class TraineeServiceImplTest {
 		// Given
 		List<String> trainerUsernames = List.of("Trainer1.Smith", "Trainer2.Jones");
 
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
+		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.ofNullable(testTrainee));
 		doNothing().when(traineeRepository).updateTrainersList("John.Doe", trainerUsernames);
 
 		// When
-		traineeService.updateTrainersList(testCredentials, trainerUsernames);
+		traineeService.updateTrainersList(testTrainee.getUsername(), trainerUsernames);
 
 		// Then
 		verify(traineeRepository).updateTrainersList("John.Doe", trainerUsernames);
@@ -359,11 +337,11 @@ class TraineeServiceImplTest {
 		// Given
 		List<String> emptyList = new ArrayList<>();
 
-		when(authenticationService.authenticate(testCredentials)).thenReturn(testTrainee);
+		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.ofNullable(testTrainee));
 		doNothing().when(traineeRepository).updateTrainersList("John.Doe", emptyList);
 
 		// When
-		traineeService.updateTrainersList(testCredentials, emptyList);
+		traineeService.updateTrainersList(testTrainee.getUsername(), emptyList);
 
 		// Then
 		verify(traineeRepository).updateTrainersList("John.Doe", emptyList);

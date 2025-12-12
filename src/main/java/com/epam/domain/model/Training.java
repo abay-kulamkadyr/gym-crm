@@ -1,10 +1,10 @@
 package com.epam.domain.model;
 
+import java.time.LocalDateTime;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
 
 @Getter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)

@@ -1,7 +1,13 @@
 package com.epam.application.facade;
 
-import com.epam.application.Credentials;
-import com.epam.application.exception.AuthenticationException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.CreateTrainingRequest;
@@ -27,14 +33,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @TestPropertySource(properties = "spring.main.banner-mode=off")
@@ -75,10 +73,9 @@ class GymFacadeImplIntegrationTest {
 		assertThat(created.getUsername()).isEqualTo("Michael.Brown");
 		assertThat(created.getPassword()).isNotNull().hasSize(10);
 
-		Credentials credentials = new Credentials(created.getUsername(), created.getPassword());
-		Optional<Trainee> retrieved = gymFacade.findTraineeByUsername(credentials);
-		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getUsername()).isEqualTo("Michael.Brown");
+		Trainee retrieved = gymFacade.getTraineeByUsername(created.getUsername());
+		assertThat(retrieved).isNotNull();
+		assertThat(retrieved.getUsername()).isEqualTo("Michael.Brown");
 	}
 
 	@Test
@@ -88,11 +85,10 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
 
 		Trainee trainee = gymFacade.createTraineeProfile(createRequest);
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 
-		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(credentials, Optional.empty(),
-				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(LocalDate.of(1991, 2, 2)),
-				Optional.of("999 New Address"));
+		UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(trainee.getUsername(),
+				Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+				Optional.of(LocalDate.of(1991, 2, 2)), Optional.of("999 New Address"));
 
 		// When
 		Trainee updated = gymFacade.updateTraineeProfile(updateRequest);
@@ -101,10 +97,10 @@ class GymFacadeImplIntegrationTest {
 		assertThat(updated.getAddress()).isEqualTo("999 New Address");
 		assertThat(updated.getDob()).isEqualTo(LocalDate.of(1991, 2, 2));
 
-		Optional<Trainee> retrieved = gymFacade.findTraineeByUsername(credentials);
-		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getAddress()).isEqualTo("999 New Address");
-		assertThat(retrieved.get().getDob()).isEqualTo(LocalDate.of(1991, 2, 2));
+		Trainee retrieved = gymFacade.getTraineeByUsername(trainee.getUsername());
+		assertThat(retrieved).isNotNull();
+		assertThat(retrieved.getAddress()).isEqualTo("999 New Address");
+		assertThat(retrieved.getDob()).isEqualTo(LocalDate.of(1991, 2, 2));
 	}
 
 	@Test
@@ -113,12 +109,11 @@ class GymFacadeImplIntegrationTest {
 		CreateTraineeProfileRequest request = new CreateTraineeProfileRequest("Tom", "Davis", true, Optional.empty(),
 				Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(request);
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		TraineeDAO createdTraineeDAO = entityManager.find(TraineeDAO.class, trainee.getTraineeId());
 		assertThat(createdTraineeDAO).isNotNull();
 
 		// When
-		gymFacade.deleteTraineeProfile(credentials);
+		gymFacade.deleteTraineeProfile(trainee.getUsername());
 
 		// Then - Should not be able to find trainee anymore (authentication will fail)
 		TrainerDAO deletedTraineeDAO = entityManager.find(TrainerDAO.class, trainee.getTraineeId());
@@ -155,8 +150,6 @@ class GymFacadeImplIntegrationTest {
 				specialization.getTrainingTypeName());
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1", LocalDateTime.now(), 60,
 				Optional.of(specialization.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest1);
@@ -167,7 +160,7 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(trainingRequest2);
 
 		// When
-		List<Training> result = gymFacade.getTraineeTrainings(traineeCredentials, TrainingFilter.empty());
+		List<Training> result = gymFacade.getTraineeTrainings(trainee.getUsername(), TrainingFilter.empty());
 
 		// Then
 		assertThat(result).isNotEmpty();
@@ -189,10 +182,9 @@ class GymFacadeImplIntegrationTest {
 		assertThat(trainer.getUsername()).isEqualTo("Emma.Taylor");
 		assertThat(trainer.getPassword()).isNotNull().hasSize(10);
 
-		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-		Optional<Trainer> retrieved = gymFacade.findTrainerByUsername(credentials);
-		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getUsername()).isEqualTo("Emma.Taylor");
+		Trainer retrieved = gymFacade.getTrainerByUsername(trainer.getUsername());
+		assertThat(retrieved).isNotNull();
+		assertThat(retrieved.getUsername()).isEqualTo("Emma.Taylor");
 	}
 
 	@Test
@@ -203,10 +195,8 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.CROSSFIT);
 		Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
-		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		TrainingType newType = createOrGetTestTrainingType(TrainingTypeEnum.PILATES);
-		UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(credentials, Optional.empty(),
+		UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(trainer.getUsername(),
 				Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false),
 				Optional.of(newType.getTrainingTypeName()));
 
@@ -225,13 +215,11 @@ class GymFacadeImplIntegrationTest {
 		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Henry", "Cavill", true,
 				TrainingTypeEnum.CARDIO);
 		Trainer trainer = gymFacade.createTrainerProfile(request);
-
-		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 		TrainerDAO createdTrainer = entityManager.find(TrainerDAO.class, trainer.getTrainerId());
 		assertThat(createdTrainer).isNotNull();
 
 		// When
-		gymFacade.deleteTrainerProfile(credentials);
+		gymFacade.deleteTrainerProfile(trainer.getUsername());
 
 		// Then
 		TrainerDAO deleted = entityManager.find(TrainerDAO.class, trainer.getTrainerId());
@@ -273,7 +261,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Cardio", LocalDateTime.now(), 60,
 				Optional.of(type.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 
@@ -281,7 +268,7 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(trainingRequest);
 
 		// Then
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, TrainingFilter.empty());
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), TrainingFilter.empty());
 		assertThat(trainings).hasSize(1);
 		assertThat(trainings.get(0).getTrainingName()).isEqualTo("Morning Cardio");
 		assertThat(trainings.get(0).getTrainee()).isNotNull();
@@ -305,9 +292,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1", LocalDateTime.now(), 60,
 				Optional.of(type.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest1);
@@ -318,10 +302,10 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(trainingRequest2);
 
 		// When
-		gymFacade.deleteTraineeProfile(traineeCredentials);
+		gymFacade.deleteTraineeProfile(trainee.getUsername());
 
 		// Then
-		assertThat(gymFacade.findTrainerByUsername(trainerCredentials)).isPresent();
+		assertThat(gymFacade.getTrainerByUsername(trainer.getUsername())).isNotNull();
 	}
 
 	@Test
@@ -337,8 +321,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Run", LocalDateTime.now().minusDays(1), 60,
 				Optional.of(specialization.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(t1Request);
@@ -352,7 +334,7 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDateTime.now()), Optional.of(trainer.getUsername()),
 				Optional.of(specialization.getTrainingTypeName()));
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(2);
@@ -375,8 +357,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
 				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -391,7 +371,7 @@ class GymFacadeImplIntegrationTest {
 		TrainingFilter filter = TrainingFilter.forTrainee(Optional.of(LocalDateTime.now().minusDays(7)),
 				Optional.of(LocalDateTime.now()), Optional.empty(), Optional.empty());
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -411,8 +391,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
 				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -426,7 +404,7 @@ class GymFacadeImplIntegrationTest {
 		TrainingFilter filter = TrainingFilter.forTrainee(Optional.empty(), Optional.empty(),
 				Optional.of(trainer.getUsername()), Optional.empty());
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(2);
@@ -447,8 +425,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
 				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -463,7 +439,7 @@ class GymFacadeImplIntegrationTest {
 		TrainingFilter filter = TrainingFilter.forTrainee(Optional.empty(), Optional.empty(), Optional.empty(),
 				Optional.of(yoga.getTrainingTypeName()));
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -484,8 +460,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
 				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -501,7 +475,7 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDateTime.now().minusDays(90)), Optional.empty(),
 				Optional.of(yoga.getTrainingTypeName()));
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).isEmpty();
@@ -521,8 +495,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now().minusDays(1),
 				60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -538,7 +510,7 @@ class GymFacadeImplIntegrationTest {
 				Optional.of(LocalDateTime.now()), Optional.of(trainer.getUsername()),
 				Optional.of(yoga.getTrainingTypeName()));
 
-		List<Training> trainings = gymFacade.getTraineeTrainings(credentials, filter);
+		List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -564,14 +536,13 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		List<String> trainerUsernames = List.of(trainer1.getUsername(), trainer2.getUsername());
 
 		// When
-		gymFacade.updateTraineeTrainersList(credentials, trainerUsernames);
+		gymFacade.updateTraineeTrainersList(trainee.getUsername(), trainerUsernames);
 
 		// Then
-		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(credentials);
+		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(trainee.getUsername());
 		assertThat(unassigned).isEmpty();
 	}
 
@@ -581,17 +552,15 @@ class GymFacadeImplIntegrationTest {
 		CreateTraineeProfileRequest request = new CreateTraineeProfileRequest("Test", "User", true, Optional.empty(),
 				Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(request);
-
-		Credentials credentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		assertThat(trainee.getActive()).isTrue();
 
 		// When
-		gymFacade.toggleTraineeActiveStatus(credentials);
+		gymFacade.toggleTraineeActiveStatus(trainee.getUsername());
 
 		// Then
-		Optional<Trainee> updated = gymFacade.findTraineeByUsername(credentials);
-		assertThat(updated).isPresent();
-		assertThat(updated.get().getActive()).isFalse();
+		Trainee updated = gymFacade.getTraineeByUsername(trainee.getUsername());
+		assertThat(updated).isNotNull();
+		assertThat(updated.getActive()).isFalse();
 	}
 
 	@Test
@@ -601,64 +570,15 @@ class GymFacadeImplIntegrationTest {
 		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true,
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(request);
-
-		Credentials credentials = new Credentials(trainer.getUsername(), trainer.getPassword());
 		assertThat(trainer.getActive()).isTrue();
 
 		// When
-		gymFacade.toggleTrainerActiveStatus(credentials);
+		gymFacade.toggleTrainerActiveStatus(trainer.getUsername());
 
 		// Then
-		Optional<Trainer> updated = gymFacade.findTrainerByUsername(credentials);
-		assertThat(updated).isPresent();
-		assertThat(updated.get().getActive()).isFalse();
-	}
-
-	@Test
-	void updateTraineePassword_shouldChangePassword() {
-		// Given
-		CreateTraineeProfileRequest request = new CreateTraineeProfileRequest("Test", "User", true, Optional.empty(),
-				Optional.empty());
-		Trainee trainee = gymFacade.createTraineeProfile(request);
-
-		Credentials oldCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-		String newPassword = "newPassword123";
-
-		// When
-		gymFacade.updateTraineePassword(oldCredentials, newPassword);
-
-		// Then
-		Credentials newCredentials = new Credentials(trainee.getUsername(), newPassword);
-		Optional<Trainee> retrieved = gymFacade.findTraineeByUsername(newCredentials);
-		assertThat(retrieved).isPresent();
-
-		// Old password should not work
-		assertThatThrownBy(() -> gymFacade.findTraineeByUsername(oldCredentials))
-			.isInstanceOf(AuthenticationException.class);
-	}
-
-	@Test
-	void updateTrainerPassword_shouldChangePassword() {
-		// Given
-		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
-		CreateTrainerProfileRequest request = new CreateTrainerProfileRequest("Test", "Trainer", true,
-				TrainingTypeEnum.YOGA);
-		Trainer trainer = gymFacade.createTrainerProfile(request);
-
-		Credentials oldCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-		String newPassword = "newPassword123";
-
-		// When
-		gymFacade.updateTrainerPassword(oldCredentials, newPassword);
-
-		// Then
-		Credentials newCredentials = new Credentials(trainer.getUsername(), newPassword);
-		Optional<Trainer> retrieved = gymFacade.findTrainerByUsername(newCredentials);
-		assertThat(retrieved).isPresent();
-
-		// Old password should not work
-		assertThatThrownBy(() -> gymFacade.findTrainerByUsername(oldCredentials))
-			.isInstanceOf(AuthenticationException.class);
+		Trainer updated = gymFacade.getTrainerByUsername(trainer.getUsername());
+		assertThat(updated).isNotNull();
+		assertThat(updated.getActive()).isFalse();
 	}
 
 	@Test
@@ -678,8 +598,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
 				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(),
@@ -694,7 +612,7 @@ class GymFacadeImplIntegrationTest {
 		// When
 		TrainingFilter filter = TrainingFilter.forTrainer(Optional.empty(), Optional.empty(), Optional.empty());
 
-		List<Training> trainings = gymFacade.getTrainerTrainings(trainerCredentials, filter);
+		List<Training> trainings = gymFacade.getTrainerTrainings(trainer.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(2);
@@ -719,8 +637,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		// Create trainings
 		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
 				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(),
@@ -736,38 +652,12 @@ class GymFacadeImplIntegrationTest {
 		TrainingFilter filter = TrainingFilter.forTrainer(Optional.empty(), Optional.empty(),
 				Optional.of(trainee1.getUsername()));
 
-		List<Training> trainings = gymFacade.getTrainerTrainings(trainerCredentials, filter);
+		List<Training> trainings = gymFacade.getTrainerTrainings(trainer.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
 		assertThat(trainings.get(0).getTrainingName()).isEqualTo("Morning Session");
 		assertThat(trainings.get(0).getTrainee().getUsername()).isEqualTo(trainee1.getUsername());
-	}
-
-	@Test
-	void updateTrainerProfile_shouldUpdateUsername() {
-		// Given
-		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
-		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest("Jane", "Smith", true,
-				TrainingTypeEnum.YOGA);
-		Trainer trainer = gymFacade.createTrainerProfile(createRequest);
-
-		Credentials oldCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-		String newUsername = "Jane.Smith1";
-
-		UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(oldCredentials, Optional.empty(),
-				Optional.empty(), Optional.of(newUsername), Optional.empty(), Optional.empty(), Optional.empty());
-
-		// When
-		Trainer updated = gymFacade.updateTrainerProfile(updateRequest);
-
-		// Then
-		assertThat(updated.getUsername()).isEqualTo(newUsername);
-
-		Credentials newCredentials = new Credentials(newUsername, trainer.getPassword());
-		Optional<Trainer> retrieved = gymFacade.findTrainerByUsername(newCredentials);
-		assertThat(retrieved).isPresent();
-		assertThat(retrieved.get().getUsername()).isEqualTo(newUsername);
 	}
 
 	@Test
@@ -802,8 +692,6 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.CARDIO);
 		Trainer trainer3 = gymFacade.createTrainerProfile(trainer3Request);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Assign trainer1 by creating a training
 		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga",
 				LocalDateTime.now().minusDays(1), 60, Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(),
@@ -811,7 +699,7 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(trainingRequest);
 
 		// When
-		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(traineeCredentials);
+		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(trainee.getUsername());
 
 		// Then
 		assertThat(unassigned).hasSize(2)
@@ -844,10 +732,8 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee newTrainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials credentials = new Credentials(newTrainee.getUsername(), newTrainee.getPassword());
-
 		// When
-		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(credentials);
+		List<Trainer> unassigned = gymFacade.getTraineeUnassignedTrainers(newTrainee.getUsername());
 
 		// Then
 		assertThat(unassigned).hasSize(3)
@@ -862,8 +748,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		createOrGetTestTrainingType(TrainingTypeEnum.YOGA);
 		createOrGetTestTrainingType(TrainingTypeEnum.BOXING);
 
@@ -877,7 +761,7 @@ class GymFacadeImplIntegrationTest {
 		List<Trainer> trainers = List.of(trainer1, trainer2);
 		List<String> trainerUsernames = trainers.stream().map(Trainer::getUsername).toList();
 
-		gymFacade.updateTraineeTrainersList(traineeCredentials, trainerUsernames);
+		gymFacade.updateTraineeTrainersList(trainee.getUsername(), trainerUsernames);
 
 		String jpql = "SELECT t FROM TraineeDAO t WHERE t.userDAO.username = :username";
 
@@ -935,13 +819,12 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.BOXING);
 		Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
 		List<String> trainerUsernames = List.of(trainer1.getUsername(), trainer2.getUsername());
 
-		gymFacade.updateTraineeTrainersList(traineeCredentials, trainerUsernames);
+		gymFacade.updateTraineeTrainersList(trainee.getUsername(), trainerUsernames);
 
 		// When
-		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(trainee.getUsername());
 
 		// Then
 		assertThat(trainers).hasSize(2);
@@ -956,10 +839,8 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// When
-		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(trainee.getUsername());
 
 		// Then
 		assertThat(trainers).isEmpty();
@@ -978,15 +859,13 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials traineeCredentials = new Credentials(trainee.getUsername(), trainee.getPassword());
-
 		// Assign trainer by creating a training
 		CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga", LocalDateTime.now(), 60,
 				Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
 		gymFacade.createTraining(trainingRequest);
 
 		// When
-		List<Trainer> trainers = gymFacade.getTraineeTrainers(traineeCredentials);
+		List<Trainer> trainers = gymFacade.getTraineeTrainers(trainee.getUsername());
 
 		// Then
 		assertThat(trainers).hasSize(1);
@@ -996,10 +875,10 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTraineeTrainers_shouldThrowExceptionForInvalidCredentials() {
 		// Given
-		Credentials invalidCredentials = new Credentials("nonexistent.user", "wrongPassword");
+		String invalidUsername = "nonexistent.user";
 
 		// When & Then
-		assertThatThrownBy(() -> gymFacade.getTraineeTrainers(invalidCredentials))
+		assertThatThrownBy(() -> gymFacade.getTraineeTrainers(invalidUsername))
 			.isInstanceOf(EntityNotFoundException.class);
 	}
 
@@ -1020,8 +899,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		// Assign trainees by creating trainings
 		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session", LocalDateTime.now(), 60,
 				Optional.of(yoga.getTrainingTypeName()), trainee1.getUsername(), trainer.getUsername());
@@ -1033,7 +910,7 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(training2Request);
 
 		// When
-		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainer.getUsername());
 
 		// Then
 		assertThat(trainees).hasSize(2);
@@ -1050,10 +927,8 @@ class GymFacadeImplIntegrationTest {
 				TrainingTypeEnum.YOGA);
 		Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		// When
-		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainer.getUsername());
 
 		// Then
 		assertThat(trainees).isEmpty();
@@ -1072,8 +947,6 @@ class GymFacadeImplIntegrationTest {
 				Optional.empty(), Optional.empty());
 		Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-		Credentials trainerCredentials = new Credentials(trainer.getUsername(), trainer.getPassword());
-
 		// Create multiple trainings with the same trainee
 		CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session", LocalDateTime.now(), 60,
 				Optional.of(yoga.getTrainingTypeName()), trainee.getUsername(), trainer.getUsername());
@@ -1085,7 +958,7 @@ class GymFacadeImplIntegrationTest {
 		gymFacade.createTraining(training2Request);
 
 		// When
-		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainerCredentials);
+		List<Trainee> trainees = gymFacade.getTrainerTrainees(trainer.getUsername());
 
 		// Then
 		assertThat(trainees).hasSize(1);
@@ -1095,10 +968,9 @@ class GymFacadeImplIntegrationTest {
 	@Test
 	void getTrainerTrainees_shouldThrowExceptionForInvalidCredentials() {
 		// Given
-		Credentials invalidCredentials = new Credentials("nonexistent.trainer", "wrongPassword");
-
+		String invalidUsername = "nonexistent.trainer";
 		// When & Then
-		assertThatThrownBy(() -> gymFacade.getTrainerTrainees(invalidCredentials))
+		assertThatThrownBy(() -> gymFacade.getTrainerTrainees(invalidUsername))
 			.isInstanceOf(EntityNotFoundException.class);
 	}
 

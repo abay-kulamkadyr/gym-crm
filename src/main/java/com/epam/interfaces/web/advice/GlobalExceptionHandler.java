@@ -1,6 +1,10 @@
 package com.epam.interfaces.web.advice;
 
-import com.epam.application.exception.AuthenticationException;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.epam.application.exception.ValidationException;
 import com.epam.infrastructure.logging.MdcConstants;
 import com.epam.interfaces.web.dto.response.ErrorResponse;
@@ -9,6 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -16,11 +23,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.context.request.WebRequest;
-
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 @Slf4j
@@ -46,8 +48,19 @@ class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
 	}
 
-	@ExceptionHandler(AuthenticationException.class)
-	public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
+	@ExceptionHandler(LockedException.class)
+	public ResponseEntity<ErrorResponse> handleLockedException(LockedException ex, WebRequest request) {
+
+		logException(ex, request, null);
+
+		ErrorResponse errorResponse = buildErrorResponse(HttpStatus.TOO_MANY_REQUESTS, "Account is locked",
+				ex.getMessage(), request);
+
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+	}
+
+	@ExceptionHandler({ AuthenticationException.class, AuthorizationDeniedException.class })
+	public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
 
 		logException(ex, request, null);
 

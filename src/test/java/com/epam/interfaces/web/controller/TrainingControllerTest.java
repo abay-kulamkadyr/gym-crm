@@ -1,22 +1,5 @@
 package com.epam.interfaces.web.controller;
 
-import com.epam.application.facade.GymFacade;
-import com.epam.application.request.CreateTrainingRequest;
-import com.epam.interfaces.web.controller.impl.TrainingController;
-import com.epam.interfaces.web.dto.request.AddTrainingRequest;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -26,8 +9,28 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalDateTime;
+
+import com.epam.application.facade.GymFacade;
+import com.epam.application.request.CreateTrainingRequest;
+import com.epam.interfaces.web.controller.impl.TrainingController;
+import com.epam.interfaces.web.dto.request.AddTrainingRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
 @WebMvcTest(TrainingController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
+@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class })
 @ActiveProfiles("test")
 class TrainingControllerTest {
 

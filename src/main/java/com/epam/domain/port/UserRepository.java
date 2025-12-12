@@ -1,8 +1,8 @@
 package com.epam.domain.port;
 
-import com.epam.domain.model.User;
-
 import java.util.Optional;
+
+import com.epam.domain.model.User;
 
 public interface UserRepository {
 

@@ -1,9 +1,9 @@
 package com.epam.domain;
 
-import com.epam.domain.model.TrainingTypeEnum;
-
 import java.time.LocalDateTime;
 import java.util.Optional;
+
+import com.epam.domain.model.TrainingTypeEnum;
 
 public record TrainingFilter(Optional<LocalDateTime> fromDate, Optional<LocalDateTime> toDate,
 		Optional<String> trainerName, Optional<String> traineeName, Optional<TrainingTypeEnum> trainingType) {

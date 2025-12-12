@@ -1,5 +1,7 @@
 package com.epam.infrastructure.logging;
 
+import java.util.Enumeration;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -8,8 +10,6 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.util.Enumeration;
 
 /**
  * Interceptor to log detailed REST endpoint information. Logs: endpoint called, request

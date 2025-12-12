@@ -1,9 +1,9 @@
 package com.epam.interfaces.web.dto.request;
 
+import java.util.List;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-
-import java.util.List;
 
 public record UpdateTraineeTrainersRequest(@NotEmpty(message = "Trainer list cannot be empty") @NotNull(
 		message = "Trainer list is required") List<@NotNull(

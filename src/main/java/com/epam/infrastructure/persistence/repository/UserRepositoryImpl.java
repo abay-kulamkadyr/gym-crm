@@ -1,5 +1,7 @@
 package com.epam.infrastructure.persistence.repository;
 
+import java.util.Optional;
+
 import com.epam.domain.model.User;
 import com.epam.domain.model.UserRole;
 import com.epam.domain.port.UserRepository;
@@ -9,8 +11,6 @@ import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {

@@ -1,5 +1,10 @@
 package com.epam.infrastructure.monitoring.health;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainingTypeRepository;
@@ -10,11 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.Status;
-
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class TrainingTypeRepositoryHealthIndicatorTest {

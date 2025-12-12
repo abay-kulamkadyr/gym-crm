@@ -1,9 +1,9 @@
 package com.epam.interfaces.web.dto.response;
 
+import java.time.LocalDateTime;
+
 import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingTypeEnum;
-
-import java.time.LocalDateTime;
 
 public record EmbeddedTraineeTrainingResponse(String trainingName, LocalDateTime trainingDate,
 		TrainingTypeEnum trainingType, Integer durationMin, String trainerName) {

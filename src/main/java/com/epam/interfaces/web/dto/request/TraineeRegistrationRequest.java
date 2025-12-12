@@ -1,12 +1,12 @@
 package com.epam.interfaces.web.dto.request;
 
+import java.time.LocalDate;
+import java.util.Optional;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
-
-import java.time.LocalDate;
-import java.util.Optional;
 
 public record TraineeRegistrationRequest(
 		@NotBlank(message = "First name is required") @Size(min = 2, max = 50,

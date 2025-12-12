@@ -1,10 +1,10 @@
 package com.epam.domain.port;
 
-import com.epam.domain.model.Trainee;
-import com.epam.domain.model.Trainer;
-
 import java.util.List;
 import java.util.Optional;
+
+import com.epam.domain.model.Trainee;
+import com.epam.domain.model.Trainer;
 
 public interface TraineeRepository extends CrudRepository<Trainee> {
 

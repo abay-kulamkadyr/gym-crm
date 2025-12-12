@@ -1,6 +1,15 @@
 package com.epam.application.service;
 
-import com.epam.application.Credentials;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import com.epam.application.request.CreateTrainingRequest;
 import com.epam.application.service.impl.TrainingServiceImpl;
 import com.epam.domain.TrainingFilter;
@@ -21,16 +30,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class TrainingServiceImplTest {
 
@@ -49,10 +48,6 @@ class TrainingServiceImplTest {
 	@InjectMocks
 	private TrainingServiceImpl trainingService;
 
-	private Credentials traineeCredentials;
-
-	private Credentials trainerCredentials;
-
 	private Trainee testTrainee;
 
 	private Trainer testTrainer;
@@ -63,10 +58,6 @@ class TrainingServiceImplTest {
 
 	@BeforeEach
 	void setUp() {
-		// Setup credentials
-		traineeCredentials = new Credentials("John.Doe", "password123");
-		trainerCredentials = new Credentials("Alice.Johnson", "trainerpass456");
-
 		// Setup trainee
 		testTrainee = new Trainee("John", "Doe", true);
 		testTrainee.setTraineeId(1L);
@@ -157,10 +148,11 @@ class TrainingServiceImplTest {
 		TrainingFilter filter = TrainingFilter.empty();
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(trainingRepository.getTraineeTrainings("John.Doe", filter)).thenReturn(expectedTrainings);
+		when(trainingRepository.getTraineeTrainings(testTrainee.getUsername(), filter)).thenReturn(expectedTrainings);
+		when(traineeRepository.findByUsername(testTrainee.getUsername())).thenReturn(Optional.ofNullable(testTrainee));
 
 		// When
-		List<Training> trainings = trainingService.getTraineeTrainings(traineeCredentials, filter);
+		List<Training> trainings = trainingService.getTraineeTrainings(testTrainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -179,9 +171,10 @@ class TrainingServiceImplTest {
 		List<Training> expectedTrainings = List.of(testTraining);
 
 		when(trainingRepository.getTraineeTrainings("John.Doe", filter)).thenReturn(expectedTrainings);
+		when(traineeRepository.findByUsername(testTrainee.getUsername())).thenReturn(Optional.ofNullable(testTrainee));
 
 		// When
-		List<Training> trainings = trainingService.getTraineeTrainings(traineeCredentials, filter);
+		List<Training> trainings = trainingService.getTraineeTrainings(testTrainee.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -194,10 +187,11 @@ class TrainingServiceImplTest {
 		TrainingFilter filter = TrainingFilter.empty();
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(trainingRepository.getTrainerTrainings("Alice.Johnson", filter)).thenReturn(expectedTrainings);
+		when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter)).thenReturn(expectedTrainings);
+		when(trainerRepository.findByUsername(testTrainer.getUsername())).thenReturn(Optional.ofNullable(testTrainer));
 
 		// When
-		List<Training> trainings = trainingService.getTrainerTrainings(trainerCredentials, filter);
+		List<Training> trainings = trainingService.getTrainerTrainings(testTrainer.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);
@@ -215,10 +209,11 @@ class TrainingServiceImplTest {
 
 		List<Training> expectedTrainings = List.of(testTraining);
 
-		when(trainingRepository.getTrainerTrainings("Alice.Johnson", filter)).thenReturn(expectedTrainings);
+		when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter)).thenReturn(expectedTrainings);
+		when(trainerRepository.findByUsername(testTrainer.getUsername())).thenReturn(Optional.ofNullable(testTrainer));
 
 		// When
-		List<Training> trainings = trainingService.getTrainerTrainings(trainerCredentials, filter);
+		List<Training> trainings = trainingService.getTrainerTrainings(testTrainer.getUsername(), filter);
 
 		// Then
 		assertThat(trainings).hasSize(1);

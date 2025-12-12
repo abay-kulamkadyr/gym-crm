@@ -1,5 +1,8 @@
 package com.epam.infrastructure.logging;
 
+import java.io.IOException;
+import java.util.UUID;
+
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -12,9 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.UUID;
 
 /**
  * Filter to generate and manage transaction IDs for request tracking. Transaction ID is

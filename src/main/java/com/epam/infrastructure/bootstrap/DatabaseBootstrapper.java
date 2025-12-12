@@ -1,5 +1,9 @@
 package com.epam.infrastructure.bootstrap;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.model.UserRole;
 import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
@@ -24,10 +28,6 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Database bootstrapper for loading initial data from JSON when application context is

@@ -1,11 +1,11 @@
 package com.epam.application.service.impl;
 
-import com.epam.application.Credentials;
+import java.util.List;
+
 import com.epam.application.event.TrainerRegisteredEvent;
 import com.epam.application.exception.ValidationException;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
-import com.epam.application.service.AuthenticationService;
 import com.epam.application.service.TrainerService;
 import com.epam.application.util.CredentialsUtil;
 import com.epam.domain.model.Trainee;
@@ -18,11 +18,9 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @Transactional
@@ -33,9 +31,9 @@ public class TrainerServiceImpl implements TrainerService {
 
 	private TrainingTypeRepository trainingTypeRepository;
 
-	private AuthenticationService authenticationService;
-
 	private ApplicationEventPublisher applicationEventPublisher;
+
+	private PasswordEncoder passwordEncoder;
 
 	@Autowired
 	void setTrainerRepository(TrainerRepository trainerRepository) {
@@ -48,8 +46,8 @@ public class TrainerServiceImpl implements TrainerService {
 	}
 
 	@Autowired
-	void setAuthenticationService(AuthenticationService authenticationService) {
-		this.authenticationService = authenticationService;
+	void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Autowired
@@ -68,16 +66,17 @@ public class TrainerServiceImpl implements TrainerService {
 		String password = CredentialsUtil.generateRandomPassword(10);
 
 		trainer.setUsername(username);
-		trainer.setPassword(password);
+		trainer.setPassword(passwordEncoder.encode(password));
 
 		applicationEventPublisher.publishEvent(new TrainerRegisteredEvent(trainer.getUserId()));
-		return trainerRepository.save(trainer);
+		Trainer savedTrainer = trainerRepository.save(trainer);
+		savedTrainer.setPassword(password);
+		return savedTrainer;
 	}
 
 	@Override
 	public Trainer updateProfile(UpdateTrainerProfileRequest request) {
-		authenticationService.authenticate(request.credentials());
-		Trainer trainer = findTrainerByUsernameOrThrow(request.credentials().username());
+		Trainer trainer = findTrainerByUsernameOrThrow(request.username());
 
 		request.firstName().ifPresent(newFirstName -> {
 			CredentialsUtil.validateName(newFirstName, "First name");
@@ -89,14 +88,9 @@ public class TrainerServiceImpl implements TrainerService {
 			trainer.setLastName(newLastName);
 		});
 
-		request.username().ifPresent(newUsername -> {
-			validateUsernameChange(newUsername, trainer.getUsername());
-			trainer.setUsername(newUsername);
-		});
-
 		request.password().ifPresent(newPassword -> {
 			validateNewPassword(newPassword);
-			trainer.setPassword(newPassword);
+			trainer.setPassword(passwordEncoder.encode(newPassword));
 		});
 
 		request.active().ifPresent(trainer::setActive);
@@ -112,26 +106,22 @@ public class TrainerServiceImpl implements TrainerService {
 			trainer.setSpecialization(trainingType);
 		});
 
-		return trainerRepository.save(trainer);
+		Trainer savedTrainer = trainerRepository.save(trainer);
+		request.password().ifPresent(savedTrainer::setPassword);
+		return savedTrainer;
 	}
 
 	@Override
-	public void updatePassword(Credentials credentials, String newPassword) {
+	public void updatePassword(String username, String newPassword) {
 		validateNewPassword(newPassword);
-
-		authenticationService.authenticate(credentials);
-		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
-
-		validateNewPassword(newPassword);
-
-		trainer.setPassword(newPassword);
+		Trainer trainer = findTrainerByUsernameOrThrow(username);
+		trainer.setPassword(passwordEncoder.encode(newPassword));
 		trainerRepository.save(trainer);
 	}
 
 	@Override
-	public void toggleActiveStatus(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		Trainer trainer = findTrainerByUsernameOrThrow(credentials.username());
+	public void toggleActiveStatus(String username) {
+		Trainer trainer = findTrainerByUsernameOrThrow(username);
 
 		boolean oldStatus = trainer.getActive();
 		boolean newStatus = !oldStatus;
@@ -141,16 +131,21 @@ public class TrainerServiceImpl implements TrainerService {
 	}
 
 	@Override
-	public void deleteProfile(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		trainerRepository.deleteByUsername(credentials.username());
+	public void deleteProfile(String username) {
+		findTrainerByUsernameOrThrow(username);
+		trainerRepository.deleteByUsername(username);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Optional<Trainer> findProfileByUsername(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return trainerRepository.findByUsername(credentials.username());
+	public Trainer getProfileByUsername(String username) {
+		return findTrainerByUsernameOrThrow(username);
+	}
+
+	@Override
+	public List<Trainee> getTrainees(String username) {
+		findTrainerByUsernameOrThrow(username);
+		return trainerRepository.getTrainees(username);
 	}
 
 	private Trainer findTrainerByUsernameOrThrow(String username) {
@@ -172,26 +167,6 @@ public class TrainerServiceImpl implements TrainerService {
 			throw new ValidationException("New password cannot be null");
 		}
 		CredentialsUtil.validatePassword(password);
-	}
-
-	private void validateUsernameChange(String newUsername, String currentUsername) {
-		CredentialsUtil.validateUsername(newUsername);
-
-		if (newUsername.equals(currentUsername)) {
-			log.warn("New username is the same as current username: {}", newUsername);
-			throw new ValidationException("New username must be different from current username");
-		}
-
-		if (trainerRepository.findByUsername(newUsername).isPresent()) {
-			log.error("Username already exists: {}", newUsername);
-			throw new ValidationException(String.format("Username already exists: %s", newUsername));
-		}
-	}
-
-	@Override
-	public List<Trainee> getTrainees(Credentials credentials) {
-		authenticationService.authenticate(credentials);
-		return trainerRepository.getTrainees(credentials.username());
 	}
 
 }

@@ -1,8 +1,8 @@
 package com.epam.domain.port;
 
-import org.springframework.lang.NonNull;
-
 import java.util.Optional;
+
+import org.springframework.lang.NonNull;
 
 public interface CrudRepository<T> {
 

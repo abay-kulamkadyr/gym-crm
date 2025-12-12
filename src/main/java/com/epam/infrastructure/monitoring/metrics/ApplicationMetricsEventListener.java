@@ -2,8 +2,8 @@ package com.epam.infrastructure.monitoring.metrics;
 
 import com.epam.application.event.TraineeRegisteredEvent;
 import com.epam.application.event.TrainerRegisteredEvent;
-import com.epam.application.event.UserLoginAttemptEvent;
-import com.epam.application.event.UserLoginFailedEvent;
+import com.epam.infrastructure.security.event.UserLoginAttemptEvent;
+import com.epam.infrastructure.security.event.UserLoginFailedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

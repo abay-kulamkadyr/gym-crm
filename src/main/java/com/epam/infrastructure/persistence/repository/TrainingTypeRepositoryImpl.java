@@ -1,5 +1,8 @@
 package com.epam.infrastructure.persistence.repository;
 
+import java.util.List;
+import java.util.Optional;
+
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainingTypeRepository;
@@ -11,9 +14,6 @@ import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
-import java.util.Optional;
 
 @Repository
 @Slf4j

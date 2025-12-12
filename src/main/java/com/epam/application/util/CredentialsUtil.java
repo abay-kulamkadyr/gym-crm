@@ -1,11 +1,11 @@
 package com.epam.application.util;
 
-import com.epam.application.exception.ValidationException;
-
 import java.security.SecureRandom;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+
+import com.epam.application.exception.ValidationException;
 
 public class CredentialsUtil {
 

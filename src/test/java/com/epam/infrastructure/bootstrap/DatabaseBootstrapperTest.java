@@ -1,5 +1,14 @@
 package com.epam.infrastructure.bootstrap;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.model.UserRole;
 import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
@@ -20,19 +29,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Transactional
+@TestPropertySource(properties = "spring.main.banner-mode=off")
 @ActiveProfiles({ "test" })
 class DatabaseBootstrapperTest {
 
