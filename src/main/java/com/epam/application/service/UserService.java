@@ -5,16 +5,16 @@ import com.epam.application.request.types.UpdateProfileRequest;
 
 public interface UserService<T, C extends CreateProfileRequest, U extends UpdateProfileRequest> {
 
-	T createProfile(C request);
+    T createProfile(C request);
 
-	T updateProfile(U request);
+    T updateProfile(U request);
 
-	void updatePassword(String username, String newPassword);
+    void updatePassword(String username, String newPassword);
 
-	void toggleActiveStatus(String username);
+    void toggleActiveStatus(String username);
 
-	void deleteProfile(String username);
+    void deleteProfile(String username);
 
-	T getProfileByUsername(String username);
+    T getProfileByUsername(String username);
 
 }

@@ -23,30 +23,30 @@ import lombok.Setter;
 @Setter
 public class TrainingTypeDAO {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@Column(name = "training_type_id")
-	private Long trainingTypeId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "training_type_id")
+    private Long trainingTypeId;
 
-	@Enumerated(EnumType.STRING)
-	@Column(name = "training_type_name", unique = true, nullable = false)
-	private TrainingTypeEnum trainingTypeName;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "training_type_name", unique = true, nullable = false)
+    private TrainingTypeEnum trainingTypeName;
 
-	@OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
-	private List<TrainerDAO> trainerDAOS = new ArrayList<>();
+    @OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
+    private List<TrainerDAO> trainerDAOS = new ArrayList<>();
 
-	@OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
-	private List<TrainingDAO> trainingDAOS = new ArrayList<>();
+    @OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
+    private List<TrainingDAO> trainingDAOS = new ArrayList<>();
 
-	public TrainingTypeDAO() {
+    public TrainingTypeDAO() {
 
-	}
+    }
 
-	public void addTraining(TrainingDAO trainingDAO) {
-		if (!trainingDAOS.contains(trainingDAO)) {
-			trainingDAOS.add(trainingDAO);
-		}
-		trainingDAO.setTrainingTypeDAO(this);
-	}
+    public void addTraining(TrainingDAO trainingDAO) {
+        if (!trainingDAOS.contains(trainingDAO)) {
+            trainingDAOS.add(trainingDAO);
+        }
+        trainingDAO.setTrainingTypeDAO(this);
+    }
 
 }

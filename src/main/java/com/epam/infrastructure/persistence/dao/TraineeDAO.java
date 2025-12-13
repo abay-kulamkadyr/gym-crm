@@ -29,46 +29,48 @@ import lombok.Setter;
 @Setter
 public class TraineeDAO {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@Column(name = "trainee_id")
-	@EqualsAndHashCode.Include
-	private Long traineeId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "trainee_id")
+    @EqualsAndHashCode.Include
+    private Long traineeId;
 
-	@OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
-	@JoinColumn(name = "user_id", nullable = false, unique = true)
-	private UserDAO userDAO;
+    @OneToOne(fetch = FetchType.EAGER, optional = false, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private UserDAO userDAO;
 
-	@OneToMany(mappedBy = "traineeDAO", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
-	private List<TrainingDAO> trainingDAOS = new ArrayList<>();
+    @OneToMany(mappedBy = "traineeDAO", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE, orphanRemoval = true)
+    private List<TrainingDAO> trainingDAOS = new ArrayList<>();
 
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "trainee_trainer", joinColumns = @JoinColumn(name = "trainee_id"),
-			inverseJoinColumns = @JoinColumn(name = "trainer_id"))
-	private List<TrainerDAO> trainerDAOS = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "trainee_trainer",
+            joinColumns = @JoinColumn(name = "trainee_id"),
+            inverseJoinColumns = @JoinColumn(name = "trainer_id"))
+    private List<TrainerDAO> trainerDAOS = new ArrayList<>();
 
-	@Column(name = "date_of_birth")
-	@JsonFormat(pattern = "yyyy-MM-dd")
-	private LocalDate dob;
+    @Column(name = "date_of_birth")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate dob;
 
-	@Column(name = "address")
-	private String address;
+    @Column(name = "address")
+    private String address;
 
-	public TraineeDAO() {
+    public TraineeDAO() {
 
-	}
+    }
 
-	public void addTraining(TrainingDAO trainingDAO) {
-		if (!trainingDAOS.contains(trainingDAO)) {
-			trainingDAOS.add(trainingDAO);
-		}
-		trainingDAO.setTraineeDAO(this);
-	}
+    public void addTraining(TrainingDAO trainingDAO) {
+        if (!trainingDAOS.contains(trainingDAO)) {
+            trainingDAOS.add(trainingDAO);
+        }
+        trainingDAO.setTraineeDAO(this);
+    }
 
-	public void addTrainer(TrainerDAO trainerDAO) {
-		if (!trainerDAOS.contains(trainerDAO)) {
-			trainerDAOS.add(trainerDAO);
-		}
-	}
+    public void addTrainer(TrainerDAO trainerDAO) {
+        if (!trainerDAOS.contains(trainerDAO)) {
+            trainerDAOS.add(trainerDAO);
+        }
+    }
 
 }

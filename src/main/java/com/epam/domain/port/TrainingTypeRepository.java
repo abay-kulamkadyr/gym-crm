@@ -8,8 +8,8 @@ import com.epam.domain.model.TrainingTypeEnum;
 
 public interface TrainingTypeRepository extends CrudRepository<TrainingType> {
 
-	Optional<TrainingType> findByTrainingTypeName(TrainingTypeEnum trainingName);
+    Optional<TrainingType> findByTrainingTypeName(TrainingTypeEnum trainingName);
 
-	List<TrainingType> getTrainingTypes();
+    List<TrainingType> getTrainingTypes();
 
 }

@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 @Tag(name = "Training Types", description = "Training type operations")
 public interface TrainingTypeControllerApi {
 
-	@Operation(summary = "Get Training Types", description = "Retrieve all available training types")
-	ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes();
+    @Operation(summary = "Get Training Types", description = "Retrieve all available training types")
+    ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes();
 
 }

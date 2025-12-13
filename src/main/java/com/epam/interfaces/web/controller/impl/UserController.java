@@ -26,43 +26,44 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class UserController implements UserControllerApi {
 
-	private final AuthenticationUseCase authenticationUseCase;
+    private final AuthenticationUseCase authenticationUseCase;
 
-	private final PasswordManagementUseCase passwordManagementUseCase;
+    private final PasswordManagementUseCase passwordManagementUseCase;
 
-	@Autowired
-	UserController(AuthenticationUseCase authenticationUseCase, PasswordManagementUseCase passwordManagementUseCase) {
-		this.authenticationUseCase = authenticationUseCase;
-		this.passwordManagementUseCase = passwordManagementUseCase;
-	}
+    @Autowired
+    UserController(AuthenticationUseCase authenticationUseCase, PasswordManagementUseCase passwordManagementUseCase) {
+        this.authenticationUseCase = authenticationUseCase;
+        this.passwordManagementUseCase = passwordManagementUseCase;
+    }
 
-	@Override
-	@PostMapping("/login")
-	public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
-		log.info("Login request received for username: {}", request.username());
-		AuthenticationResult result = authenticationUseCase.authenticate(request.username(), request.password());
-		return ResponseEntity.ok(new JwtResponse(result.token()));
-	}
+    @Override
+    @PostMapping("/login")
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
+        log.info("Login request received for username: {}", request.username());
+        AuthenticationResult result = authenticationUseCase.authenticate(request.username(), request.password());
+        return ResponseEntity.ok(new JwtResponse(result.token()));
+    }
 
-	@Override
-	@PostMapping("/logout")
-	public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization") String authHeader) {
-		if (authHeader.startsWith("Bearer ")) {
-			String token = authHeader.substring(7);
-			authenticationUseCase.logout(token);
-		}
-		return ResponseEntity.noContent().build();
-	}
+    @Override
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization") String authHeader) {
+        if (authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            authenticationUseCase.logout(token);
+        }
+        return ResponseEntity.noContent().build();
+    }
 
-	@Override
-	@PutMapping("/password")
-	@PreAuthorize("#username == authentication.name")
-	public ResponseEntity<Void> changePassword(@AuthenticationPrincipal UserDetails userDetails,
-			@Valid @RequestBody ChangePasswordRequest request) {
-		String username = userDetails.getUsername();
-		log.info("Password change request for user: {}", username);
-		passwordManagementUseCase.changePassword(username, request.oldPassword(), request.newPassword());
-		return ResponseEntity.ok().build();
-	}
+    @Override
+    @PutMapping("/password")
+    @PreAuthorize("#username == authentication.name")
+    public ResponseEntity<Void> changePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        String username = userDetails.getUsername();
+        log.info("Password change request for user: {}", username);
+        passwordManagementUseCase.changePassword(username, request.oldPassword(), request.newPassword());
+        return ResponseEntity.ok().build();
+    }
 
 }

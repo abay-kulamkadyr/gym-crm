@@ -11,15 +11,15 @@ import lombok.Setter;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true, callSuper = false)
 public class Trainee extends User {
 
-	@EqualsAndHashCode.Include
-	private Long traineeId;
+    @EqualsAndHashCode.Include
+    private Long traineeId;
 
-	private LocalDate dob;
+    private LocalDate dob;
 
-	private String address;
+    private String address;
 
-	public Trainee(String firstName, String lastName, Boolean active) {
-		super(firstName, lastName, active);
-	}
+    public Trainee(String firstName, String lastName, Boolean active) {
+        super(firstName, lastName, active);
+    }
 
 }

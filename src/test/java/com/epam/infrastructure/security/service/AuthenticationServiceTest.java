@@ -34,110 +34,114 @@ import org.springframework.security.core.Authentication;
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
 
-	@Mock
-	private AuthenticationManager authenticationManager;
+    @Mock
+    private AuthenticationManager authenticationManager;
 
-	@Mock
-	private TokenService tokenService;
+    @Mock
+    private TokenService tokenService;
 
-	@Mock
-	private TokenBlacklist tokenBlacklist;
+    @Mock
+    private TokenBlacklist tokenBlacklist;
 
-	@Mock
-	private LoginAttemptTracker loginAttemptTracker;
+    @Mock
+    private LoginAttemptTracker loginAttemptTracker;
 
-	@Mock
-	private Authentication authentication;
+    @Mock
+    private Authentication authentication;
 
-	@Mock
-	private ApplicationEventPublisher eventPublisher;
+    @Mock
+    private ApplicationEventPublisher eventPublisher;
 
-	private Clock clock;
+    private Clock clock;
 
-	private AuthenticationService service;
+    private AuthenticationService service;
 
-	@BeforeEach
-	void setUp() {
-		clock = Clock.fixed(Instant.parse("2025-01-01T12:00:00Z"), ZoneId.systemDefault());
-		service = new AuthenticationService(authenticationManager, tokenService, tokenBlacklist, loginAttemptTracker,
-				clock, eventPublisher);
-	}
+    @BeforeEach
+    void setUp() {
+        clock = Clock.fixed(Instant.parse("2025-01-01T12:00:00Z"), ZoneId.systemDefault());
+        service = new AuthenticationService(authenticationManager,
+                tokenService,
+                tokenBlacklist,
+                loginAttemptTracker,
+                clock,
+                eventPublisher);
+    }
 
-	@Test
-	void authenticate_shouldSucceed_whenCredentialsValid() {
-		// Given
-		String username = "testuser";
-		String password = "password";
-		String expectedToken = "jwt-token-123";
+    @Test
+    void authenticate_shouldSucceed_whenCredentialsValid() {
+        // Given
+        String username = "testuser";
+        String password = "password";
+        String expectedToken = "jwt-token-123";
 
-		when(loginAttemptTracker.isAccountLocked(username)).thenReturn(false);
-		when(authenticationManager.authenticate(any())).thenReturn(authentication);
-		when(authentication.getName()).thenReturn(username);
-		when(tokenService.generateToken(username)).thenReturn(expectedToken);
+        when(loginAttemptTracker.isAccountLocked(username)).thenReturn(false);
+        when(authenticationManager.authenticate(any())).thenReturn(authentication);
+        when(authentication.getName()).thenReturn(username);
+        when(tokenService.generateToken(username)).thenReturn(expectedToken);
 
-		// When
-		AuthenticationResult result = service.authenticate(username, password);
+        // When
+        AuthenticationResult result = service.authenticate(username, password);
 
-		// Then
-		assertNotNull(result);
-		assertEquals(username, result.username());
-		assertEquals(expectedToken, result.token());
+        // Then
+        assertNotNull(result);
+        assertEquals(username, result.username());
+        assertEquals(expectedToken, result.token());
 
-		verify(loginAttemptTracker).clearAttempts(username);
-		verify(tokenService).generateToken(username);
-	}
+        verify(loginAttemptTracker).clearAttempts(username);
+        verify(tokenService).generateToken(username);
+    }
 
-	@Test
-	void authenticate_shouldThrowLockedException_whenAccountLocked() {
-		// Given
-		String username = "lockeduser";
-		LockoutInfo lockout = new LockoutInfo(username, 3, clock.instant().plus(Duration.ofMinutes(5)));
+    @Test
+    void authenticate_shouldThrowLockedException_whenAccountLocked() {
+        // Given
+        String username = "lockeduser";
+        LockoutInfo lockout = new LockoutInfo(username, 3, clock.instant().plus(Duration.ofMinutes(5)));
 
-		when(loginAttemptTracker.isAccountLocked(username)).thenReturn(true);
-		when(loginAttemptTracker.getLockoutInfo(username)).thenReturn(lockout);
+        when(loginAttemptTracker.isAccountLocked(username)).thenReturn(true);
+        when(loginAttemptTracker.getLockoutInfo(username)).thenReturn(lockout);
 
-		// When/Then
-		assertThrows(LockedException.class, () -> service.authenticate(username, "password"));
+        // When/Then
+        assertThrows(LockedException.class, () -> service.authenticate(username, "password"));
 
-		verify(authenticationManager, never()).authenticate(any());
-	}
+        verify(authenticationManager, never()).authenticate(any());
+    }
 
-	@Test
-	void authenticate_shouldRecordFailedAttempt_whenAuthenticationFails() {
-		// Given
-		String username = "testuser";
-		when(loginAttemptTracker.isAccountLocked(username)).thenReturn(false);
-		when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
+    @Test
+    void authenticate_shouldRecordFailedAttempt_whenAuthenticationFails() {
+        // Given
+        String username = "testuser";
+        when(loginAttemptTracker.isAccountLocked(username)).thenReturn(false);
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Bad credentials"));
 
-		// When/Then
-		assertThrows(BadCredentialsException.class, () -> service.authenticate(username, "wrong-password"));
+        // When/Then
+        assertThrows(BadCredentialsException.class, () -> service.authenticate(username, "wrong-password"));
 
-		verify(loginAttemptTracker).recordFailedAttempt(username);
-		verify(tokenService, never()).generateToken(any());
-	}
+        verify(loginAttemptTracker).recordFailedAttempt(username);
+        verify(tokenService, never()).generateToken(any());
+    }
 
-	@Test
-	void logout_shouldRevokeToken() {
-		// Given
-		String token = "jwt-token-123";
-		TokenData tokenData = new TokenData("user", clock.instant(), clock.instant().plus(Duration.ofHours(1)));
+    @Test
+    void logout_shouldRevokeToken() {
+        // Given
+        String token = "jwt-token-123";
+        TokenData tokenData = new TokenData("user", clock.instant(), clock.instant().plus(Duration.ofHours(1)));
 
-		when(tokenService.parseToken(token)).thenReturn(tokenData);
+        when(tokenService.parseToken(token)).thenReturn(tokenData);
 
-		// When
-		service.logout(token);
+        // When
+        service.logout(token);
 
-		// Then
-		verify(tokenBlacklist).revokeToken(token, tokenData.expiresAt());
-	}
+        // Then
+        verify(tokenBlacklist).revokeToken(token, tokenData.expiresAt());
+    }
 
-	@Test
-	void logout_shouldHandleNullToken() {
-		// When
-		service.logout(null);
+    @Test
+    void logout_shouldHandleNullToken() {
+        // When
+        service.logout(null);
 
-		// Then
-		verify(tokenBlacklist, never()).revokeToken(any(), any());
-	}
+        // Then
+        verify(tokenBlacklist, never()).revokeToken(any(), any());
+    }
 
 }

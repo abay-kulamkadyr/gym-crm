@@ -22,97 +22,97 @@ import org.springframework.stereotype.Repository;
 @Slf4j
 public class TrainerRepositoryImpl implements TrainerRepository {
 
-	@PersistenceContext
-	private EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-	@Override
-	public Trainer save(@NonNull Trainer trainer) {
-		TrainerDAO entity = TrainerMapper.toEntity(trainer);
+    @Override
+    public Trainer save(@NonNull Trainer trainer) {
+        TrainerDAO entity = TrainerMapper.toEntity(trainer);
 
-		if (trainer.getTrainerId() == null) {
-			entityManager.persist(entity);
-		}
-		else {
-			entityManager.merge(entity);
-		}
+        if (trainer.getTrainerId() == null) {
+            entityManager.persist(entity);
+        }
+        else {
+            entityManager.merge(entity);
+        }
 
-		return TrainerMapper.toDomain(entity);
-	}
+        return TrainerMapper.toDomain(entity);
+    }
 
-	@Override
-	public Optional<Trainer> findById(@NonNull Long id) {
-		TrainerDAO trainerDAO = entityManager.find(TrainerDAO.class, id);
+    @Override
+    public Optional<Trainer> findById(@NonNull Long id) {
+        TrainerDAO trainerDAO = entityManager.find(TrainerDAO.class, id);
 
-		if (trainerDAO == null) {
-			log.warn("Trainer with ID {} not found", id);
-			return Optional.empty();
-		}
+        if (trainerDAO == null) {
+            log.warn("Trainer with ID {} not found", id);
+            return Optional.empty();
+        }
 
-		return Optional.of(TrainerMapper.toDomain(trainerDAO));
-	}
+        return Optional.of(TrainerMapper.toDomain(trainerDAO));
+    }
 
-	@Override
-	public void delete(@NonNull Long id) {
-		TrainerDAO trainerDAO = entityManager.find(TrainerDAO.class, id);
+    @Override
+    public void delete(@NonNull Long id) {
+        TrainerDAO trainerDAO = entityManager.find(TrainerDAO.class, id);
 
-		if (trainerDAO == null) {
-			throw new EntityNotFoundException(String.format("Trainer with ID %d not found", id));
-		}
+        if (trainerDAO == null) {
+            throw new EntityNotFoundException(String.format("Trainer with ID %d not found", id));
+        }
 
-		entityManager.remove(trainerDAO);
-	}
+        entityManager.remove(trainerDAO);
+    }
 
-	@Override
-	public Optional<Trainer> findByUsername(String username) {
-		String jpql = "SELECT t FROM TrainerDAO t WHERE t.userDAO.username = :username";
-		List<TrainerDAO> results = entityManager.createQuery(jpql, TrainerDAO.class)
-			.setParameter("username", username)
-			.getResultList();
+    @Override
+    public Optional<Trainer> findByUsername(String username) {
+        String jpql = "SELECT t FROM TrainerDAO t WHERE t.userDAO.username = :username";
+        List<TrainerDAO> results =
+                entityManager.createQuery(jpql, TrainerDAO.class).setParameter("username", username).getResultList();
 
-		if (results.isEmpty()) {
-			log.warn("Trainer with username '{}' not found", username);
-			return Optional.empty();
-		}
+        if (results.isEmpty()) {
+            log.warn("Trainer with username '{}' not found", username);
+            return Optional.empty();
+        }
 
-		return Optional.of(TrainerMapper.toDomain(results.get(0)));
-	}
+        return Optional.of(TrainerMapper.toDomain(results.get(0)));
+    }
 
-	@Override
-	public Optional<String> findLatestUsername(String prefix) {
-		String jpql = "SELECT u FROM UserDAO u WHERE u.username LIKE :prefix";
-		List<UserDAO> userDAOS = entityManager.createQuery(jpql, UserDAO.class)
-			.setParameter("prefix", prefix + "%")
-			.getResultList();
+    @Override
+    public Optional<String> findLatestUsername(String prefix) {
+        String jpql = "SELECT u FROM UserDAO u WHERE u.username LIKE :prefix";
+        List<UserDAO> userDAOS =
+                entityManager.createQuery(jpql, UserDAO.class).setParameter("prefix", prefix + "%").getResultList();
 
-		return UsernameFinder.findLatestUsername(userDAOS, prefix, UserDAO::getUsername);
-	}
+        return UsernameFinder.findLatestUsername(userDAOS, prefix, UserDAO::getUsername);
+    }
 
-	@Override
-	public List<Trainee> getTrainees(String trainerUsername) {
-		if (findByUsername(trainerUsername).isEmpty()) {
-			throw new EntityNotFoundException(String.format("Trainer with username '%s' not found", trainerUsername));
-		}
+    @Override
+    public List<Trainee> getTrainees(String trainerUsername) {
+        if (findByUsername(trainerUsername).isEmpty()) {
+            throw new EntityNotFoundException(String.format("Trainer with username '%s' not found", trainerUsername));
+        }
 
-		String jpql = """
-				SELECT tr
-				FROM TrainerDAO tr
-				LEFT JOIN FETCH tr.traineeDAOS
-				WHERE tr.userDAO.username = :username
-				""";
+        String jpql = """
+                      SELECT tr
+                      FROM TrainerDAO tr
+                      LEFT JOIN FETCH tr.traineeDAOS
+                      WHERE tr.userDAO.username = :username
+                      """;
 
-		TrainerDAO trainerDAO = entityManager.createQuery(jpql, TrainerDAO.class)
-			.setParameter("username", trainerUsername)
-			.getSingleResult();
+        TrainerDAO trainerDAO = entityManager
+                .createQuery(jpql, TrainerDAO.class)
+                .setParameter("username", trainerUsername)
+                .getSingleResult();
 
-		return trainerDAO.getTraineeDAOS().stream().map(TraineeMapper::toDomain).toList();
-	}
+        return trainerDAO.getTraineeDAOS().stream().map(TraineeMapper::toDomain).toList();
+    }
 
-	@Override
-	public void deleteByUsername(String username) {
-		Trainer trainer = findByUsername(username).orElseThrow(
-				() -> new EntityNotFoundException(String.format("Trainer with username '%s' not found", username)));
+    @Override
+    public void deleteByUsername(String username) {
+        Trainer trainer = findByUsername(username)
+                .orElseThrow(
+                    () -> new EntityNotFoundException(String.format("Trainer with username '%s' not found", username)));
 
-		delete(trainer.getTrainerId());
-	}
+        delete(trainer.getTrainerId());
+    }
 
 }

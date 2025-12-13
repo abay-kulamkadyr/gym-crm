@@ -15,21 +15,22 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/training-types")
 public class TrainingTypeController implements TrainingTypeControllerApi {
 
-	private final GymFacade gymFacade;
+    private final GymFacade gymFacade;
 
-	@Autowired
-	public TrainingTypeController(GymFacade gymFacade) {
-		this.gymFacade = gymFacade;
-	}
+    @Autowired
+    public TrainingTypeController(GymFacade gymFacade) {
+        this.gymFacade = gymFacade;
+    }
 
-	@Override
-	@GetMapping
-	public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
-		List<TrainingTypeResponse> response = gymFacade.getTrainingTypes()
-			.stream()
-			.map(type -> new TrainingTypeResponse(type.getTrainingTypeId(), type.getTrainingTypeName()))
-			.toList();
-		return ResponseEntity.ok(response);
-	}
+    @Override
+    @GetMapping
+    public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
+        List<TrainingTypeResponse> response = gymFacade
+                .getTrainingTypes()
+                .stream()
+                .map(type -> new TrainingTypeResponse(type.getTrainingTypeId(), type.getTrainingTypeName()))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
 
 }

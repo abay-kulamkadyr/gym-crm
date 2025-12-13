@@ -21,7 +21,6 @@ target/
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
-/build/
 /dist/
 /nbdist/
 /.nb-gradle/
@@ -29,7 +28,6 @@ target/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
 
 ### Mac OS ###
 .DS_Store

@@ -20,35 +20,35 @@ import lombok.Setter;
 @Setter
 public class TrainingDAO {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.SEQUENCE)
-	@Column(name = "training_id")
-	private Long trainingId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "training_id")
+    private Long trainingId;
 
-	@ManyToOne
-	@JoinColumn(name = "trainee_id", nullable = false)
-	private TraineeDAO traineeDAO;
+    @ManyToOne
+    @JoinColumn(name = "trainee_id", nullable = false)
+    private TraineeDAO traineeDAO;
 
-	@ManyToOne
-	@JoinColumn(name = "trainer_id", nullable = false)
-	private TrainerDAO trainerDAO;
+    @ManyToOne
+    @JoinColumn(name = "trainer_id", nullable = false)
+    private TrainerDAO trainerDAO;
 
-	@ManyToOne
-	@JoinColumn(name = "training_type_id", nullable = false)
-	private TrainingTypeDAO trainingTypeDAO;
+    @ManyToOne
+    @JoinColumn(name = "training_type_id", nullable = false)
+    private TrainingTypeDAO trainingTypeDAO;
 
-	@Column(name = "training_name", nullable = false)
-	private String trainingName;
+    @Column(name = "training_name", nullable = false)
+    private String trainingName;
 
-	@Column(name = "training_date", nullable = false)
-	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-	private LocalDateTime trainingDate;
+    @Column(name = "training_date", nullable = false)
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime trainingDate;
 
-	@Column(name = "training_duration", nullable = false)
-	private Integer trainingDurationMin;
+    @Column(name = "training_duration", nullable = false)
+    private Integer trainingDurationMin;
 
-	public TrainingDAO() {
+    public TrainingDAO() {
 
-	}
+    }
 
 }

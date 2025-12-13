@@ -18,51 +18,51 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class PasswordManagementService implements PasswordManagementUseCase {
 
-	private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-	private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-	private final GymFacade gymFacade;
+    private final GymFacade gymFacade;
 
-	@Autowired
-	PasswordManagementService(UserRepository userRepository, PasswordEncoder encoder, GymFacade facade) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = encoder;
-		this.gymFacade = facade;
-	}
+    @Autowired
+    PasswordManagementService(UserRepository userRepository, PasswordEncoder encoder, GymFacade facade) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = encoder;
+        this.gymFacade = facade;
+    }
 
-	@Override
-	@Transactional
-	public void changePassword(String username, String oldPassword, String newPassword) {
-		log.info("Password change request for user: {}", username);
+    @Override
+    @Transactional
+    public void changePassword(String username, String oldPassword, String newPassword) {
+        log.info("Password change request for user: {}", username);
 
-		User user = userRepository.findByUsername(username).orElseThrow(() -> {
-			log.error("User not found: {}", username);
-			return new EntityNotFoundException(String.format("User not found with username: %s", username));
-		});
+        User user = userRepository.findByUsername(username).orElseThrow(() -> {
+            log.error("User not found: {}", username);
+            return new EntityNotFoundException(String.format("User not found with username: %s", username));
+        });
 
-		// Verify old password
-		if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-			log.warn("Invalid old password provided for user: {}", username);
-			throw new BadCredentialsException("Current password is incorrect");
-		}
+        // Verify old password
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            log.warn("Invalid old password provided for user: {}", username);
+            throw new BadCredentialsException("Current password is incorrect");
+        }
 
-		updatePasswordByUserType(user, newPassword);
-		log.info("Password successfully changed for user: {}", username);
-	}
+        updatePasswordByUserType(user, newPassword);
+        log.info("Password successfully changed for user: {}", username);
+    }
 
-	private void updatePasswordByUserType(User user, String newPassword) {
-		if (user instanceof Trainee) {
-			gymFacade.updateTraineePassword(user.getUsername(), newPassword);
-		}
-		else if (user instanceof Trainer) {
-			gymFacade.updateTrainerPassword(user.getUsername(), newPassword);
-		}
-		else {
-			log.error("Unsupported user type: {}", user.getClass().getSimpleName());
-			throw new IllegalStateException(
-					String.format("Unsupported user type: %s", user.getClass().getSimpleName()));
-		}
-	}
+    private void updatePasswordByUserType(User user, String newPassword) {
+        if (user instanceof Trainee) {
+            gymFacade.updateTraineePassword(user.getUsername(), newPassword);
+        }
+        else if (user instanceof Trainer) {
+            gymFacade.updateTrainerPassword(user.getUsername(), newPassword);
+        }
+        else {
+            log.error("Unsupported user type: {}", user.getClass().getSimpleName());
+            throw new IllegalStateException(
+                    String.format("Unsupported user type: %s", user.getClass().getSimpleName()));
+        }
+    }
 
 }

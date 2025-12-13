@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class TrainingTypeDTO {
 
-	private String name;
+    private String name;
 
 }

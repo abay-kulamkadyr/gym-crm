@@ -19,22 +19,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/trainings")
 public class TrainingController implements TrainingControllerApi {
 
-	private final GymFacade gymFacade;
+    private final GymFacade gymFacade;
 
-	@Autowired
-	public TrainingController(GymFacade gymFacade) {
-		this.gymFacade = gymFacade;
-	}
+    @Autowired
+    public TrainingController(GymFacade gymFacade) {
+        this.gymFacade = gymFacade;
+    }
 
-	@Override
-	@PostMapping
-	@PreAuthorize("#request.traineeUsername == authentication.name or #request.trainerUsername == authentication.name")
-	public ResponseEntity<Void> addTraining(@Valid @RequestBody AddTrainingRequest request) {
-		CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest(request.trainingName(),
-				request.trainingDate(), request.trainingDurationMin(), Optional.empty(), request.traineeUsername(),
-				request.trainerUsername());
-		gymFacade.createTraining(createTrainingRequest);
-		return ResponseEntity.ok().build();
-	}
+    @Override
+    @PostMapping
+    @PreAuthorize("#request.traineeUsername == authentication.name or #request.trainerUsername == authentication.name")
+    public ResponseEntity<Void> addTraining(@Valid @RequestBody AddTrainingRequest request) {
+        CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest(request.trainingName(),
+                request.trainingDate(),
+                request.trainingDurationMin(),
+                Optional.empty(),
+                request.traineeUsername(),
+                request.trainerUsername());
+        gymFacade.createTraining(createTrainingRequest);
+        return ResponseEntity.ok().build();
+    }
 
 }

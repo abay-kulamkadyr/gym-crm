@@ -35,91 +35,110 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/trainers")
 public class TrainerController implements TrainerControllerApi {
 
-	private final GymFacade gymFacade;
+    private final GymFacade gymFacade;
 
-	@Autowired
-	public TrainerController(GymFacade gymFacade) {
-		this.gymFacade = gymFacade;
-	}
+    @Autowired
+    public TrainerController(GymFacade gymFacade) {
+        this.gymFacade = gymFacade;
+    }
 
-	@Override
-	@PostMapping
-	public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TrainerRegistrationRequest request) {
-		CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest(request.firstName(),
-				request.lastName(), true, request.specialization());
+    @Override
+    @PostMapping
+    public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TrainerRegistrationRequest request) {
+        CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest(request.firstName(),
+                request.lastName(),
+                true,
+                request.specialization());
 
-		Trainer trainer = gymFacade.createTrainerProfile(createRequest);
+        Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
-		CredentialsResponse response = new CredentialsResponse(trainer.getUsername(), trainer.getPassword());
+        CredentialsResponse response = new CredentialsResponse(trainer.getUsername(), trainer.getPassword());
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
-	}
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
-	@Override
-	@GetMapping("/{username}")
-	@PreAuthorize("#username == authentication.name")
-	public ResponseEntity<TrainerResponse> getProfile(@PathVariable String username) {
-		Trainer trainer = gymFacade.getTrainerByUsername(username);
+    @Override
+    @GetMapping("/{username}")
+    @PreAuthorize("#username == authentication.name")
+    public ResponseEntity<TrainerResponse> getProfile(@PathVariable String username) {
+        Trainer trainer = gymFacade.getTrainerByUsername(username);
 
-		List<EmbeddedTraineeResponse> trainees = gymFacade.getTrainerTrainees(username)
-			.stream()
-			.map(EmbeddedTraineeResponse::toEmbeddedTrainee)
-			.toList();
+        List<EmbeddedTraineeResponse> trainees = gymFacade
+                .getTrainerTrainees(username)
+                .stream()
+                .map(EmbeddedTraineeResponse::toEmbeddedTrainee)
+                .toList();
 
-		TrainerResponse trainerResponse = new TrainerResponse(Optional.empty(), trainer.getFirstName(),
-				trainer.getLastName(), trainer.getSpecialization().getTrainingTypeName(), trainer.getActive(),
-				trainees);
-		return ResponseEntity.ok(trainerResponse);
-	}
+        TrainerResponse trainerResponse = new TrainerResponse(Optional.empty(),
+                trainer.getFirstName(),
+                trainer.getLastName(),
+                trainer.getSpecialization().getTrainingTypeName(),
+                trainer.getActive(),
+                trainees);
+        return ResponseEntity.ok(trainerResponse);
+    }
 
-	@Override
-	@PutMapping("/{username}")
-	@PreAuthorize("#username == authentication.name")
-	public ResponseEntity<TrainerResponse> updateProfile(@PathVariable String username,
-			@Valid @RequestBody UpdateTrainerRequest request) {
+    @Override
+    @PutMapping("/{username}")
+    @PreAuthorize("#username == authentication.name")
+    public ResponseEntity<TrainerResponse> updateProfile(
+            @PathVariable String username,
+            @Valid @RequestBody UpdateTrainerRequest request) {
 
-		UpdateTrainerProfileRequest updateProfileRequest = new UpdateTrainerProfileRequest(username,
-				Optional.of(request.firstName()), Optional.of(request.lastName()), Optional.empty(),
-				Optional.of(request.active()), Optional.of(request.specialization()));
+        UpdateTrainerProfileRequest updateProfileRequest = new UpdateTrainerProfileRequest(username,
+                Optional.of(request.firstName()),
+                Optional.of(request.lastName()),
+                Optional.empty(),
+                Optional.of(request.active()),
+                Optional.of(request.specialization()));
 
-		Trainer trainer = gymFacade.updateTrainerProfile(updateProfileRequest);
+        Trainer trainer = gymFacade.updateTrainerProfile(updateProfileRequest);
 
-		List<EmbeddedTraineeResponse> trainees = gymFacade.getTrainerTrainees(username)
-			.stream()
-			.map(EmbeddedTraineeResponse::toEmbeddedTrainee)
-			.toList();
+        List<EmbeddedTraineeResponse> trainees = gymFacade
+                .getTrainerTrainees(username)
+                .stream()
+                .map(EmbeddedTraineeResponse::toEmbeddedTrainee)
+                .toList();
 
-		TrainerResponse response = new TrainerResponse(Optional.of(trainer.getUsername()), trainer.getFirstName(),
-				trainer.getLastName(), trainer.getSpecialization().getTrainingTypeName(), trainer.getActive(),
-				trainees);
+        TrainerResponse response = new TrainerResponse(Optional.of(trainer.getUsername()),
+                trainer.getFirstName(),
+                trainer.getLastName(),
+                trainer.getSpecialization().getTrainingTypeName(),
+                trainer.getActive(),
+                trainees);
 
-		return ResponseEntity.ok(response);
-	}
+        return ResponseEntity.ok(response);
+    }
 
-	@Override
-	@GetMapping("/{username}/trainings")
-	@PreAuthorize("#username == authentication.name")
-	public ResponseEntity<List<EmbeddedTrainerTrainingResponse>> getTrainings(@PathVariable String username,
-			@RequestParam(required = false) LocalDateTime periodFrom,
-			@RequestParam(required = false) LocalDateTime periodTo,
-			@RequestParam(required = false) String traineeName) {
-		TrainingFilter filter = TrainingFilter.forTrainer(Optional.ofNullable(periodFrom),
-				Optional.ofNullable(periodTo), Optional.ofNullable(traineeName));
+    @Override
+    @GetMapping("/{username}/trainings")
+    @PreAuthorize("#username == authentication.name")
+    public ResponseEntity<List<EmbeddedTrainerTrainingResponse>> getTrainings(
+            @PathVariable String username,
+            @RequestParam(required = false) LocalDateTime periodFrom,
+            @RequestParam(required = false) LocalDateTime periodTo,
+            @RequestParam(required = false) String traineeName) {
+        TrainingFilter filter = TrainingFilter
+                .forTrainer(
+                    Optional.ofNullable(periodFrom),
+                    Optional.ofNullable(periodTo),
+                    Optional.ofNullable(traineeName));
 
-		List<EmbeddedTrainerTrainingResponse> response = gymFacade.getTrainerTrainings(username, filter)
-			.stream()
-			.map(EmbeddedTrainerTrainingResponse::toEmbeddedTraining)
-			.toList();
+        List<EmbeddedTrainerTrainingResponse> response = gymFacade
+                .getTrainerTrainings(username, filter)
+                .stream()
+                .map(EmbeddedTrainerTrainingResponse::toEmbeddedTraining)
+                .toList();
 
-		return ResponseEntity.ok(response);
-	}
+        return ResponseEntity.ok(response);
+    }
 
-	@Override
-	@PatchMapping("/{username}/activation")
-	@PreAuthorize("#username == authentication.name")
-	public ResponseEntity<Void> toggleActivation(@PathVariable String username) {
-		gymFacade.toggleTrainerActiveStatus(username);
-		return ResponseEntity.ok().build();
-	}
+    @Override
+    @PatchMapping("/{username}/activation")
+    @PreAuthorize("#username == authentication.name")
+    public ResponseEntity<Void> toggleActivation(@PathVariable String username) {
+        gymFacade.toggleTrainerActiveStatus(username);
+        return ResponseEntity.ok().build();
+    }
 
 }

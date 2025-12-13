@@ -30,30 +30,30 @@ import org.springframework.security.core.context.SecurityContextHolder;
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
 
-	@Mock
-	private AuthenticationManager authenticationManager;
+    @Mock
+    private AuthenticationManager authenticationManager;
 
-	@Mock
-	private TokenBlacklist tokenBlacklist;
+    @Mock
+    private TokenBlacklist tokenBlacklist;
 
-	@Mock
-	private HttpServletRequest request;
+    @Mock
+    private HttpServletRequest request;
 
-	@Mock
-	private HttpServletResponse response;
+    @Mock
+    private HttpServletResponse response;
 
-	@Mock
-	private FilterChain filterChain;
+    @Mock
+    private FilterChain filterChain;
 
-	private JwtAuthenticationFilter filter;
+    private JwtAuthenticationFilter filter;
 
-	@BeforeEach
-	void setUp() {
-		SecurityContextHolder.clearContext();
-		filter = new JwtAuthenticationFilter(authenticationManager, tokenBlacklist);
-	}
+    @BeforeEach
+    void setUp() {
+        SecurityContextHolder.clearContext();
+        filter = new JwtAuthenticationFilter(authenticationManager, tokenBlacklist);
+    }
 
-	@Test
+    @Test
 	void doFilterInternal_shouldProceed_whenNoAuthorizationHeader() throws Exception {
 		// Given
 		when(request.getHeader("Authorization")).thenReturn(null);
@@ -68,60 +68,60 @@ class JwtAuthenticationFilterTest {
 		assertNull(SecurityContextHolder.getContext().getAuthentication());
 	}
 
-	@Test
-	void doFilterInternal_shouldReject_whenTokenBlacklisted() throws Exception {
-		// Given
-		String token = "blacklisted-token";
-		when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-		when(request.getRequestURI()).thenReturn("/api/test");
-		when(tokenBlacklist.isTokenRevoked(token)).thenReturn(true);
+    @Test
+    void doFilterInternal_shouldReject_whenTokenBlacklisted() throws Exception {
+        // Given
+        String token = "blacklisted-token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getRequestURI()).thenReturn("/api/test");
+        when(tokenBlacklist.isTokenRevoked(token)).thenReturn(true);
 
-		// When
-		filter.doFilterInternal(request, response, filterChain);
+        // When
+        filter.doFilterInternal(request, response, filterChain);
 
-		// Then
-		verify(response).sendError(401, "Token has been revoked");
-		verify(authenticationManager, never()).authenticate(any());
-		verify(filterChain, never()).doFilter(request, response);
-	}
+        // Then
+        verify(response).sendError(401, "Token has been revoked");
+        verify(authenticationManager, never()).authenticate(any());
+        verify(filterChain, never()).doFilter(request, response);
+    }
 
-	@Test
-	void doFilterInternal_shouldAuthenticate_whenTokenValid() throws Exception {
-		// Given
-		String token = "valid-token";
-		when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-		when(request.getRequestURI()).thenReturn("/api/test");
-		when(tokenBlacklist.isTokenRevoked(token)).thenReturn(false);
+    @Test
+    void doFilterInternal_shouldAuthenticate_whenTokenValid() throws Exception {
+        // Given
+        String token = "valid-token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getRequestURI()).thenReturn("/api/test");
+        when(tokenBlacklist.isTokenRevoked(token)).thenReturn(false);
 
-		UsernamePasswordAuthenticationToken authResult = new UsernamePasswordAuthenticationToken("user", null,
-				Collections.emptyList());
+        UsernamePasswordAuthenticationToken authResult =
+                new UsernamePasswordAuthenticationToken("user", null, Collections.emptyList());
 
-		when(authenticationManager.authenticate(any(JwtAuthenticationToken.class))).thenReturn(authResult);
+        when(authenticationManager.authenticate(any(JwtAuthenticationToken.class))).thenReturn(authResult);
 
-		// When
-		filter.doFilterInternal(request, response, filterChain);
+        // When
+        filter.doFilterInternal(request, response, filterChain);
 
-		// Then
-		verify(authenticationManager).authenticate(any(JwtAuthenticationToken.class));
-		verify(filterChain).doFilter(request, response);
-		assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-		assertEquals("user", SecurityContextHolder.getContext().getAuthentication().getName());
-	}
+        // Then
+        verify(authenticationManager).authenticate(any(JwtAuthenticationToken.class));
+        verify(filterChain).doFilter(request, response);
+        assertNotNull(SecurityContextHolder.getContext().getAuthentication());
+        assertEquals("user", SecurityContextHolder.getContext().getAuthentication().getName());
+    }
 
-	@Test
-	void doFilterInternal_shouldClearContext_whenAuthenticationFails() {
-		// Given
-		String token = "invalid-token";
-		when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
-		when(request.getRequestURI()).thenReturn("/api/test");
-		when(tokenBlacklist.isTokenRevoked(token)).thenReturn(false);
-		when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid token"));
+    @Test
+    void doFilterInternal_shouldClearContext_whenAuthenticationFails() {
+        // Given
+        String token = "invalid-token";
+        when(request.getHeader("Authorization")).thenReturn("Bearer " + token);
+        when(request.getRequestURI()).thenReturn("/api/test");
+        when(tokenBlacklist.isTokenRevoked(token)).thenReturn(false);
+        when(authenticationManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid token"));
 
-		// When
-		assertThrows(AuthenticationException.class, () -> filter.doFilterInternal(request, response, filterChain));
+        // When
+        assertThrows(AuthenticationException.class, () -> filter.doFilterInternal(request, response, filterChain));
 
-		// Then
-		assertNull(SecurityContextHolder.getContext().getAuthentication());
-	}
+        // Then
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
 
 }

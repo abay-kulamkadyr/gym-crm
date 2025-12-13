@@ -40,76 +40,86 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableScheduling
 public class SecurityConfig {
 
-	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager,
-			TokenBlacklist tokenBlacklist) throws Exception {
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            AuthenticationManager authenticationManager,
+            TokenBlacklist tokenBlacklist) throws Exception {
 
-		JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(authenticationManager, tokenBlacklist);
+        JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(authenticationManager, tokenBlacklist);
 
-		return http.cors(Customizer.withDefaults())
-			.csrf(AbstractHttpConfigurer::disable)
-			.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-			.exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
-			.authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login")
-				.permitAll()
-				.requestMatchers(HttpMethod.POST, "/api/trainees", "/api/trainers")
-				.permitAll()
-				.requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
-				.permitAll()
-				.anyRequest()
-				.authenticated())
-			.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-			.build();
-	}
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
+                .authorizeHttpRequests(
+                    auth -> auth
+                            .requestMatchers("/api/auth/login")
+                            .permitAll()
+                            .requestMatchers(HttpMethod.POST, "/api/trainees", "/api/trainers")
+                            .permitAll()
+                            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
+    }
 
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource(
-			@Value("${security.cors.allowed-origins}") String allowedOrigins) {
-		CorsConfiguration configuration = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+            @Value("${security.cors.allowed-origins}") String allowedOrigins) {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-		// Parse comma-separated origins from property file
-		configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
+        // Parse comma-separated origins from property file
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
 
-		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-		configuration.setAllowedHeaders(List.of("*"));
-		configuration.setExposedHeaders(List.of("Authorization"));
-		configuration.setAllowCredentials(true);
-		configuration.setMaxAge(3600L);
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", configuration);
-		return source;
-	}
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
 
-	@Bean
-	AuthenticationManager authenticationManager(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder,
-			JwtAuthenticationProvider jwtAuthenticationProvider) {
-		DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(userDetailsService);
-		daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-		return new ProviderManager(List.of(daoAuthenticationProvider, jwtAuthenticationProvider));
-	}
+    @Bean
+    AuthenticationManager authenticationManager(
+            UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder,
+            JwtAuthenticationProvider jwtAuthenticationProvider) {
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(userDetailsService);
+        daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
+        return new ProviderManager(List.of(daoAuthenticationProvider, jwtAuthenticationProvider));
+    }
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new BCryptPasswordEncoder();
-	}
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
-	@Bean
-	public Clock clock() {
-		return Clock.systemUTC();
-	}
+    @Bean
+    public Clock clock() {
+        return Clock.systemUTC();
+    }
 
 }
 
 class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException {
-		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		response.getWriter()
-			.write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
-	}
+    @Override
+    public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException) throws IOException {
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response
+                .getWriter()
+                .write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
+    }
 
 }

@@ -15,44 +15,45 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
-	@PersistenceContext
-	private EntityManager entityManager;
+    @PersistenceContext
+    private EntityManager entityManager;
 
-	@Override
-	public Optional<User> findByUsername(String username) {
-		String query = """
-				    SELECT u FROM UserDAO u
-				    LEFT JOIN FETCH u.traineeDAO
-				    LEFT JOIN FETCH u.trainerDAO
-				    WHERE u.username = :username
-				""";
+    @Override
+    public Optional<User> findByUsername(String username) {
+        String query = """
+                           SELECT u FROM UserDAO u
+                           LEFT JOIN FETCH u.traineeDAO
+                           LEFT JOIN FETCH u.trainerDAO
+                           WHERE u.username = :username
+                       """;
 
-		Optional<UserDAO> userOpt = entityManager.createQuery(query, UserDAO.class)
-			.setParameter("username", username)
-			.getResultStream()
-			.findFirst();
+        Optional<UserDAO> userOpt = entityManager
+                .createQuery(query, UserDAO.class)
+                .setParameter("username", username)
+                .getResultStream()
+                .findFirst();
 
-		return userOpt.map(this::mapToDomain);
-	}
+        return userOpt.map(this::mapToDomain);
+    }
 
-	private User mapToDomain(UserDAO userDAO) {
-		if (userDAO.getUserRole() == UserRole.TRAINEE) {
+    private User mapToDomain(UserDAO userDAO) {
+        if (userDAO.getUserRole() == UserRole.TRAINEE) {
 
-			if (userDAO.getTraineeDAO() == null) {
-				throw new IllegalStateException("Data Integrity Error: Role is TRAINEE but profile missing");
-			}
-			return TraineeMapper.toDomain(userDAO.getTraineeDAO());
+            if (userDAO.getTraineeDAO() == null) {
+                throw new IllegalStateException("Data Integrity Error: Role is TRAINEE but profile missing");
+            }
+            return TraineeMapper.toDomain(userDAO.getTraineeDAO());
 
-		}
-		else if (userDAO.getUserRole() == UserRole.TRAINER) {
+        }
+        else if (userDAO.getUserRole() == UserRole.TRAINER) {
 
-			if (userDAO.getTrainerDAO() == null) {
-				throw new IllegalStateException("Data Integrity Error: Role is TRAINER but profile missing");
-			}
-			return TrainerMapper.toDomain(userDAO.getTrainerDAO());
-		}
+            if (userDAO.getTrainerDAO() == null) {
+                throw new IllegalStateException("Data Integrity Error: Role is TRAINER but profile missing");
+            }
+            return TrainerMapper.toDomain(userDAO.getTrainerDAO());
+        }
 
-		throw new IllegalStateException("Invalid Role");
-	}
+        throw new IllegalStateException("Invalid Role");
+    }
 
 }

@@ -10,36 +10,36 @@ import org.springframework.stereotype.Component;
 @ConditionalOnClass(io.micrometer.core.instrument.MeterRegistry.class)
 class MicrometerAppMetrics implements AppMetrics {
 
-	private final Counter traineeRegistered;
+    private final Counter traineeRegistered;
 
-	private final Counter trainerRegistered;
+    private final Counter trainerRegistered;
 
-	private final Counter userLoginAttempts;
+    private final Counter userLoginAttempts;
 
-	private final Counter userLoginFailed;
+    private final Counter userLoginFailed;
 
-	@Autowired
-	MicrometerAppMetrics(MeterRegistry registry) {
-		this.traineeRegistered = registry.counter("trainee_registered_total");
-		this.trainerRegistered = registry.counter("trainer_registered_total");
-		this.userLoginAttempts = registry.counter("user_login_attempts_total");
-		this.userLoginFailed = registry.counter("user_login_failed_total");
-	}
+    @Autowired
+    MicrometerAppMetrics(MeterRegistry registry) {
+        this.traineeRegistered = registry.counter("trainee_registered_total");
+        this.trainerRegistered = registry.counter("trainer_registered_total");
+        this.userLoginAttempts = registry.counter("user_login_attempts_total");
+        this.userLoginFailed = registry.counter("user_login_failed_total");
+    }
 
-	public void incrementTraineeRegistered() {
-		traineeRegistered.increment();
-	}
+    public void incrementTraineeRegistered() {
+        traineeRegistered.increment();
+    }
 
-	public void incrementTrainerRegistered() {
-		trainerRegistered.increment();
-	}
+    public void incrementTrainerRegistered() {
+        trainerRegistered.increment();
+    }
 
-	public void incrementUserLoginAttempts() {
-		userLoginAttempts.increment();
-	}
+    public void incrementUserLoginAttempts() {
+        userLoginAttempts.increment();
+    }
 
-	public void incrementUserLoginFailed() {
-		userLoginFailed.increment();
-	}
+    public void incrementUserLoginFailed() {
+        userLoginFailed.increment();
+    }
 
 }

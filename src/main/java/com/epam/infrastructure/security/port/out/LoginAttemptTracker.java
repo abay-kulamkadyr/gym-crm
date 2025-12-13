@@ -4,12 +4,12 @@ import com.epam.infrastructure.security.core.LockoutInfo;
 
 public interface LoginAttemptTracker {
 
-	void recordFailedAttempt(String username);
+    void recordFailedAttempt(String username);
 
-	void clearAttempts(String username);
+    void clearAttempts(String username);
 
-	LockoutInfo getLockoutInfo(String username);
+    LockoutInfo getLockoutInfo(String username);
 
-	boolean isAccountLocked(String username);
+    boolean isAccountLocked(String username);
 
 }

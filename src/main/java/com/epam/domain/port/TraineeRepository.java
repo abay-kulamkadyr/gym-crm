@@ -8,16 +8,16 @@ import com.epam.domain.model.Trainer;
 
 public interface TraineeRepository extends CrudRepository<Trainee> {
 
-	Optional<Trainee> findByUsername(String username);
+    Optional<Trainee> findByUsername(String username);
 
-	Optional<String> findLatestUsername(String prefix);
+    Optional<String> findLatestUsername(String prefix);
 
-	List<Trainer> getTrainers(String traineeUsername);
+    List<Trainer> getTrainers(String traineeUsername);
 
-	List<Trainer> getUnassignedTrainers(String traineeUsername);
+    List<Trainer> getUnassignedTrainers(String traineeUsername);
 
-	void deleteByUsername(String username);
+    void deleteByUsername(String username);
 
-	void updateTrainersList(String traineeUsername, List<String> trainerUsernames);
+    void updateTrainersList(String traineeUsername, List<String> trainerUsernames);
 
 }

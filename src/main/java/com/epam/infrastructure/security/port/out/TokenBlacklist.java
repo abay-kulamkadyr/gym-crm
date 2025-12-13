@@ -4,8 +4,8 @@ import java.time.Instant;
 
 public interface TokenBlacklist {
 
-	void revokeToken(String token, Instant expiresAt);
+    void revokeToken(String token, Instant expiresAt);
 
-	boolean isTokenRevoked(String token);
+    boolean isTokenRevoked(String token);
 
 }
