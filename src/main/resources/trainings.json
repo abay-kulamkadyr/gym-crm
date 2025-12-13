@@ -1,0 +1,82 @@
+[
+  {
+    "name": "Morning Cardio Session",
+    "date": "2024-01-15T09:00:00",
+    "durationMinutes": 60,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "John.Smith",
+    "trainingType": "CARDIO"
+  },
+  {
+    "name": "Strength Building Workout",
+    "date": "2024-01-15T14:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "Emma.Johnson",
+    "trainingType": "STRENGTH"
+  },
+  {
+    "name": "Evening Yoga Class",
+    "date": "2024-01-16T18:00:00",
+    "durationMinutes": 75,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "YOGA"
+  },
+  {
+    "name": "CrossFit Intensive",
+    "date": "2024-01-17T10:00:00",
+    "durationMinutes": 120,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "Sarah.Brown",
+    "trainingType": "CROSSFIT"
+  },
+  {
+    "name": "Cardio Bootcamp",
+    "date": "2024-01-17T16:00:00",
+    "durationMinutes": 45,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "John.Smith",
+    "trainingType": "CARDIO"
+  },
+  {
+    "name": "Advanced Strength Training",
+    "date": "2024-01-18T11:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "Emma.Johnson",
+    "trainingType": "STRENGTH"
+  },
+  {
+    "name": "Beginner Yoga Flow",
+    "date": "2024-01-18T19:00:00",
+    "durationMinutes": 60,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "YOGA"
+  },
+  {
+    "name": "HIIT Cardio",
+    "date": "2024-01-19T08:00:00",
+    "durationMinutes": 45,
+    "traineeUsername": "David.Davis",
+    "trainerUsername": "John.Smith",
+    "trainingType": "CARDIO"
+  },
+  {
+    "name": "CrossFit Fundamentals",
+    "date": "2024-01-19T15:00:00",
+    "durationMinutes": 90,
+    "traineeUsername": "James.Wilson",
+    "trainerUsername": "Sarah.Brown",
+    "trainingType": "CROSSFIT"
+  },
+  {
+    "name": "Power Yoga",
+    "date": "2024-01-20T17:00:00",
+    "durationMinutes": 75,
+    "traineeUsername": "Lisa.Miller",
+    "trainerUsername": "Michael.Williams",
+    "trainingType": "YOGA"
+  }
+]

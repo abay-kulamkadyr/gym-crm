@@ -1,0 +1,34 @@
+[
+  {
+    "username": "David.Davis",
+    "dateOfBirth": "1990-05-15",
+    "address": "123 Main Street, New York, NY 10001",
+    "trainerUsernames": [
+      "John.Smith",
+      "Emma.Johnson"
+    ]
+  },
+  {
+    "username": "Lisa.Miller",
+    "dateOfBirth": "1992-08-22",
+    "address": "456 Oak Avenue, Los Angeles, CA 90001",
+    "trainerUsernames": [
+      "Michael.Williams"
+    ]
+  },
+  {
+    "username": "James.Wilson",
+    "dateOfBirth": "1988-03-10",
+    "address": "789 Pine Road, Chicago, IL 60601",
+    "trainerUsernames": [
+      "Sarah.Brown",
+      "John.Smith"
+    ]
+  },
+  {
+    "username": "Emily.Moore",
+    "dateOfBirth": "1995-11-30",
+    "address": "321 Elm Street, Houston, TX 77001",
+    "trainerUsernames": []
+  }
+]

@@ -1,0 +1,67 @@
+[
+  {
+    "firstName": "John",
+    "lastName": "Smith",
+    "username": "John.Smith",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINER"
+
+  },
+  {
+    "firstName": "Emma",
+    "lastName": "Johnson",
+    "username": "Emma.Johnson",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINER"
+  },
+  {
+    "firstName": "Michael",
+    "lastName": "Williams",
+    "username": "Michael.Williams",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINER"
+  },
+  {
+    "firstName": "Sarah",
+    "lastName": "Brown",
+    "username": "Sarah.Brown",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINER"
+  },
+  {
+    "firstName": "David",
+    "lastName": "Davis",
+    "username": "David.Davis",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINEE"
+  },
+  {
+    "firstName": "Lisa",
+    "lastName": "Miller",
+    "username": "Lisa.Miller",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINEE"
+  },
+  {
+    "firstName": "James",
+    "lastName": "Wilson",
+    "username": "James.Wilson",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": true,
+    "role": "TRAINEE"
+  },
+  {
+    "firstName": "Emily",
+    "lastName": "Moore",
+    "username": "Emily.Moore",
+    "password": "$2a$12$VwP2hOmpi3R/5Ya9Jgocz.zMOrLiLcpmHKFj.tWLm7f..e8n3cijO",
+    "active": false,
+    "role": "TRAINEE"
+  }
+]
