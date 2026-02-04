@@ -1,6 +1,7 @@
 package com.epam.interfaces.web.controller;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,11 @@ import java.time.LocalDateTime;
 
 import com.epam.application.facade.GymFacade;
 import com.epam.application.request.CreateTrainingRequest;
+import com.epam.domain.model.Trainer;
+import com.epam.domain.model.TrainingType;
+import com.epam.domain.model.TrainingTypeEnum;
+import com.epam.interfaces.web.client.TrainerWorkloadInterface;
+import com.epam.interfaces.web.client.request.TrainerWorkloadWebRequest;
 import com.epam.interfaces.web.controller.impl.TrainingController;
 import com.epam.interfaces.web.dto.request.AddTrainingRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,6 +49,11 @@ class TrainingControllerTest {
     @MockitoBean
     private GymFacade gymFacade;
 
+    @MockitoBean
+    private TrainerWorkloadInterface workload;
+
+    private final Trainer mockTrainer = new Trainer("john", "doe", true, new TrainingType(TrainingTypeEnum.CARDIO));
+
     @Test
     @DisplayName("POST /api/trainings - Should add training successfully")
     void testAddTraining_Success() throws Exception {
@@ -53,7 +64,9 @@ class TrainingControllerTest {
                 LocalDateTime.now().plusDays(7),
                 60);
 
+        when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
+        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class))).thenReturn(null);
 
         // When & Then
         mockMvc
@@ -271,7 +284,9 @@ class TrainingControllerTest {
                 new AddTrainingRequest("john.doe", "jane.smith", "Quick Session", LocalDateTime.now().plusDays(7), 1 // Minimum valid: 1 minute
                 );
 
+        when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
+        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class))).thenReturn(null);
 
         // When & Then
         mockMvc
@@ -296,7 +311,9 @@ class TrainingControllerTest {
         // hours)
         );
 
+        when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
+        when(workload.processTrainerRequest(any())).thenReturn(null);
 
         // When & Then
         mockMvc

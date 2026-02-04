@@ -1,5 +1,6 @@
 package com.epam.application.service.impl;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.epam.application.request.CreateTrainingRequest;
@@ -82,6 +83,17 @@ public class TrainingServiceImpl implements TrainingService {
     public List<Training> getTrainerTrainings(String username, TrainingFilter filter) {
         findTrainerOrThrow(username);
         return trainingRepository.getTrainerTrainings(username, filter);
+    }
+
+    @Override
+    public void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date) {
+        log.debug("Deleting training for trainee: {}, trainer: {} on date: {}", traineeUsername, trainerUsername, date);
+
+        // Optional: Validate users exist before attempting delete
+        findTraineeOrThrow(traineeUsername);
+        findTrainerOrThrow(trainerUsername);
+
+        trainingRepository.deleteByTraineeTrainerAndDate(traineeUsername, trainerUsername, date);
     }
 
     private Trainee findTraineeOrThrow(String username) {

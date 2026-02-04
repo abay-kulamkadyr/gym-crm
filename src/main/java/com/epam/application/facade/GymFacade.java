@@ -1,5 +1,6 @@
 package com.epam.application.facade;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.epam.application.request.CreateTraineeProfileRequest;
@@ -48,6 +49,8 @@ public interface GymFacade {
     List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter);
 
     Training createTraining(CreateTrainingRequest request);
+
+    void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date);
 
     List<Trainer> getTraineeTrainers(String traineeUsername);
 

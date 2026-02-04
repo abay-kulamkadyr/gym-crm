@@ -1,5 +1,6 @@
 package com.epam.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.epam.application.request.CreateTrainingRequest;
@@ -14,4 +15,5 @@ public interface TrainingService {
 
     List<Training> getTrainerTrainings(String username, TrainingFilter filter);
 
+    void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date);
 }

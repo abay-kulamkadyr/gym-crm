@@ -1,5 +1,6 @@
 package com.epam.infrastructure.persistence.repository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
@@ -89,6 +91,34 @@ public class TrainingRepositoryImpl implements TrainingRepository {
             trainerUsername,
             TrainingFilter.forTrainer(filter.fromDate(), filter.toDate(), filter.traineeName()),
             UserType.TRAINER);
+    }
+
+    @Override
+    public void deleteByTraineeTrainerAndDate(String traineeUsername, String trainerUsername, LocalDateTime date) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaDelete<TrainingDAO> delete = cb.createCriteriaDelete(TrainingDAO.class);
+        Root<TrainingDAO> root = delete.from(TrainingDAO.class);
+
+        // Join paths to reach the usernames in the UserDAO
+        Predicate traineeMatch = cb.equal(root.get("traineeDAO").get("userDAO").get("username"), traineeUsername);
+        Predicate trainerMatch = cb.equal(root.get("trainerDAO").get("userDAO").get("username"), trainerUsername);
+        Predicate dateMatch = cb.equal(root.get("trainingDate"), date);
+
+        delete.where(cb.and(traineeMatch, trainerMatch, dateMatch));
+
+        int deletedCount = entityManager.createQuery(delete).executeUpdate();
+
+        if (deletedCount == 0) {
+            log
+                    .warn(
+                        "No training found to delete for Trainee: {}, Trainer: {}, Date: {}",
+                        traineeUsername,
+                        trainerUsername,
+                        date);
+        }
+        else {
+            log.info("Successfully deleted {} training record(s)", deletedCount);
+        }
     }
 
     private List<Training> getTrainings(String requestedUsername, TrainingFilter trainingFilter, UserType userType) {
