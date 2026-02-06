@@ -25,10 +25,8 @@ public class FeignInterceptor implements RequestInterceptor {
 
         HttpServletRequest request = attributes.getRequest();
 
-        // 1. Propagate Authorization header (JWT token)
         propagateAuthorizationHeader(request, template);
 
-        // 2. Propagate Transaction ID header
         propagateTransactionIdHeader(request, template);
     }
 
