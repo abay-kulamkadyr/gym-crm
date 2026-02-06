@@ -88,11 +88,6 @@ public class TrainingServiceImpl implements TrainingService {
     @Override
     public void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date) {
         log.debug("Deleting training for trainee: {}, trainer: {} on date: {}", traineeUsername, trainerUsername, date);
-
-        // Optional: Validate users exist before attempting delete
-        findTraineeOrThrow(traineeUsername);
-        findTrainerOrThrow(trainerUsername);
-
         trainingRepository.deleteByTraineeTrainerAndDate(traineeUsername, trainerUsername, date);
     }
 
