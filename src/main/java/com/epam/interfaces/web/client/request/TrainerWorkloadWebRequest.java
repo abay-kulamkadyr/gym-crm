@@ -18,6 +18,6 @@ public record TrainerWorkloadWebRequest(@NotBlank(message = "Trainer username is
 
         @NotNull(message = "Training duration is required") @Min(
                 value = 1,
-                message = "Training duration must be at least 1 minute") Integer trainingDurationMin,
+                message = "Training duration must be at least 1 minute") Integer trainingDurationMinutes,
 
         @NotNull(message = "Action type is required") ActionType actionType) {}
