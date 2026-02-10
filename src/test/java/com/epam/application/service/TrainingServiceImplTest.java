@@ -75,8 +75,7 @@ class TrainingServiceImplTest {
         testTrainer.setPassword("trainerpass456");
 
         // Setup training
-        testTraining = Training
-                .builder()
+        testTraining = Training.builder()
                 .trainingId(1L)
                 .trainingName("Morning Cardio Session")
                 .trainingDate(LocalDateTime.of(2024, 1, 15, 9, 0))
@@ -90,7 +89,8 @@ class TrainingServiceImplTest {
     @Test
     void create_shouldCreateTraining_whenAllEntitiesExist() {
         // Given
-        CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session",
+        CreateTrainingRequest request = new CreateTrainingRequest(
+                "Morning Cardio Session",
                 LocalDateTime.of(2024, 1, 15, 9, 0),
                 60,
                 Optional.of(TrainingTypeEnum.CARDIO),
@@ -115,7 +115,8 @@ class TrainingServiceImplTest {
     @Test
     void create_shouldThrowEntityNotFoundException_whenTraineeNotFound() {
         // Given
-        CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session",
+        CreateTrainingRequest request = new CreateTrainingRequest(
+                "Morning Cardio Session",
                 LocalDateTime.now(),
                 60,
                 Optional.of(TrainingTypeEnum.CARDIO),
@@ -131,7 +132,8 @@ class TrainingServiceImplTest {
     @Test
     void create_shouldThrowEntityNotFoundException_whenTrainerNotFound() {
         // Given
-        CreateTrainingRequest request = new CreateTrainingRequest("Morning Cardio Session",
+        CreateTrainingRequest request = new CreateTrainingRequest(
+                "Morning Cardio Session",
                 LocalDateTime.now(),
                 60,
                 Optional.of(TrainingTypeEnum.CARDIO),
@@ -148,15 +150,14 @@ class TrainingServiceImplTest {
     @Test
     void create_shouldThrowIllegalArgumentExceptionException_whenTrainingTypeNotFound() {
         // Given
-        assertThatThrownBy(
-            () -> new CreateTrainingRequest("Morning Cardio Session",
-                    LocalDateTime.now(),
-                    60,
-                    Optional.of(TrainingTypeEnum.valueOf("NonExistentTYpe")),
-                    "John.Doe",
-                    "Alice.Johnson"))
+        assertThatThrownBy(() -> new CreateTrainingRequest(
+                        "Morning Cardio Session",
+                        LocalDateTime.now(),
+                        60,
+                        Optional.of(TrainingTypeEnum.valueOf("NonExistentTYpe")),
+                        "John.Doe",
+                        "Alice.Johnson"))
                 .isInstanceOf(IllegalArgumentException.class);
-
     }
 
     @Test
@@ -165,7 +166,8 @@ class TrainingServiceImplTest {
         TrainingFilter filter = TrainingFilter.empty();
         List<Training> expectedTrainings = List.of(testTraining);
 
-        when(trainingRepository.getTraineeTrainings(testTrainee.getUsername(), filter)).thenReturn(expectedTrainings);
+        when(trainingRepository.getTraineeTrainings(testTrainee.getUsername(), filter))
+                .thenReturn(expectedTrainings);
         when(traineeRepository.findByUsername(testTrainee.getUsername())).thenReturn(Optional.ofNullable(testTrainee));
 
         // When
@@ -182,12 +184,11 @@ class TrainingServiceImplTest {
         // Given
         LocalDateTime fromDate = LocalDateTime.of(2024, 1, 1, 0, 0);
         LocalDateTime toDate = LocalDateTime.of(2024, 12, 31, 23, 59);
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.of(fromDate),
-                    Optional.of(toDate),
-                    Optional.of("Alice.Johnson"),
-                    Optional.of(TrainingTypeEnum.CARDIO));
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.of(fromDate),
+                Optional.of(toDate),
+                Optional.of("Alice.Johnson"),
+                Optional.of(TrainingTypeEnum.CARDIO));
 
         List<Training> expectedTrainings = List.of(testTraining);
 
@@ -208,7 +209,8 @@ class TrainingServiceImplTest {
         TrainingFilter filter = TrainingFilter.empty();
         List<Training> expectedTrainings = List.of(testTraining);
 
-        when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter)).thenReturn(expectedTrainings);
+        when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter))
+                .thenReturn(expectedTrainings);
         when(trainerRepository.findByUsername(testTrainer.getUsername())).thenReturn(Optional.ofNullable(testTrainer));
 
         // When
@@ -230,7 +232,8 @@ class TrainingServiceImplTest {
 
         List<Training> expectedTrainings = List.of(testTraining);
 
-        when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter)).thenReturn(expectedTrainings);
+        when(trainingRepository.getTrainerTrainings(testTrainer.getUsername(), filter))
+                .thenReturn(expectedTrainings);
         when(trainerRepository.findByUsername(testTrainer.getUsername())).thenReturn(Optional.ofNullable(testTrainer));
 
         // When
@@ -240,5 +243,4 @@ class TrainingServiceImplTest {
         assertThat(trainings).hasSize(1);
         verify(trainingRepository).getTrainerTrainings("Alice.Johnson", filter);
     }
-
 }

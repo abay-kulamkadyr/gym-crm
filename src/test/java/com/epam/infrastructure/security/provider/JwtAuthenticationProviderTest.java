@@ -38,7 +38,8 @@ class JwtAuthenticationProviderTest {
     void authenticate_shouldSucceed_whenTokenValid() {
         // Given
         String token = "valid-jwt-token";
-        TokenData tokenData = new TokenData("testuser", Instant.now(), Instant.now().plusSeconds(3600));
+        TokenData tokenData =
+                new TokenData("testuser", Instant.now(), Instant.now().plusSeconds(3600));
 
         when(tokenService.validateToken(token)).thenReturn(tokenData);
 
@@ -74,5 +75,4 @@ class JwtAuthenticationProviderTest {
     void supports_shouldReturnFalse_forOtherTokens() {
         assertFalse(provider.supports(UsernamePasswordAuthenticationToken.class));
     }
-
 }

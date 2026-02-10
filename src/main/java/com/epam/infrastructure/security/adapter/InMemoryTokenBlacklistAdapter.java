@@ -57,5 +57,4 @@ public class InMemoryTokenBlacklistAdapter implements TokenBlacklist {
         Instant now = clock.instant();
         blacklist.entrySet().removeIf(entry -> entry.getValue().isBefore(now));
     }
-
 }

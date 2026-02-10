@@ -31,8 +31,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
-            MethodArgumentNotValidException ex,
-            WebRequest request) {
+            MethodArgumentNotValidException ex, WebRequest request) {
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach(error -> {
@@ -61,7 +60,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
     }
 
-    @ExceptionHandler({ AuthenticationException.class, AuthorizationDeniedException.class })
+    @ExceptionHandler({AuthenticationException.class, AuthorizationDeniedException.class})
     public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
 
         logException(ex, request, null);
@@ -72,7 +71,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
-    @ExceptionHandler({ ValidationException.class, IllegalArgumentException.class })
+    @ExceptionHandler({ValidationException.class, IllegalArgumentException.class})
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex, WebRequest request) {
 
         logException(ex, request, null);
@@ -97,24 +96,19 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(CircuitBreakingException.class)
     public ResponseEntity<ErrorResponse> handleCircuitBreakerException(
-            CircuitBreakingException ex,
-            WebRequest request) {
+            CircuitBreakingException ex, WebRequest request) {
 
         logException(ex, request, null);
 
         ErrorResponse errorResponse = buildErrorResponse(
-            HttpStatus.SERVICE_UNAVAILABLE,
-            "Service is current unavailable",
-            ex.getMessage(),
-            request);
+                HttpStatus.SERVICE_UNAVAILABLE, "Service is current unavailable", ex.getMessage(), request);
 
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     public ResponseEntity<ErrorResponse> handleMissingRequestHeaderException(
-            MissingRequestHeaderException ex,
-            WebRequest request) {
+            MissingRequestHeaderException ex, WebRequest request) {
 
         logException(ex, request, null);
 
@@ -130,14 +124,13 @@ class GlobalExceptionHandler {
         String transactionId = getTransactionId();
         String endpoint = getRequestURI(request);
 
-        log
-                .error(
-                    "UnexpectedException | TransactionId: {} | Endpoint: {} | ExceptionType: {} | Message: {} | StackTrace:",
-                    transactionId,
-                    endpoint,
-                    ex.getClass().getSimpleName(),
-                    ex.getMessage(),
-                    ex);
+        log.error(
+                "UnexpectedException | TransactionId: {} | Endpoint: {} | ExceptionType: {} | Message: {} | StackTrace:",
+                transactionId,
+                endpoint,
+                ex.getClass().getSimpleName(),
+                ex.getMessage(),
+                ex);
 
         String userMessage =
                 "An unexpected error occurred. Please contact support with transaction ID: " + transactionId;
@@ -154,23 +147,20 @@ class GlobalExceptionHandler {
         String exceptionType = ex.getClass().getSimpleName();
 
         if (additionalInfo != null && !additionalInfo.isEmpty()) {
-            log
-                    .error(
-                        "{} | TransactionId: {} | Endpoint: {} | Message: {} | {}",
-                        exceptionType,
-                        transactionId,
-                        endpoint,
-                        ex.getMessage(),
-                        additionalInfo);
-        }
-        else {
-            log
-                    .error(
-                        "{} | TransactionId: {} | Endpoint: {} | Message: {}",
-                        exceptionType,
-                        transactionId,
-                        endpoint,
-                        ex.getMessage());
+            log.error(
+                    "{} | TransactionId: {} | Endpoint: {} | Message: {} | {}",
+                    exceptionType,
+                    transactionId,
+                    endpoint,
+                    ex.getMessage(),
+                    additionalInfo);
+        } else {
+            log.error(
+                    "{} | TransactionId: {} | Endpoint: {} | Message: {}",
+                    exceptionType,
+                    transactionId,
+                    endpoint,
+                    ex.getMessage());
         }
     }
 
@@ -179,19 +169,18 @@ class GlobalExceptionHandler {
         String endpoint = getRequestURI(request);
         String exceptionType = ex.getClass().getSimpleName();
 
-        log
-                .warn(
-                    "{} | TransactionId: {} | Endpoint: {} | Message: {}",
-                    exceptionType,
-                    transactionId,
-                    endpoint,
-                    ex.getMessage());
+        log.warn(
+                "{} | TransactionId: {} | Endpoint: {} | Message: {}",
+                exceptionType,
+                transactionId,
+                endpoint,
+                ex.getMessage());
     }
 
     private ErrorResponse buildErrorResponse(HttpStatus status, String error, String message, WebRequest request) {
 
-        return new ErrorResponse(LocalDateTime
-                .now(), status.value(), error, message, getRequestURI(request), getTransactionId());
+        return new ErrorResponse(
+                LocalDateTime.now(), status.value(), error, message, getRequestURI(request), getTransactionId());
     }
 
     private String getTransactionId() {
@@ -206,11 +195,8 @@ class GlobalExceptionHandler {
     }
 
     private String formatValidationErrors(Map<String, String> errors) {
-        return errors
-                .entrySet()
-                .stream()
+        return errors.entrySet().stream()
                 .map(entry -> entry.getKey() + ": " + entry.getValue())
                 .collect(Collectors.joining(", "));
     }
-
 }

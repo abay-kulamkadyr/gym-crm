@@ -150,7 +150,8 @@ class TraineeServiceImplTest {
     @Test
     void updateProfile_shouldUpdateAllProvidedFields() {
         // Given
-        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(), //
+        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(
+                testTrainee.getUsername(), //
                 Optional.of("Jane"), //
                 Optional.of("Smith"), //
                 Optional.of("newpassword123"), //
@@ -179,7 +180,8 @@ class TraineeServiceImplTest {
     @Test
     void updateProfile_shouldThrowEntityNotFoundException_whenCredentialsInvalid() {
         // Given
-        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(),
+        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(
+                testTrainee.getUsername(),
                 Optional.of("Jane"),
                 Optional.empty(),
                 Optional.empty(),
@@ -194,14 +196,15 @@ class TraineeServiceImplTest {
     @Test
     void updateProfile_shouldThrowValidationException_whenNewUsernameSameAsCurrent() {
         // Given
-        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(testTrainee.getUsername(), //
+        UpdateTraineeProfileRequest request = new UpdateTraineeProfileRequest(
+                testTrainee.getUsername(), //
                 Optional.empty(), //
                 Optional.empty(), //
                 Optional.of("John.Doe"), //
                 Optional.empty(), //
                 Optional.empty(), //
                 Optional.empty() //
-        );
+                );
 
         when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
@@ -239,17 +242,17 @@ class TraineeServiceImplTest {
     }
 
     @Test
-	void toggleActiveStatus_shouldToggleFromTrueToFalse() {
-		// Given
-		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
-		when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
+    void toggleActiveStatus_shouldToggleFromTrueToFalse() {
+        // Given
+        when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
+        when(traineeRepository.save(any(Trainee.class))).thenReturn(testTrainee);
 
-		// When
-		traineeService.toggleActiveStatus(testTrainee.getUsername());
+        // When
+        traineeService.toggleActiveStatus(testTrainee.getUsername());
 
-		// Then
-		verify(traineeRepository).save(any(Trainee.class));
-	}
+        // Then
+        verify(traineeRepository).save(any(Trainee.class));
+    }
 
     @Test
     void toggleActiveStatus_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
@@ -279,17 +282,17 @@ class TraineeServiceImplTest {
     }
 
     @Test
-	void findProfileByUsername_shouldReturnTrainee() {
-		// Given
-		when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
+    void findProfileByUsername_shouldReturnTrainee() {
+        // Given
+        when(traineeRepository.findByUsername("John.Doe")).thenReturn(Optional.of(testTrainee));
 
-		// When
-		Trainee found = traineeService.getProfileByUsername(testTrainee.getUsername());
+        // When
+        Trainee found = traineeService.getProfileByUsername(testTrainee.getUsername());
 
-		// Then
-		assertThat(found).isNotNull();
-		assertThat(found.getUsername()).isEqualTo("John.Doe");
-	}
+        // Then
+        assertThat(found).isNotNull();
+        assertThat(found.getUsername()).isEqualTo("John.Doe");
+    }
 
     @Test
     void findProfileByUsername_shouldThrowAuthenticationException_whenInvalidCredentials() {
@@ -352,5 +355,4 @@ class TraineeServiceImplTest {
         // Then
         verify(traineeRepository).updateTrainersList("John.Doe", emptyList);
     }
-
 }

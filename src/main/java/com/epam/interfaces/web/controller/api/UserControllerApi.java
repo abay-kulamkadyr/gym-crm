@@ -20,12 +20,10 @@ public interface UserControllerApi {
 
     @Operation(summary = "Change Password", description = "Change user password")
     ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails,
-            @Valid @RequestBody ChangePasswordRequest request);
+            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request);
 
     @Operation(
             summary = "Logout",
             description = "Revoke the current JWT token. Token will be blacklisted and cannot be used again.")
     ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authHeader);
-
 }

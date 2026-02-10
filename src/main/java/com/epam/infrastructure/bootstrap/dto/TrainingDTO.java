@@ -22,5 +22,4 @@ public class TrainingDTO {
     private String trainerUsername; // Reference to Trainer
 
     private String trainingType; // Reference to TrainingType
-
 }

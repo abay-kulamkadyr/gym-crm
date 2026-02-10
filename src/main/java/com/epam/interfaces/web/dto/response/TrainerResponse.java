@@ -8,7 +8,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @JsonInclude(Include.NON_EMPTY)
-public record TrainerResponse(Optional<String> username, String firstName, String lastName,
-        TrainingTypeEnum specialization, Boolean active, List<EmbeddedTraineeResponse> trainees) {
-
-}
+public record TrainerResponse(
+        Optional<String> username,
+        String firstName,
+        String lastName,
+        TrainingTypeEnum specialization,
+        Boolean active,
+        List<EmbeddedTraineeResponse> trainees) {}

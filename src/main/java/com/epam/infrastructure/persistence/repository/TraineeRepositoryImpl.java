@@ -41,8 +41,7 @@ public class TraineeRepositoryImpl implements TraineeRepository {
 
         if (trainee.getTraineeId() == null) {
             entityManager.persist(entity);
-        }
-        else {
+        } else {
             TraineeDAO existing = entityManager.find(TraineeDAO.class, entity.getTraineeId());
             TraineeMapper.updateEntity(existing, trainee);
         }
@@ -76,8 +75,10 @@ public class TraineeRepositoryImpl implements TraineeRepository {
     @Override
     public Optional<Trainee> findByUsername(String username) {
         String jpql = "SELECT t FROM TraineeDAO t WHERE t.userDAO.username = :username";
-        List<TraineeDAO> results =
-                entityManager.createQuery(jpql, TraineeDAO.class).setParameter("username", username).getResultList();
+        List<TraineeDAO> results = entityManager
+                .createQuery(jpql, TraineeDAO.class)
+                .setParameter("username", username)
+                .getResultList();
 
         if (results.isEmpty()) {
             log.warn("Trainee with username '{}' not found", username);
@@ -90,8 +91,10 @@ public class TraineeRepositoryImpl implements TraineeRepository {
     @Override
     public Optional<String> findLatestUsername(String prefix) {
         String jpql = "SELECT u FROM UserDAO u WHERE u.username LIKE :prefix";
-        List<UserDAO> userDAOS =
-                entityManager.createQuery(jpql, UserDAO.class).setParameter("prefix", prefix + "%").getResultList();
+        List<UserDAO> userDAOS = entityManager
+                .createQuery(jpql, UserDAO.class)
+                .setParameter("prefix", prefix + "%")
+                .getResultList();
 
         return UsernameFinder.findLatestUsername(userDAOS, prefix, UserDAO::getUsername);
     }
@@ -101,7 +104,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
         if (findByUsername(traineeUsername).isEmpty()) {
             throw new EntityNotFoundException(String.format("Trainee with username '%s' not found", traineeUsername));
         }
-        String jpql = """
+        String jpql =
+                """
                       SELECT t
                       FROM TraineeDAO t
                       LEFT JOIN FETCH t.trainerDAOS
@@ -121,7 +125,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
             throw new EntityNotFoundException(String.format("Trainee with username '%s' not found", traineeUsername));
         }
 
-        String jpql = """
+        String jpql =
+                """
                           SELECT tr
                           FROM TrainerDAO tr
                           WHERE tr.trainerId NOT IN (
@@ -143,8 +148,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
     @Override
     public void deleteByUsername(String username) {
         Trainee trainee = findByUsername(username)
-                .orElseThrow(
-                    () -> new EntityNotFoundException(String.format("Trainee with username '%s' not found", username)));
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.format("Trainee with username '%s' not found", username)));
 
         delete(trainee.getTraineeId());
     }
@@ -152,7 +157,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
     @Override
     public void updateTrainersList(String traineeUsername, List<String> trainerUsernames) {
         // Fetch trainee with trainers collection
-        String jpql = """
+        String jpql =
+                """
                           SELECT t FROM TraineeDAO t
                           LEFT JOIN FETCH t.trainerDAOS
                           WHERE t.userDAO.username = :username
@@ -178,9 +184,8 @@ public class TraineeRepositoryImpl implements TraineeRepository {
             Long trainerId = trainerRepository
                     .findByUsername(trainerUsername)
                     .map(Trainer::getTrainerId)
-                    .orElseThrow(
-                        () -> new EntityNotFoundException(
-                                String.format("Trainer with username '%s' not found", trainerUsername)));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            String.format("Trainer with username '%s' not found", trainerUsername)));
 
             TrainerDAO trainerDAO = entityManager.find(TrainerDAO.class, trainerId);
 
@@ -191,5 +196,4 @@ public class TraineeRepositoryImpl implements TraineeRepository {
             trainerDAOS.add(trainerDAO);
         }
     }
-
 }

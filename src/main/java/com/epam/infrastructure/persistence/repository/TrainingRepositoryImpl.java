@@ -47,8 +47,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
         if (training.getTrainingId() == null) {
             entityManager.persist(entity);
-        }
-        else {
+        } else {
             entityManager.merge(entity);
         }
 
@@ -80,17 +79,18 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     @Override
     public List<Training> getTraineeTrainings(String traineeUsername, TrainingFilter filter) {
         return getTrainings(
-            traineeUsername,
-            TrainingFilter.forTrainee(filter.fromDate(), filter.toDate(), filter.trainerName(), filter.trainingType()),
-            UserType.TRAINEE);
+                traineeUsername,
+                TrainingFilter.forTrainee(
+                        filter.fromDate(), filter.toDate(), filter.trainerName(), filter.trainingType()),
+                UserType.TRAINEE);
     }
 
     @Override
     public List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter) {
         return getTrainings(
-            trainerUsername,
-            TrainingFilter.forTrainer(filter.fromDate(), filter.toDate(), filter.traineeName()),
-            UserType.TRAINER);
+                trainerUsername,
+                TrainingFilter.forTrainer(filter.fromDate(), filter.toDate(), filter.traineeName()),
+                UserType.TRAINER);
     }
 
     @Override
@@ -109,14 +109,12 @@ public class TrainingRepositoryImpl implements TrainingRepository {
         int deletedCount = entityManager.createQuery(delete).executeUpdate();
 
         if (deletedCount == 0) {
-            log
-                    .warn(
-                        "No training found to delete for Trainee: {}, Trainer: {}, Date: {}",
-                        traineeUsername,
-                        trainerUsername,
-                        date);
-        }
-        else {
+            log.warn(
+                    "No training found to delete for Trainee: {}, Trainer: {}, Date: {}",
+                    traineeUsername,
+                    trainerUsername,
+                    date);
+        } else {
             log.info("Successfully deleted {} training record(s)", deletedCount);
         }
     }
@@ -135,8 +133,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
         // --- Dynamic Primary Predicate ---
         if (userType == UserType.TRAINEE) {
             predicates.add(cb.equal(traineeJoin.get("userDAO").get("username"), requestedUsername));
-        }
-        else {
+        } else {
             predicates.add(cb.equal(trainerJoin.get("userDAO").get("username"), requestedUsername));
         }
 
@@ -150,18 +147,19 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
         trainingFilter
                 .trainerName()
-                .ifPresent(username -> predicates.add(cb.equal(trainerJoin.get("userDAO").get("username"), username)));
+                .ifPresent(username ->
+                        predicates.add(cb.equal(trainerJoin.get("userDAO").get("username"), username)));
 
         trainingFilter
                 .traineeName()
-                .ifPresent(username -> predicates.add(cb.equal(traineeJoin.get("userDAO").get("username"), username)));
+                .ifPresent(username ->
+                        predicates.add(cb.equal(traineeJoin.get("userDAO").get("username"), username)));
 
         trainingFilter
                 .trainingType()
                 .ifPresent(typeName -> predicates.add(cb.equal(typeJoin.get("trainingTypeName"), typeName)));
 
-        cq
-                .select(trainingRoot)
+        cq.select(trainingRoot)
                 .where(cb.and(predicates.toArray(new Predicate[0])))
                 .orderBy(cb.asc(trainingRoot.get("trainingDate")));
 
@@ -171,9 +169,7 @@ public class TrainingRepositoryImpl implements TrainingRepository {
     }
 
     private enum UserType {
-
-        TRAINEE, TRAINER
-
+        TRAINEE,
+        TRAINER
     }
-
 }

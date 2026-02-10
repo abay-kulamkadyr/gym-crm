@@ -45,10 +45,8 @@ public class TrainerController implements TrainerControllerApi {
     @Override
     @PostMapping
     public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TrainerRegistrationRequest request) {
-        CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest(request.firstName(),
-                request.lastName(),
-                true,
-                request.specialization());
+        CreateTrainerProfileRequest createRequest = new CreateTrainerProfileRequest(
+                request.firstName(), request.lastName(), true, request.specialization());
 
         Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
@@ -63,13 +61,12 @@ public class TrainerController implements TrainerControllerApi {
     public ResponseEntity<TrainerResponse> getProfile(@PathVariable String username) {
         Trainer trainer = gymFacade.getTrainerByUsername(username);
 
-        List<EmbeddedTraineeResponse> trainees = gymFacade
-                .getTrainerTrainees(username)
-                .stream()
+        List<EmbeddedTraineeResponse> trainees = gymFacade.getTrainerTrainees(username).stream()
                 .map(EmbeddedTraineeResponse::toEmbeddedTrainee)
                 .toList();
 
-        TrainerResponse trainerResponse = new TrainerResponse(Optional.empty(),
+        TrainerResponse trainerResponse = new TrainerResponse(
+                Optional.empty(),
                 trainer.getFirstName(),
                 trainer.getLastName(),
                 trainer.getSpecialization().getTrainingTypeName(),
@@ -82,10 +79,10 @@ public class TrainerController implements TrainerControllerApi {
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.name")
     public ResponseEntity<TrainerResponse> updateProfile(
-            @PathVariable String username,
-            @Valid @RequestBody UpdateTrainerRequest request) {
+            @PathVariable String username, @Valid @RequestBody UpdateTrainerRequest request) {
 
-        UpdateTrainerProfileRequest updateProfileRequest = new UpdateTrainerProfileRequest(username,
+        UpdateTrainerProfileRequest updateProfileRequest = new UpdateTrainerProfileRequest(
+                username,
                 Optional.of(request.firstName()),
                 Optional.of(request.lastName()),
                 Optional.empty(),
@@ -94,13 +91,12 @@ public class TrainerController implements TrainerControllerApi {
 
         Trainer trainer = gymFacade.updateTrainerProfile(updateProfileRequest);
 
-        List<EmbeddedTraineeResponse> trainees = gymFacade
-                .getTrainerTrainees(username)
-                .stream()
+        List<EmbeddedTraineeResponse> trainees = gymFacade.getTrainerTrainees(username).stream()
                 .map(EmbeddedTraineeResponse::toEmbeddedTrainee)
                 .toList();
 
-        TrainerResponse response = new TrainerResponse(Optional.of(trainer.getUsername()),
+        TrainerResponse response = new TrainerResponse(
+                Optional.of(trainer.getUsername()),
                 trainer.getFirstName(),
                 trainer.getLastName(),
                 trainer.getSpecialization().getTrainingTypeName(),
@@ -118,15 +114,10 @@ public class TrainerController implements TrainerControllerApi {
             @RequestParam(required = false) LocalDateTime periodFrom,
             @RequestParam(required = false) LocalDateTime periodTo,
             @RequestParam(required = false) String traineeName) {
-        TrainingFilter filter = TrainingFilter
-                .forTrainer(
-                    Optional.ofNullable(periodFrom),
-                    Optional.ofNullable(periodTo),
-                    Optional.ofNullable(traineeName));
+        TrainingFilter filter = TrainingFilter.forTrainer(
+                Optional.ofNullable(periodFrom), Optional.ofNullable(periodTo), Optional.ofNullable(traineeName));
 
-        List<EmbeddedTrainerTrainingResponse> response = gymFacade
-                .getTrainerTrainings(username, filter)
-                .stream()
+        List<EmbeddedTrainerTrainingResponse> response = gymFacade.getTrainerTrainings(username, filter).stream()
                 .map(EmbeddedTrainerTrainingResponse::toEmbeddedTraining)
                 .toList();
 
@@ -140,5 +131,4 @@ public class TrainerController implements TrainerControllerApi {
         gymFacade.toggleTrainerActiveStatus(username);
         return ResponseEntity.ok().build();
     }
-
 }

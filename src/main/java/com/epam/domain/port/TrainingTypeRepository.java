@@ -11,5 +11,4 @@ public interface TrainingTypeRepository extends CrudRepository<TrainingType> {
     Optional<TrainingType> findByTrainingTypeName(TrainingTypeEnum trainingName);
 
     List<TrainingType> getTrainingTypes();
-
 }

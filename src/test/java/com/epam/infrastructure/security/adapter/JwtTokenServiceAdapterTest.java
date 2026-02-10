@@ -88,5 +88,4 @@ class JwtTokenServiceAdapterTest {
     void parseToken_shouldThrowException_forInvalidToken() {
         assertThrows(IllegalArgumentException.class, () -> adapter.parseToken("invalid.token.here"));
     }
-
 }

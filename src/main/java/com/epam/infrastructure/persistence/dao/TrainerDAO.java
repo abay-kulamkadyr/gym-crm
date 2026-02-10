@@ -47,9 +47,7 @@ public class TrainerDAO {
     @ManyToMany(mappedBy = "trainerDAOS", fetch = FetchType.LAZY)
     private List<TraineeDAO> traineeDAOS = new ArrayList<>();
 
-    public TrainerDAO() {
-
-    }
+    public TrainerDAO() {}
 
     public void addTraining(TrainingDAO trainingDAO) {
         if (!trainingDAOS.contains(trainingDAO)) {
@@ -63,5 +61,4 @@ public class TrainerDAO {
             traineeDAOS.add(traineeDAO);
         }
     }
-
 }

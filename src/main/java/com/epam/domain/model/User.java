@@ -27,5 +27,4 @@ public abstract class User {
         this.lastName = lastName;
         this.active = active;
     }
-
 }

@@ -39,8 +39,7 @@ public class FeignInterceptor implements RequestInterceptor {
         if (authHeader != null && !authHeader.isEmpty()) {
             template.header("Authorization", authHeader);
             log.debug("Propagated Authorization header to downstream service");
-        }
-        else {
+        } else {
             log.warn("No Authorization header found - downstream call may fail authentication");
         }
     }
@@ -55,8 +54,7 @@ public class FeignInterceptor implements RequestInterceptor {
         if (transactionId != null && !transactionId.isEmpty()) {
             template.header(MdcConstants.TRANSACTION_ID_HEADER, transactionId);
             log.debug("Propagated Transaction ID to downstream service: {}", transactionId);
-        }
-        else {
+        } else {
             log.warn("No Transaction ID found in request attributes - downstream service will generate new one");
         }
     }

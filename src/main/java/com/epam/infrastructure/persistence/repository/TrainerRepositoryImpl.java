@@ -31,8 +31,7 @@ public class TrainerRepositoryImpl implements TrainerRepository {
 
         if (trainer.getTrainerId() == null) {
             entityManager.persist(entity);
-        }
-        else {
+        } else {
             entityManager.merge(entity);
         }
 
@@ -65,8 +64,10 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     @Override
     public Optional<Trainer> findByUsername(String username) {
         String jpql = "SELECT t FROM TrainerDAO t WHERE t.userDAO.username = :username";
-        List<TrainerDAO> results =
-                entityManager.createQuery(jpql, TrainerDAO.class).setParameter("username", username).getResultList();
+        List<TrainerDAO> results = entityManager
+                .createQuery(jpql, TrainerDAO.class)
+                .setParameter("username", username)
+                .getResultList();
 
         if (results.isEmpty()) {
             log.warn("Trainer with username '{}' not found", username);
@@ -79,8 +80,10 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     @Override
     public Optional<String> findLatestUsername(String prefix) {
         String jpql = "SELECT u FROM UserDAO u WHERE u.username LIKE :prefix";
-        List<UserDAO> userDAOS =
-                entityManager.createQuery(jpql, UserDAO.class).setParameter("prefix", prefix + "%").getResultList();
+        List<UserDAO> userDAOS = entityManager
+                .createQuery(jpql, UserDAO.class)
+                .setParameter("prefix", prefix + "%")
+                .getResultList();
 
         return UsernameFinder.findLatestUsername(userDAOS, prefix, UserDAO::getUsername);
     }
@@ -91,7 +94,8 @@ public class TrainerRepositoryImpl implements TrainerRepository {
             throw new EntityNotFoundException(String.format("Trainer with username '%s' not found", trainerUsername));
         }
 
-        String jpql = """
+        String jpql =
+                """
                       SELECT tr
                       FROM TrainerDAO tr
                       LEFT JOIN FETCH tr.traineeDAOS
@@ -109,10 +113,9 @@ public class TrainerRepositoryImpl implements TrainerRepository {
     @Override
     public void deleteByUsername(String username) {
         Trainer trainer = findByUsername(username)
-                .orElseThrow(
-                    () -> new EntityNotFoundException(String.format("Trainer with username '%s' not found", username)));
+                .orElseThrow(() ->
+                        new EntityNotFoundException(String.format("Trainer with username '%s' not found", username)));
 
         delete(trainer.getTrainerId());
     }
-
 }

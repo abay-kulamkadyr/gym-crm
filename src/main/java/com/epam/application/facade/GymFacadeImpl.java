@@ -149,5 +149,4 @@ public class GymFacadeImpl implements GymFacade {
     public List<TrainingType> getTrainingTypes() {
         return trainingTypeRepository.getTrainingTypes();
     }
-
 }

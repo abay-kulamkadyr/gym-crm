@@ -11,5 +11,4 @@ public interface LoginAttemptTracker {
     LockoutInfo getLockoutInfo(String username);
 
     boolean isAccountLocked(String username);
-
 }

@@ -10,5 +10,4 @@ import com.epam.domain.model.Trainer;
 public interface TrainerService extends UserService<Trainer, CreateTrainerProfileRequest, UpdateTrainerProfileRequest> {
 
     List<Trainee> getTrainees(String username);
-
 }

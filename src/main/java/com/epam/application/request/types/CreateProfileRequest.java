@@ -5,5 +5,4 @@ public interface CreateProfileRequest {
     String firstName();
 
     String lastName();
-
 }

@@ -55,13 +55,11 @@ public class TrainingServiceImpl implements TrainingService {
         TrainingType trainingType;
         if (request.trainingType().isEmpty()) {
             trainingType = trainer.getSpecialization();
-        }
-        else {
+        } else {
             trainingType = findTrainingType(request.trainingType().get());
         }
 
-        Training training = Training
-                .builder()
+        Training training = Training.builder()
                 .trainingName(request.trainingName())
                 .trainingDate(request.trainingDate())
                 .trainingDurationMin(request.trainingDurationMin())
@@ -111,5 +109,4 @@ public class TrainingServiceImpl implements TrainingService {
             return new EntityNotFoundException("TrainingType not found: " + name);
         });
     }
-
 }

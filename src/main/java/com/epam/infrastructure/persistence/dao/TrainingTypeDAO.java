@@ -38,9 +38,7 @@ public class TrainingTypeDAO {
     @OneToMany(mappedBy = "trainingTypeDAO", fetch = FetchType.LAZY)
     private List<TrainingDAO> trainingDAOS = new ArrayList<>();
 
-    public TrainingTypeDAO() {
-
-    }
+    public TrainingTypeDAO() {}
 
     public void addTraining(TrainingDAO trainingDAO) {
         if (!trainingDAOS.contains(trainingDAO)) {
@@ -48,5 +46,4 @@ public class TrainingTypeDAO {
         }
         trainingDAO.setTrainingTypeDAO(this);
     }
-
 }

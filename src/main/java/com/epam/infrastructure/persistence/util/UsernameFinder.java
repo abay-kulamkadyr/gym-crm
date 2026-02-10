@@ -12,15 +12,12 @@ public final class UsernameFinder {
     }
 
     public static <T> Optional<String> findLatestUsername(
-            Collection<T> daos,
-            String prefix,
-            Function<T, String> usernameExtractor) {
+            Collection<T> daos, String prefix, Function<T, String> usernameExtractor) {
         if (prefix == null) {
             return Optional.empty();
         }
 
-        return daos
-                .stream()
+        return daos.stream()
                 .map(usernameExtractor)
                 .filter(u -> u != null && u.startsWith(prefix))
                 .max(Comparator.comparingLong(u -> getSerialNumberForComparison(u, prefix)));
@@ -28,14 +25,11 @@ public final class UsernameFinder {
 
     private static long getSerialNumberForComparison(String username, String prefix) {
         String serialPart = username.substring(prefix.length());
-        if (serialPart.isEmpty())
-            return 0L;
+        if (serialPart.isEmpty()) return 0L;
         try {
             return Long.parseLong(serialPart);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return 0L;
         }
     }
-
 }

@@ -60,5 +60,4 @@ public final class TraineeMapper {
         dao.setDob(trainee.getDob());
         dao.setAddress(trainee.getAddress());
     }
-
 }

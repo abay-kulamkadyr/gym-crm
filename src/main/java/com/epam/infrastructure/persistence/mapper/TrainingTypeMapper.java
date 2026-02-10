@@ -35,5 +35,4 @@ public final class TrainingTypeMapper {
 
         return trainingType;
     }
-
 }

@@ -26,26 +26,21 @@ public class CredentialsUtil {
     }
 
     public static String generateUniqueUsername(
-            String firstname,
-            String lastName,
-            Function<String, Optional<String>> latestUsernameFinder) {
+            String firstname, String lastName, Function<String, Optional<String>> latestUsernameFinder) {
         String baseUsername = firstname + "." + lastName;
         String res = baseUsername;
         Optional<String> latestUsername = latestUsernameFinder.apply(baseUsername);
         if (latestUsername.isEmpty()) {
             return baseUsername;
-        }
-        else {
+        } else {
             try {
                 String serialPart = latestUsername.get().substring(baseUsername.length());
                 res += Long.parseLong(serialPart) + 1;
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 res += "1";
             }
         }
         return res;
-
     }
 
     public static String generateRandomPassword(int length) {
@@ -73,7 +68,6 @@ public class CredentialsUtil {
         if (password.trim().isEmpty()) {
             throw new ValidationException("Password cannot contain only whitespace");
         }
-
     }
 
     public static void validateUsername(String username) {
@@ -123,8 +117,7 @@ public class CredentialsUtil {
                 if (serialNum < 0) {
                     throw new ValidationException("Username serial number must be positive");
                 }
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 throw new ValidationException("Invalid serial number in username: " + serial);
             }
         }
@@ -159,7 +152,5 @@ public class CredentialsUtil {
         if (!NAME_PATTERN.matcher(name).matches()) {
             throw new ValidationException(fieldName + " can only contain letters, spaces, hyphens, and apostrophes");
         }
-
     }
-
 }

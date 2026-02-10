@@ -15,15 +15,13 @@ public class OpenApiConfig {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
-                .info(
-                    new Info()
-                            .title("Gym CRM API")
-                            .version("1.0")
-                            .description("API documentation for gym management system"))
+                .info(new Info()
+                        .title("Gym CRM API")
+                        .version("1.0")
+                        .description("API documentation for gym management system"))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
-                .components(
-                    new io.swagger.v3.oas.models.Components()
-                            .addSecuritySchemes(
+                .components(new io.swagger.v3.oas.models.Components()
+                        .addSecuritySchemes(
                                 securitySchemeName,
                                 new SecurityScheme()
                                         .name(securitySchemeName)
@@ -31,5 +29,4 @@ public class OpenApiConfig {
                                         .scheme("bearer")
                                         .bearerFormat("JWT")));
     }
-
 }

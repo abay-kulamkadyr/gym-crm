@@ -54,8 +54,7 @@ public class TrainingMapper {
         Trainer trainer = TrainerMapper.toDomain(trainingDAO.getTrainerDAO());
         TrainingType trainingType = TrainingTypeMapper.toDomain(trainingDAO.getTrainingTypeDAO());
 
-        Training training = Training
-                .builder()
+        Training training = Training.builder()
                 .trainingName(trainingDAO.getTrainingName())
                 .trainingDate(trainingDAO.getTrainingDate())
                 .trainingDurationMin(trainingDAO.getTrainingDurationMin())
@@ -98,32 +97,32 @@ public class TrainingMapper {
 
     private TraineeDAO getTraineeReference(Training training) {
         try {
-            return entityManager.getReference(TraineeDAO.class, training.getTrainee().getTraineeId());
-        }
-        catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(
-                    String.format("Trainee with ID %d not found", training.getTrainee().getTraineeId()));
+            return entityManager.getReference(
+                    TraineeDAO.class, training.getTrainee().getTraineeId());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException(String.format(
+                    "Trainee with ID %d not found", training.getTrainee().getTraineeId()));
         }
     }
 
     private TrainerDAO getTrainerReference(Training training) {
         try {
-            return entityManager.getReference(TrainerDAO.class, training.getTrainer().getTrainerId());
-        }
-        catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(
-                    String.format("Trainer with ID %d not found", training.getTrainer().getTrainerId()));
+            return entityManager.getReference(
+                    TrainerDAO.class, training.getTrainer().getTrainerId());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException(String.format(
+                    "Trainer with ID %d not found", training.getTrainer().getTrainerId()));
         }
     }
 
     private TrainingTypeDAO getTrainingTypeReference(Training training) {
         try {
-            return entityManager.getReference(TrainingTypeDAO.class, training.getTrainingType().getTrainingTypeId());
-        }
-        catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException(String
-                    .format("Training type with ID %d not found", training.getTrainingType().getTrainingTypeId()));
+            return entityManager.getReference(
+                    TrainingTypeDAO.class, training.getTrainingType().getTrainingTypeId());
+        } catch (EntityNotFoundException e) {
+            throw new EntityNotFoundException(String.format(
+                    "Training type with ID %d not found",
+                    training.getTrainingType().getTrainingTypeId()));
         }
     }
-
 }

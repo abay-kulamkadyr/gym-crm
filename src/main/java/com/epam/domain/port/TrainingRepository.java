@@ -13,5 +13,4 @@ public interface TrainingRepository extends CrudRepository<Training> {
     List<Training> getTrainerTrainings(String trainerUsername, TrainingFilter filter);
 
     void deleteByTraineeTrainerAndDate(String traineeUsername, String trainerUsername, LocalDateTime date);
-
 }

@@ -41,5 +41,4 @@ class MicrometerAppMetrics implements AppMetrics {
     public void incrementUserLoginFailed() {
         userLoginFailed.increment();
     }
-
 }

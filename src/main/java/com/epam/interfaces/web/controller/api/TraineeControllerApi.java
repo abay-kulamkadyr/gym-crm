@@ -56,5 +56,4 @@ public interface TraineeControllerApi {
     @Operation(summary = "Activate/Deactivate Trainee", description = "Change trainee active status")
     ResponseEntity<Void> toggleActivation(
             @Parameter(description = "Trainee username", required = true) String username);
-
 }

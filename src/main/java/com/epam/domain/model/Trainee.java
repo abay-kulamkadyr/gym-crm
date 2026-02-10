@@ -21,5 +21,4 @@ public class Trainee extends User {
     public Trainee(String firstName, String lastName, Boolean active) {
         super(firstName, lastName, active);
     }
-
 }

@@ -106,7 +106,5 @@ public class Training {
             training.setTrainingId(trainingId);
             return training;
         }
-
     }
-
 }

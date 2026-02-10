@@ -9,5 +9,4 @@ public interface AppMetrics {
     void incrementUserLoginAttempts();
 
     void incrementUserLoginFailed();
-
 }

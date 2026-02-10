@@ -113,7 +113,8 @@ class TrainerServiceImplTest {
         TrainingType yogaType = new TrainingType(TrainingTypeEnum.YOGA);
         yogaType.setTrainingTypeId(2L);
 
-        UpdateTrainerProfileRequest request = new UpdateTrainerProfileRequest(testTrainer.getUsername(),
+        UpdateTrainerProfileRequest request = new UpdateTrainerProfileRequest(
+                testTrainer.getUsername(),
                 Optional.of("Bob"),
                 Optional.of("Smith"),
                 Optional.of("newpassword123"),
@@ -121,7 +122,8 @@ class TrainerServiceImplTest {
                 Optional.of(TrainingTypeEnum.YOGA));
 
         when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.ofNullable(testTrainer));
-        when(trainingTypeRepository.findByTrainingTypeName(TrainingTypeEnum.YOGA)).thenReturn(Optional.of(yogaType));
+        when(trainingTypeRepository.findByTrainingTypeName(TrainingTypeEnum.YOGA))
+                .thenReturn(Optional.of(yogaType));
 
         Trainer updatedTrainer = new Trainer("Bob", "Smith", false, yogaType);
         when(trainerRepository.save(any(Trainer.class))).thenReturn(updatedTrainer);
@@ -137,15 +139,14 @@ class TrainerServiceImplTest {
     @Test
     void updateProfile_shouldThrowIllegalArgumentException_whenSpecializationIsNotValid() {
         // Given
-        assertThatThrownBy(
-            () -> new UpdateTrainerProfileRequest(testTrainer.getUsername(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.of(TrainingTypeEnum.valueOf("Non existent"))))
+        assertThatThrownBy(() -> new UpdateTrainerProfileRequest(
+                        testTrainer.getUsername(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.empty(),
+                        Optional.of(TrainingTypeEnum.valueOf("Non existent"))))
                 .isInstanceOf(IllegalArgumentException.class);
-
     }
 
     @Test
@@ -178,17 +179,17 @@ class TrainerServiceImplTest {
     }
 
     @Test
-	void toggleActiveStatus_shouldToggleFromTrueToFalse() {
-		// Given
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
-		when(trainerRepository.save(any(Trainer.class))).thenReturn(testTrainer);
+    void toggleActiveStatus_shouldToggleFromTrueToFalse() {
+        // Given
+        when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
+        when(trainerRepository.save(any(Trainer.class))).thenReturn(testTrainer);
 
-		// When
-		trainerService.toggleActiveStatus(testTrainer.getUsername());
+        // When
+        trainerService.toggleActiveStatus(testTrainer.getUsername());
 
-		// Then
-		verify(trainerRepository).save(any(Trainer.class));
-	}
+        // Then
+        verify(trainerRepository).save(any(Trainer.class));
+    }
 
     @Test
     void toggleActiveStatus_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
@@ -201,17 +202,17 @@ class TrainerServiceImplTest {
     }
 
     @Test
-	void deleteProfile_shouldDeleteTrainer() {
-		// Given
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.ofNullable(testTrainer));
-		doNothing().when(trainerRepository).deleteByUsername("Alice.Johnson");
+    void deleteProfile_shouldDeleteTrainer() {
+        // Given
+        when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.ofNullable(testTrainer));
+        doNothing().when(trainerRepository).deleteByUsername("Alice.Johnson");
 
-		// When
-		trainerService.deleteProfile(testTrainer.getUsername());
+        // When
+        trainerService.deleteProfile(testTrainer.getUsername());
 
-		// Then
-		verify(trainerRepository).deleteByUsername("Alice.Johnson");
-	}
+        // Then
+        verify(trainerRepository).deleteByUsername("Alice.Johnson");
+    }
 
     @Test
     void deleteProfile_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
@@ -221,17 +222,17 @@ class TrainerServiceImplTest {
     }
 
     @Test
-	void findProfileByUsername_shouldReturnTrainer() {
-		// Given
-		when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
+    void findProfileByUsername_shouldReturnTrainer() {
+        // Given
+        when(trainerRepository.findByUsername("Alice.Johnson")).thenReturn(Optional.of(testTrainer));
 
-		// When
-		Trainer found = trainerService.getProfileByUsername(testTrainer.getUsername());
+        // When
+        Trainer found = trainerService.getProfileByUsername(testTrainer.getUsername());
 
-		// Then
-		assertThat(found).isNotNull();
-		assertThat(found.getUsername()).isEqualTo("Alice.Johnson");
-	}
+        // Then
+        assertThat(found).isNotNull();
+        assertThat(found.getUsername()).isEqualTo("Alice.Johnson");
+    }
 
     @Test
     void findProfileByUsername_shouldThrowEntityNotFoundException_whenInvalidCredentials() {
@@ -239,5 +240,4 @@ class TrainerServiceImplTest {
         assertThatThrownBy(() -> trainerService.getProfileByUsername(testTrainer.getUsername()))
                 .isInstanceOf(EntityNotFoundException.class);
     }
-
 }

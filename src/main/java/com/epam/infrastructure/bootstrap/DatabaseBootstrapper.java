@@ -74,8 +74,9 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 
         try {
             // Check if already initialized
-            Long existingUserCount =
-                    entityManager.createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class).getSingleResult();
+            Long existingUserCount = entityManager
+                    .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
+                    .getSingleResult();
 
             if (existingUserCount > 0) {
                 log.info("Database already initialized ({} users found), skipping bootstrap", existingUserCount);
@@ -116,8 +117,7 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
             log.info("{} Trainers", trainers.size());
             log.info("{} Trainees", trainees.size());
 
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Database initialization failed", e);
             this.lastError = e;
             this.initialized.set(false);
@@ -173,9 +173,7 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
     }
 
     private Map<String, TrainerDAO> persistTrainers(
-            InitialBootstrapData data,
-            Map<String, UserDAO> users,
-            Map<String, TrainingTypeDAO> trainingTypes) {
+            InitialBootstrapData data, Map<String, UserDAO> users, Map<String, TrainingTypeDAO> trainingTypes) {
         log.info("Step 3/6: Persisting trainers...");
         Map<String, TrainerDAO> trainerMap = new HashMap<>();
 
@@ -200,12 +198,11 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
             entityManager.flush();
 
             trainerMap.put(trainerDTO.getUsername(), dao);
-            log
-                    .debug(
-                        "Created Trainer: {} (ID: {}, Type: {})",
-                        userDao.getUsername(),
-                        dao.getTrainerId(),
-                        typeDao.getTrainingTypeName());
+            log.debug(
+                    "Created Trainer: {} (ID: {}, Type: {})",
+                    userDao.getUsername(),
+                    dao.getTrainerId(),
+                    typeDao.getTrainingTypeName());
         }
 
         log.info("Created {} trainers", trainerMap.size());
@@ -240,16 +237,13 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
     }
 
     private void createTraineeTrainerRelationships(
-            InitialBootstrapData data,
-            Map<String, TraineeDAO> trainees,
-            Map<String, TrainerDAO> trainers) {
+            InitialBootstrapData data, Map<String, TraineeDAO> trainees, Map<String, TrainerDAO> trainers) {
         log.info("Step 5/6: Creating trainee-trainer relationships...");
         int relationshipCount = 0;
 
         for (TraineeDTO traineeDTO : data.getTrainees()) {
             TraineeDAO traineeDao = trainees.get(traineeDTO.getUsername());
-            if (traineeDao == null)
-                continue;
+            if (traineeDao == null) continue;
 
             for (String trainerUsername : traineeDTO.getTrainerUsernames()) {
                 TrainerDAO trainerDao = trainers.get(trainerUsername);
@@ -258,8 +252,7 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
                     trainerDao.getTraineeDAOS().add(traineeDao);
                     relationshipCount++;
                     log.debug("Linked: {} ↔ {}", traineeDTO.getUsername(), trainerUsername);
-                }
-                else {
+                } else {
                     log.warn("Trainer not found: {}", trainerUsername);
                 }
             }
@@ -305,16 +298,14 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
 
             entityManager.persist(dao);
             trainingCount++;
-            log
-                    .debug(
-                        "Created Training: {} ({} with {})",
-                        trainingDTO.getName(),
-                        trainingDTO.getTraineeUsername(),
-                        trainingDTO.getTrainerUsername());
+            log.debug(
+                    "Created Training: {} ({} with {})",
+                    trainingDTO.getName(),
+                    trainingDTO.getTraineeUsername(),
+                    trainingDTO.getTrainerUsername());
         }
 
         entityManager.flush();
         log.info("Created {} trainings", trainingCount);
     }
-
 }

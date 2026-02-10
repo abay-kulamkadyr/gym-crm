@@ -54,8 +54,5 @@ public class UserDAO {
     @Column(name = "is_active", nullable = false)
     private Boolean active;
 
-    public UserDAO() {
-
-    }
-
+    public UserDAO() {}
 }

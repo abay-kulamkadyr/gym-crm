@@ -54,19 +54,19 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-	void doFilterInternal_shouldProceed_whenNoAuthorizationHeader() throws Exception {
-		// Given
-		when(request.getHeader("Authorization")).thenReturn(null);
-		when(request.getRequestURI()).thenReturn("/api/test");
+    void doFilterInternal_shouldProceed_whenNoAuthorizationHeader() throws Exception {
+        // Given
+        when(request.getHeader("Authorization")).thenReturn(null);
+        when(request.getRequestURI()).thenReturn("/api/test");
 
-		// When
-		filter.doFilterInternal(request, response, filterChain);
+        // When
+        filter.doFilterInternal(request, response, filterChain);
 
-		// Then
-		verify(filterChain).doFilter(request, response);
-		verify(authenticationManager, never()).authenticate(any());
-		assertNull(SecurityContextHolder.getContext().getAuthentication());
-	}
+        // Then
+        verify(filterChain).doFilter(request, response);
+        verify(authenticationManager, never()).authenticate(any());
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
 
     @Test
     void doFilterInternal_shouldReject_whenTokenBlacklisted() throws Exception {
@@ -96,7 +96,8 @@ class JwtAuthenticationFilterTest {
         UsernamePasswordAuthenticationToken authResult =
                 new UsernamePasswordAuthenticationToken("user", null, Collections.emptyList());
 
-        when(authenticationManager.authenticate(any(JwtAuthenticationToken.class))).thenReturn(authResult);
+        when(authenticationManager.authenticate(any(JwtAuthenticationToken.class)))
+                .thenReturn(authResult);
 
         // When
         filter.doFilterInternal(request, response, filterChain);
@@ -105,7 +106,8 @@ class JwtAuthenticationFilterTest {
         verify(authenticationManager).authenticate(any(JwtAuthenticationToken.class));
         verify(filterChain).doFilter(request, response);
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-        assertEquals("user", SecurityContextHolder.getContext().getAuthentication().getName());
+        assertEquals(
+                "user", SecurityContextHolder.getContext().getAuthentication().getName());
     }
 
     @Test
@@ -123,5 +125,4 @@ class JwtAuthenticationFilterTest {
         // Then
         assertNull(SecurityContextHolder.getContext().getAuthentication());
     }
-
 }

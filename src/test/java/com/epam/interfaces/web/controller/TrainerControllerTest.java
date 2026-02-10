@@ -45,7 +45,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TrainerController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
-@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class })
+@ImportAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @ActiveProfiles("test")
 class TrainerControllerTest {
 
@@ -85,14 +85,13 @@ class TrainerControllerTest {
         // Given
         TrainerRegistrationRequest request = new TrainerRegistrationRequest("Jane", "Smith", TrainingTypeEnum.CARDIO);
 
-        when(gymFacade.createTrainerProfile(any(CreateTrainerProfileRequest.class))).thenReturn(testTrainer);
+        when(gymFacade.createTrainerProfile(any(CreateTrainerProfileRequest.class)))
+                .thenReturn(testTrainer);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainers")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("jane.smith"))
                 .andExpect(jsonPath("$.password").value("password123"));
@@ -107,11 +106,9 @@ class TrainerControllerTest {
         TrainerRegistrationRequest request = new TrainerRegistrationRequest("", "Smith", TrainingTypeEnum.CARDIO);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainers")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
         verify(gymFacade, never()).createTrainerProfile(any());
@@ -121,7 +118,8 @@ class TrainerControllerTest {
     @DisplayName("POST /api/trainers - Should return 400 for missing specialization")
     void testRegisterTrainer_MissingSpecialization() throws Exception {
         // Given
-        String requestJson = """
+        String requestJson =
+                """
                              {
                                "firstName": "Jane",
                                "lastName": "Smith"
@@ -129,44 +127,45 @@ class TrainerControllerTest {
                              """;
 
         // When & Then
-        mockMvc
-                .perform(post("/api/trainers").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+        mockMvc.perform(post("/api/trainers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isBadRequest());
 
         verify(gymFacade, never()).createTrainerProfile(any());
     }
 
     @Test
-	@DisplayName("GET /api/trainers/{username} - Should return trainer profile")
-	void testGetProfile_Success() throws Exception {
-		// Given
-		when(gymFacade.getTrainerByUsername(testTrainer.getUsername())).thenReturn(testTrainer);
-		when(gymFacade.getTrainerTrainees(testTrainer.getUsername())).thenReturn(List.of(testTrainee));
+    @DisplayName("GET /api/trainers/{username} - Should return trainer profile")
+    void testGetProfile_Success() throws Exception {
+        // Given
+        when(gymFacade.getTrainerByUsername(testTrainer.getUsername())).thenReturn(testTrainer);
+        when(gymFacade.getTrainerTrainees(testTrainer.getUsername())).thenReturn(List.of(testTrainee));
 
-		// When & Then
-		mockMvc.perform(get("/api/trainers/jane.smith"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.firstName").value("Jane"))
-			.andExpect(jsonPath("$.lastName").value("Smith"))
-			.andExpect(jsonPath("$.specialization").value("CARDIO"))
-			.andExpect(jsonPath("$.active").value(true))
-			.andExpect(jsonPath("$.trainees").isArray())
-			.andExpect(jsonPath("$.trainees[0].username").value("john.doe"));
+        // When & Then
+        mockMvc.perform(get("/api/trainers/jane.smith"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Jane"))
+                .andExpect(jsonPath("$.lastName").value("Smith"))
+                .andExpect(jsonPath("$.specialization").value("CARDIO"))
+                .andExpect(jsonPath("$.active").value(true))
+                .andExpect(jsonPath("$.trainees").isArray())
+                .andExpect(jsonPath("$.trainees[0].username").value("john.doe"));
 
-		verify(gymFacade).getTrainerByUsername(testTrainer.getUsername());
-	}
+        verify(gymFacade).getTrainerByUsername(testTrainer.getUsername());
+    }
 
     @Test
-	@DisplayName("GET /api/trainers/{username} - Should return 404 when trainer not found")
-	void testGetProfile_NotFound() throws Exception {
-		// Given
-		when(gymFacade.getTrainerByUsername(testTrainer.getUsername())).thenThrow(EntityNotFoundException.class);
+    @DisplayName("GET /api/trainers/{username} - Should return 404 when trainer not found")
+    void testGetProfile_NotFound() throws Exception {
+        // Given
+        when(gymFacade.getTrainerByUsername(testTrainer.getUsername())).thenThrow(EntityNotFoundException.class);
 
-		// When & Then
-		mockMvc.perform(get("/api/trainers/jane.smith")).andExpect(status().isNotFound());
+        // When & Then
+        mockMvc.perform(get("/api/trainers/jane.smith")).andExpect(status().isNotFound());
 
-		verify(gymFacade).getTrainerByUsername(testTrainer.getUsername());
-	}
+        verify(gymFacade).getTrainerByUsername(testTrainer.getUsername());
+    }
 
     @Test
     @DisplayName("PUT /api/trainers/{username} - Should update trainer profile")
@@ -184,11 +183,9 @@ class TrainerControllerTest {
         when(gymFacade.getTrainerTrainees(testTrainer.getUsername())).thenReturn(List.of());
 
         // When & Then
-        mockMvc
-                .perform(
-                    put("/api/trainers/jane.smith")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/trainers/jane.smith")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("jane.smith"))
                 .andExpect(jsonPath("$.lastName").value("Smith Updated"))
@@ -202,18 +199,17 @@ class TrainerControllerTest {
     @DisplayName("PUT /api/trainers/{username} - Should return 400 for invalid input")
     void testUpdateProfile_InvalidInput() throws Exception {
         // Given
-        UpdateTrainerRequest request = new UpdateTrainerRequest("", // Invalid: blank
+        UpdateTrainerRequest request = new UpdateTrainerRequest(
+                "", // Invalid: blank
                 // first name
                 "Smith",
                 TrainingTypeEnum.CARDIO,
                 true);
 
         // When & Then
-        mockMvc
-                .perform(
-                    put("/api/trainers/jane.smith")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/trainers/jane.smith")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
         verify(gymFacade, never()).updateTrainerProfile(any());
@@ -223,8 +219,7 @@ class TrainerControllerTest {
     @DisplayName("GET /api/trainers/{username}/trainings - Should return trainings with filters")
     void testGetTrainings_Success() throws Exception {
         // Given
-        Training training = Training
-                .builder()
+        Training training = Training.builder()
                 .trainingName("Morning Session")
                 .trainingDate(LocalDateTime.now())
                 .trainingDurationMin(90)
@@ -237,12 +232,10 @@ class TrainerControllerTest {
                 .thenReturn(List.of(training));
 
         // When & Then
-        mockMvc
-                .perform(
-                    get("/api/trainers/jane.smith/trainings")
-                            .param("traineeName", "john.doe")
-                            .param("periodFrom", "2024-01-01T00:00:00")
-                            .param("periodTo", "2024-12-31T23:59:59"))
+        mockMvc.perform(get("/api/trainers/jane.smith/trainings")
+                        .param("traineeName", "john.doe")
+                        .param("periodFrom", "2024-01-01T00:00:00")
+                        .param("periodTo", "2024-12-31T23:59:59"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].trainingName").value("Morning Session"))
@@ -252,20 +245,20 @@ class TrainerControllerTest {
     }
 
     @Test
-	@DisplayName("GET /api/trainers/{username}/trainings - Should return trainings without filters")
-	void testGetTrainings_NoFilters() throws Exception {
-		// Given
-		when(gymFacade.getTrainerTrainings(eq(testTrainer.getUsername()), any(TrainingFilter.class)))
-			.thenReturn(List.of());
+    @DisplayName("GET /api/trainers/{username}/trainings - Should return trainings without filters")
+    void testGetTrainings_NoFilters() throws Exception {
+        // Given
+        when(gymFacade.getTrainerTrainings(eq(testTrainer.getUsername()), any(TrainingFilter.class)))
+                .thenReturn(List.of());
 
-		// When & Then
-		mockMvc.perform(get("/api/trainers/jane.smith/trainings"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$").isArray())
-			.andExpect(jsonPath("$").isEmpty());
+        // When & Then
+        mockMvc.perform(get("/api/trainers/jane.smith/trainings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
 
-		verify(gymFacade).getTrainerTrainings(eq(testTrainer.getUsername()), any(TrainingFilter.class));
-	}
+        verify(gymFacade).getTrainerTrainings(eq(testTrainer.getUsername()), any(TrainingFilter.class));
+    }
 
     @Test
     @DisplayName("PATCH /api/trainers/{username}/activation - Should toggle activation status")
@@ -277,11 +270,10 @@ class TrainerControllerTest {
     }
 
     @Test
-	@DisplayName("Should return 403 when username mismatch")
-	void testUsernameMismatch() throws Exception {
-		when(gymFacade.getTrainerByUsername("jane.smith")).thenThrow(EntityNotFoundException.class);
-		// When & Then
-		mockMvc.perform(get("/api/trainers/jane.smith")).andExpect(status().isNotFound());
-	}
-
+    @DisplayName("Should return 403 when username mismatch")
+    void testUsernameMismatch() throws Exception {
+        when(gymFacade.getTrainerByUsername("jane.smith")).thenThrow(EntityNotFoundException.class);
+        // When & Then
+        mockMvc.perform(get("/api/trainers/jane.smith")).andExpect(status().isNotFound());
+    }
 }

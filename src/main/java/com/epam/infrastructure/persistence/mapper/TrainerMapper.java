@@ -56,5 +56,4 @@ public final class TrainerMapper {
 
         return trainer;
     }
-
 }

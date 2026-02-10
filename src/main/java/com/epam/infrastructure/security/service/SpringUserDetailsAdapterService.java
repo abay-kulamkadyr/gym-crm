@@ -26,5 +26,4 @@ public class SpringUserDetailsAdapterService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found"));
         return new DomainUserDetailsAdapter(user);
     }
-
 }

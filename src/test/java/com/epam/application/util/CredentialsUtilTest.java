@@ -333,16 +333,17 @@ class CredentialsUtilTest {
 
     @ParameterizedTest
     @ValueSource(
-            strings = { "JohnDoe", // No dot
-                    "John_Doe", // Underscore instead of dot
-                    "John Doe", // Space instead of dot
-                    "john.doe.", // Trailing dot
-                    ".john.doe", // Leading dot
-                    "John.Doe.Smith", // Multiple dots
-                    "123.456", // Numbers as names
-                    "John.123", // Numbers in last name
-                    "John.Doe-1", // Hyphen with serial
-                    "John.Doe ABC" // Space in serial
+            strings = {
+                "JohnDoe", // No dot
+                "John_Doe", // Underscore instead of dot
+                "John Doe", // Space instead of dot
+                "john.doe.", // Trailing dot
+                ".john.doe", // Leading dot
+                "John.Doe.Smith", // Multiple dots
+                "123.456", // Numbers as names
+                "John.123", // Numbers in last name
+                "John.Doe-1", // Hyphen with serial
+                "John.Doe ABC" // Space in serial
             })
     void validateUsername_shouldThrowWhenUsernameHasInvalidFormat(String invalidUsername) {
         // When & Then
@@ -574,13 +575,14 @@ class CredentialsUtilTest {
 
     @ParameterizedTest
     @ValueSource(
-            strings = { "John123", // Contains numbers
-                    "John@Doe", // Contains special character
-                    "John_Doe", // Contains underscore
-                    "John.Doe", // Contains dot
-                    "John!", // Contains exclamation
-                    "123John", // Starts with number
-                    "!John" // Starts with special character
+            strings = {
+                "John123", // Contains numbers
+                "John@Doe", // Contains special character
+                "John_Doe", // Contains underscore
+                "John.Doe", // Contains dot
+                "John!", // Contains exclamation
+                "123John", // Starts with number
+                "!John" // Starts with special character
             })
     void validateName_shouldThrowWhenNameContainsInvalidCharacters(String invalidName) {
         // When & Then
@@ -622,5 +624,4 @@ class CredentialsUtilTest {
         // When & Then - should not throw (trimmed length is valid)
         CredentialsUtil.validateName(name, "First name");
     }
-
 }

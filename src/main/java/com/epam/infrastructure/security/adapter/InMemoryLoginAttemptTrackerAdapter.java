@@ -41,7 +41,6 @@ public class InMemoryLoginAttemptTrackerAdapter implements LoginAttemptTracker {
         int attempts = 0;
 
         Instant lockUntil;
-
     }
 
     @Override
@@ -62,8 +61,7 @@ public class InMemoryLoginAttemptTrackerAdapter implements LoginAttemptTracker {
             if (record.attempts >= maxAttempts) {
                 record.lockUntil = clock.instant().plus(lockoutDuration);
                 log.warn("Account locked after {} failed attempts: {}", record.attempts, username);
-            }
-            else {
+            } else {
                 log.debug("Failed attempt #{} recorded for: {}", record.attempts, username);
             }
             return record;
@@ -114,5 +112,4 @@ public class InMemoryLoginAttemptTrackerAdapter implements LoginAttemptTracker {
             log.info("Lockout cleanup: removed {} expired entries, {} remaining", removed, attempts.size());
         }
     }
-
 }

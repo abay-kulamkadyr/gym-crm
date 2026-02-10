@@ -60,12 +60,11 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldReturnUsernameWithHighestSerialNumber() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.Doe1"),
-                    new TestUserDAO("John.Doe5"),
-                    new TestUserDAO("John.Doe3"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe1"),
+                new TestUserDAO("John.Doe5"),
+                new TestUserDAO("John.Doe3"));
         String prefix = "John.Doe";
 
         // When
@@ -79,12 +78,11 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleLargeSerialNumbers() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.Doe999"),
-                    new TestUserDAO("John.Doe1000"),
-                    new TestUserDAO("John.Doe500"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe999"),
+                new TestUserDAO("John.Doe1000"),
+                new TestUserDAO("John.Doe500"));
         String prefix = "John.Doe";
 
         // When
@@ -98,12 +96,11 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldIgnoreNonMatchingPrefixes() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("Jane.Smith1"),
-                    new TestUserDAO("Jane.Smith5"),
-                    new TestUserDAO("John.Doe2"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("Jane.Smith1"),
+                new TestUserDAO("Jane.Smith5"),
+                new TestUserDAO("John.Doe2"));
         String prefix = "John.Doe";
 
         // When
@@ -146,12 +143,11 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldTreatInvalidSerialAsZero() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.DoeABC"), // Invalid
-                    // serial
-                    new TestUserDAO("John.Doe1"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.DoeABC"), // Invalid
+                // serial
+                new TestUserDAO("John.Doe1"));
         String prefix = "John.Doe";
 
         // When
@@ -165,10 +161,9 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldTreatBaseUsernameAsSerialZero() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"), // Serial 0
-                    new TestUserDAO("John.DoeXYZ") // Invalid serial, treated as 0
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"), // Serial 0
+                new TestUserDAO("John.DoeXYZ") // Invalid serial, treated as 0
                 );
         String prefix = "John.Doe";
 
@@ -183,13 +178,12 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleMixedValidAndInvalidSerials() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.Doe2"),
-                    new TestUserDAO("John.DoeABC"),
-                    new TestUserDAO("John.Doe10"),
-                    new TestUserDAO("John.Doe!@#"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe2"),
+                new TestUserDAO("John.DoeABC"),
+                new TestUserDAO("John.Doe10"),
+                new TestUserDAO("John.Doe!@#"));
         String prefix = "John.Doe";
 
         // When
@@ -203,11 +197,10 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleVeryLargeSerialNumbers() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.Doe999999999"),
-                    new TestUserDAO("John.Doe1000000000"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe999999999"),
+                new TestUserDAO("John.Doe1000000000"));
         String prefix = "John.Doe";
 
         // When
@@ -274,7 +267,6 @@ class UsernameFinderTest {
             String getUserIdentifier() {
                 return userIdentifier;
             }
-
         }
 
         Collection<CustomDAO> daos =
@@ -292,13 +284,12 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleLeadingZerosInSerial() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe"),
-                    new TestUserDAO("John.Doe01"), // Leading
-                    // zero
-                    new TestUserDAO("John.Doe001"), // Leading zeros
-                    new TestUserDAO("John.Doe10"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe01"), // Leading
+                // zero
+                new TestUserDAO("John.Doe001"), // Leading zeros
+                new TestUserDAO("John.Doe10"));
         String prefix = "John.Doe";
 
         // When
@@ -312,9 +303,10 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleNegativeNumbersInSerial() {
         // Given
-        Collection<TestUserDAO> daos = List.of(new TestUserDAO("John.Doe"), new TestUserDAO("John.Doe-5") // Negative
-        // number
-        );
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"), new TestUserDAO("John.Doe-5") // Negative
+                // number
+                );
         String prefix = "John.Doe";
 
         // When
@@ -341,8 +333,10 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandlePartialPrefixMatches() {
         // Given
-        Collection<TestUserDAO> daos =
-                List.of(new TestUserDAO("John.Doe"), new TestUserDAO("John.Doe1"), new TestUserDAO("John.Doenot") // Starts with prefix but not a serial
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe"),
+                new TestUserDAO("John.Doe1"),
+                new TestUserDAO("John.Doenot") // Starts with prefix but not a serial
                 );
         String prefix = "John.Doe";
 
@@ -357,11 +351,8 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldHandleSpecialCharactersInPrefix() {
         // Given
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.O'Brien"),
-                    new TestUserDAO("John.O'Brien1"),
-                    new TestUserDAO("John.O'Brien5"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.O'Brien"), new TestUserDAO("John.O'Brien1"), new TestUserDAO("John.O'Brien5"));
         String prefix = "John.O'Brien";
 
         // When
@@ -375,13 +366,12 @@ class UsernameFinderTest {
     @Test
     void findLatestUsername_shouldWorkWithUnsortedCollection() {
         // Given - Intentionally unsorted
-        Collection<TestUserDAO> daos = List
-                .of(
-                    new TestUserDAO("John.Doe7"),
-                    new TestUserDAO("John.Doe2"),
-                    new TestUserDAO("John.Doe100"),
-                    new TestUserDAO("John.Doe1"),
-                    new TestUserDAO("John.Doe50"));
+        Collection<TestUserDAO> daos = List.of(
+                new TestUserDAO("John.Doe7"),
+                new TestUserDAO("John.Doe2"),
+                new TestUserDAO("John.Doe100"),
+                new TestUserDAO("John.Doe1"),
+                new TestUserDAO("John.Doe50"));
         String prefix = "John.Doe";
 
         // When
@@ -406,5 +396,4 @@ class UsernameFinderTest {
         assertThat(result).isPresent();
         assertThat(result.get()).isEqualTo("John.Doe1");
     }
-
 }

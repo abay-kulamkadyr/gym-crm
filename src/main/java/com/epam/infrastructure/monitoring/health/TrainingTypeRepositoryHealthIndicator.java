@@ -24,27 +24,22 @@ class TrainingTypeRepositoryHealthIndicator implements HealthIndicator {
             int trainingTypesCount = trainingTypeRepository.getTrainingTypes().size();
 
             if (trainingTypesCount < MIN_TYPES) {
-                return Health
-                        .down()
+                return Health.down()
                         .withDetail("Training types count", trainingTypesCount)
                         .withDetail("Required minimum", MIN_TYPES)
                         .build();
             }
 
-            return Health
-                    .up()
+            return Health.up()
                     .withDetail("Training types count", trainingTypesCount)
                     .withDetail("Required minimum", MIN_TYPES)
                     .build();
 
-        }
-        catch (Exception e) {
-            return Health
-                    .down(e)
+        } catch (Exception e) {
+            return Health.down(e)
                     .withDetail("Reason", "Failed to access TrainingTypeRepository")
                     .withDetail("Required minimum", MIN_TYPES)
                     .build();
         }
     }
-
 }

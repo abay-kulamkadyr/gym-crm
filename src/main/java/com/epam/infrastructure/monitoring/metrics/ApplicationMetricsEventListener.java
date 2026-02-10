@@ -37,5 +37,4 @@ class ApplicationMetricsEventListener {
     public void onUserLoginFailed(UserLoginFailedEvent event) {
         metrics.incrementUserLoginFailed();
     }
-
 }

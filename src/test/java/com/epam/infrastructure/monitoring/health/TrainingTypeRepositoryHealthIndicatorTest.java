@@ -32,13 +32,12 @@ class TrainingTypeRepositoryHealthIndicatorTest {
     @Test
     void health_shouldReturnUp_whenTrainingTypesCountIsAtLeastMinimum() {
         // Given - 5 training types (meets minimum)
-        List<TrainingType> trainingTypes = List
-                .of(
-                    new TrainingType(TrainingTypeEnum.YOGA),
-                    new TrainingType(TrainingTypeEnum.CARDIO),
-                    new TrainingType(TrainingTypeEnum.BOXING),
-                    new TrainingType(TrainingTypeEnum.CROSSFIT),
-                    new TrainingType(TrainingTypeEnum.PILATES));
+        List<TrainingType> trainingTypes = List.of(
+                new TrainingType(TrainingTypeEnum.YOGA),
+                new TrainingType(TrainingTypeEnum.CARDIO),
+                new TrainingType(TrainingTypeEnum.BOXING),
+                new TrainingType(TrainingTypeEnum.CROSSFIT),
+                new TrainingType(TrainingTypeEnum.PILATES));
         when(trainingTypeRepository.getTrainingTypes()).thenReturn(trainingTypes);
 
         // When
@@ -52,14 +51,13 @@ class TrainingTypeRepositoryHealthIndicatorTest {
 
     @Test
     void health_shouldReturnUp_whenTrainingTypesCountExceedsMinimum() {
-        List<TrainingType> trainingTypes = List
-                .of(
-                    new TrainingType(TrainingTypeEnum.YOGA),
-                    new TrainingType(TrainingTypeEnum.CARDIO),
-                    new TrainingType(TrainingTypeEnum.BOXING),
-                    new TrainingType(TrainingTypeEnum.CROSSFIT),
-                    new TrainingType(TrainingTypeEnum.PILATES),
-                    new TrainingType(TrainingTypeEnum.STRENGTH));
+        List<TrainingType> trainingTypes = List.of(
+                new TrainingType(TrainingTypeEnum.YOGA),
+                new TrainingType(TrainingTypeEnum.CARDIO),
+                new TrainingType(TrainingTypeEnum.BOXING),
+                new TrainingType(TrainingTypeEnum.CROSSFIT),
+                new TrainingType(TrainingTypeEnum.PILATES),
+                new TrainingType(TrainingTypeEnum.STRENGTH));
         when(trainingTypeRepository.getTrainingTypes()).thenReturn(trainingTypes);
 
         // When
@@ -73,11 +71,10 @@ class TrainingTypeRepositoryHealthIndicatorTest {
     @Test
     void health_shouldReturnDown_whenTrainingTypesCountIsBelowMinimum() {
         // Given - 3 training types (below minimum of 5)
-        List<TrainingType> trainingTypes = List
-                .of(
-                    new TrainingType(TrainingTypeEnum.YOGA),
-                    new TrainingType(TrainingTypeEnum.CARDIO),
-                    new TrainingType(TrainingTypeEnum.BOXING));
+        List<TrainingType> trainingTypes = List.of(
+                new TrainingType(TrainingTypeEnum.YOGA),
+                new TrainingType(TrainingTypeEnum.CARDIO),
+                new TrainingType(TrainingTypeEnum.BOXING));
         when(trainingTypeRepository.getTrainingTypes()).thenReturn(trainingTypes);
 
         // When
@@ -90,17 +87,17 @@ class TrainingTypeRepositoryHealthIndicatorTest {
     }
 
     @Test
-	void health_shouldReturnDown_whenTrainingTypesListIsEmpty() {
-		// Given - Empty list
-		when(trainingTypeRepository.getTrainingTypes()).thenReturn(List.of());
+    void health_shouldReturnDown_whenTrainingTypesListIsEmpty() {
+        // Given - Empty list
+        when(trainingTypeRepository.getTrainingTypes()).thenReturn(List.of());
 
-		// When
-		Health health = healthIndicator.health();
+        // When
+        Health health = healthIndicator.health();
 
-		// Then
-		assertThat(health.getStatus()).isEqualTo(Status.DOWN);
-		assertThat(health.getDetails()).containsEntry("Training types count", 0);
-	}
+        // Then
+        assertThat(health.getStatus()).isEqualTo(Status.DOWN);
+        assertThat(health.getDetails()).containsEntry("Training types count", 0);
+    }
 
     @Test
     void health_shouldReturnDown_whenRepositoryThrowsException() {
@@ -131,5 +128,4 @@ class TrainingTypeRepositoryHealthIndicatorTest {
         assertThat(health.getStatus()).isEqualTo(Status.DOWN);
         assertThat(health.getDetails()).containsEntry("Training types count", 1);
     }
-
 }

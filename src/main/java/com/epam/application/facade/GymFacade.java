@@ -57,5 +57,4 @@ public interface GymFacade {
     List<Trainee> getTrainerTrainees(String trainerUsername);
 
     List<TrainingType> getTrainingTypes();
-
 }

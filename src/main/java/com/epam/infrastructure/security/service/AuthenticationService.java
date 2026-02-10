@@ -85,8 +85,7 @@ public class AuthenticationService implements AuthenticationUseCase {
             log.info("Authentication successful for user: {}", username);
             return new AuthenticationResult(username, token);
 
-        }
-        catch (AuthenticationException e) {
+        } catch (AuthenticationException e) {
             // Failed - record attempt
             loginAttemptTracker.recordFailedAttempt(username);
 
@@ -109,8 +108,7 @@ public class AuthenticationService implements AuthenticationUseCase {
             TokenData tokenData = tokenService.parseToken(token);
             tokenBlacklist.revokeToken(token, tokenData.expiresAt());
             log.info("User logged out successfully: {}", tokenData.username());
-        }
-        catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             log.error("Error during logout: {}", e.getMessage());
         }
     }
@@ -118,12 +116,9 @@ public class AuthenticationService implements AuthenticationUseCase {
     private String formatLockoutMessage(Duration remaining) {
         long minutes = remaining.toMinutes();
         long seconds = remaining.minusMinutes(minutes).getSeconds();
-        return String
-                .format(
-                    "Account temporarily locked due to multiple failed login attempts. "
-                            + "Please try again in %d minutes and %d seconds.",
-                    minutes,
-                    seconds);
+        return String.format(
+                "Account temporarily locked due to multiple failed login attempts. "
+                        + "Please try again in %d minutes and %d seconds.",
+                minutes, seconds);
     }
-
 }

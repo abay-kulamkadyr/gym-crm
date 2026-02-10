@@ -41,5 +41,4 @@ public interface TrainerControllerApi {
     @Operation(summary = "Activate/Deactivate Trainer", description = "Change trainer active status")
     ResponseEntity<Void> toggleActivation(
             @Parameter(description = "Trainer username", required = true) String username);
-
 }

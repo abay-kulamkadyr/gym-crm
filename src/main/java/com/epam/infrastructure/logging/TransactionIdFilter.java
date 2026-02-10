@@ -50,20 +50,18 @@ class TransactionIdFilter implements Filter {
             // Add to response header so downstream services can use it
             httpResponse.setHeader(MdcConstants.TRANSACTION_ID_HEADER, transactionId);
 
-            log
-                    .info(
-                        "Transaction started - Method: {}, URI: {}, TransactionId: {}",
-                        httpRequest.getMethod(),
-                        httpRequest.getRequestURI(),
-                        transactionId);
+            log.info(
+                    "Transaction started - Method: {}, URI: {}, TransactionId: {}",
+                    httpRequest.getMethod(),
+                    httpRequest.getRequestURI(),
+                    transactionId);
 
             // Continue with request processing
             chain.doFilter(request, response);
 
             log.info("Transaction completed - Status: {}, TransactionId: {}", httpResponse.getStatus(), transactionId);
 
-        }
-        finally {
+        } finally {
             MDC.remove(MdcConstants.TRANSACTION_ID_MDC_KEY);
         }
     }
@@ -72,7 +70,8 @@ class TransactionIdFilter implements Filter {
      * Generate unique transaction ID Format: TXN-{timestamp}-{uuid}
      */
     private String generateTransactionId() {
-        return "TXN-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8);
+        return "TXN-" + System.currentTimeMillis() + "-"
+                + UUID.randomUUID().toString().substring(0, 8);
     }
 
     @Override
@@ -80,5 +79,4 @@ class TransactionIdFilter implements Filter {
 
     @Override
     public void destroy() {}
-
 }

@@ -58,12 +58,8 @@ class AuthenticationServiceTest {
     @BeforeEach
     void setUp() {
         clock = Clock.fixed(Instant.parse("2025-01-01T12:00:00Z"), ZoneId.systemDefault());
-        service = new AuthenticationService(authenticationManager,
-                tokenService,
-                tokenBlacklist,
-                loginAttemptTracker,
-                clock,
-                eventPublisher);
+        service = new AuthenticationService(
+                authenticationManager, tokenService, tokenBlacklist, loginAttemptTracker, clock, eventPublisher);
     }
 
     @Test
@@ -123,7 +119,8 @@ class AuthenticationServiceTest {
     void logout_shouldRevokeToken() {
         // Given
         String token = "jwt-token-123";
-        TokenData tokenData = new TokenData("user", clock.instant(), clock.instant().plus(Duration.ofHours(1)));
+        TokenData tokenData =
+                new TokenData("user", clock.instant(), clock.instant().plus(Duration.ofHours(1)));
 
         when(tokenService.parseToken(token)).thenReturn(tokenData);
 
@@ -142,5 +139,4 @@ class AuthenticationServiceTest {
         // Then
         verify(tokenBlacklist, never()).revokeToken(any(), any());
     }
-
 }

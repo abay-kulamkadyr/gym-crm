@@ -18,5 +18,4 @@ public class Trainer extends User {
         super(firstName, lastName, active);
         this.specialization = specialization;
     }
-
 }

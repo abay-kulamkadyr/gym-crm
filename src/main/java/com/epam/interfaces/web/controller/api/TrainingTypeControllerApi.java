@@ -12,5 +12,4 @@ public interface TrainingTypeControllerApi {
 
     @Operation(summary = "Get Training Types", description = "Retrieve all available training types")
     ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes();
-
 }

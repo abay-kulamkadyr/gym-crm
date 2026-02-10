@@ -20,5 +20,4 @@ public class TraineeDTO {
     private String address;
 
     private List<String> trainerUsernames = new ArrayList<>(); // References to Trainers
-
 }

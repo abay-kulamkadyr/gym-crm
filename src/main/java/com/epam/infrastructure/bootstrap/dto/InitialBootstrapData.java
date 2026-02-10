@@ -21,5 +21,4 @@ public class InitialBootstrapData {
     private List<TraineeDTO> trainees = new ArrayList<>();
 
     private List<TrainingDTO> trainings = new ArrayList<>();
-
 }

@@ -7,5 +7,4 @@ public interface TokenBlacklist {
     void revokeToken(String token, Instant expiresAt);
 
     boolean isTokenRevoked(String token);
-
 }

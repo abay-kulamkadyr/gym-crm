@@ -11,5 +11,4 @@ public interface CrudRepository<T> {
     Optional<T> findById(@NonNull Long id);
 
     void delete(@NonNull Long id);
-
 }

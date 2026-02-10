@@ -15,5 +15,4 @@ public interface TrainerRepository extends CrudRepository<Trainer> {
     List<Trainee> getTrainees(String trainerUsername);
 
     void deleteByUsername(String username);
-
 }

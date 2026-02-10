@@ -17,5 +17,4 @@ public class TrainingType {
     public TrainingType(TrainingTypeEnum trainingTypeName) {
         this.trainingTypeName = trainingTypeName;
     }
-
 }

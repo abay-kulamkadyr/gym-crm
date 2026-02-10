@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Transactional
 @TestPropertySource(properties = "spring.main.banner-mode=off")
-@ActiveProfiles({ "test" })
+@ActiveProfiles({"test"})
 class DatabaseBootstrapperTest {
 
     @PersistenceContext
@@ -64,8 +64,7 @@ class DatabaseBootstrapperTest {
             var field = DatabaseBootstrapper.class.getDeclaredField("entityManager");
             field.setAccessible(true);
             field.set(bootstrapper, entityManager);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Failed to inject EntityManager", e);
         }
     }
@@ -93,15 +92,19 @@ class DatabaseBootstrapperTest {
         assertThat(bootstrapper.getTraineeCount()).isEqualTo(2);
 
         // Verify data persisted
-        Long userCount = entityManager.createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class).getSingleResult();
+        Long userCount = entityManager
+                .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
+                .getSingleResult();
         assertThat(userCount).isEqualTo(3);
 
-        Long trainerCount =
-                entityManager.createQuery("SELECT COUNT(t) FROM TrainerDAO t", Long.class).getSingleResult();
+        Long trainerCount = entityManager
+                .createQuery("SELECT COUNT(t) FROM TrainerDAO t", Long.class)
+                .getSingleResult();
         assertThat(trainerCount).isEqualTo(1);
 
-        Long traineeCount =
-                entityManager.createQuery("SELECT COUNT(t) FROM TraineeDAO t", Long.class).getSingleResult();
+        Long traineeCount = entityManager
+                .createQuery("SELECT COUNT(t) FROM TraineeDAO t", Long.class)
+                .getSingleResult();
         assertThat(traineeCount).isEqualTo(2);
     }
 
@@ -132,7 +135,9 @@ class DatabaseBootstrapperTest {
         assertThat(bootstrapper.getUserCount()).isEqualTo(1);
 
         // Verify no additional data was created
-        Long userCount = entityManager.createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class).getSingleResult();
+        Long userCount = entityManager
+                .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
+                .getSingleResult();
         assertThat(userCount).isEqualTo(1); // Only the existing user
     }
 
@@ -234,8 +239,9 @@ class DatabaseBootstrapperTest {
         // Then - Should complete without creating the invalid training
         assertThat(bootstrapper.isInitialized()).isTrue();
 
-        Long trainingCount =
-                entityManager.createQuery("SELECT COUNT(t) FROM TrainingDAO t", Long.class).getSingleResult();
+        Long trainingCount = entityManager
+                .createQuery("SELECT COUNT(t) FROM TrainingDAO t", Long.class)
+                .getSingleResult();
         assertThat(trainingCount).isEqualTo(0); // Training not created
     }
 
@@ -261,8 +267,9 @@ class DatabaseBootstrapperTest {
         bootstrapper.onApplicationEvent(event);
 
         // Then
-        List<TrainingDAO> trainings =
-                entityManager.createQuery("SELECT t FROM TrainingDAO t", TrainingDAO.class).getResultList();
+        List<TrainingDAO> trainings = entityManager
+                .createQuery("SELECT t FROM TrainingDAO t", TrainingDAO.class)
+                .getResultList();
 
         assertThat(trainings).hasSize(1);
         assertThat(trainings.get(0).getTrainingName()).isEqualTo("Morning Yoga");
@@ -315,9 +322,8 @@ class DatabaseBootstrapperTest {
     void shouldCreateAllTrainingTypes() {
         // Given
         InitialBootstrapData data = new InitialBootstrapData();
-        data
-                .setTrainingTypes(
-                    List.of(new TrainingTypeDTO("YOGA"), new TrainingTypeDTO("CARDIO"), new TrainingTypeDTO("BOXING")));
+        data.setTrainingTypes(
+                List.of(new TrainingTypeDTO("YOGA"), new TrainingTypeDTO("CARDIO"), new TrainingTypeDTO("BOXING")));
         data.setUsers(List.of(new UserDTO("Test", "User", "Test.User", "password", true, "TRAINEE")));
         data.setTrainers(List.of());
         data.setTrainees(List.of());
@@ -330,8 +336,9 @@ class DatabaseBootstrapperTest {
         bootstrapper.onApplicationEvent(event);
 
         // Then
-        List<TrainingTypeDAO> types =
-                entityManager.createQuery("SELECT t FROM TrainingTypeDAO t", TrainingTypeDAO.class).getResultList();
+        List<TrainingTypeDAO> types = entityManager
+                .createQuery("SELECT t FROM TrainingTypeDAO t", TrainingTypeDAO.class)
+                .getResultList();
 
         assertThat(types).hasSize(3);
         assertThat(types)
@@ -383,8 +390,8 @@ class DatabaseBootstrapperTest {
         // Then - Check trainee side
         TraineeDAO trainee = entityManager
                 .createQuery(
-                    "SELECT t FROM TraineeDAO t JOIN FETCH t.trainerDAOS WHERE t.userDAO.username = :username",
-                    TraineeDAO.class)
+                        "SELECT t FROM TraineeDAO t JOIN FETCH t.trainerDAOS WHERE t.userDAO.username = :username",
+                        TraineeDAO.class)
                 .setParameter("username", "John.Doe")
                 .getSingleResult();
 
@@ -393,8 +400,8 @@ class DatabaseBootstrapperTest {
         // Check trainer side
         TrainerDAO trainer = entityManager
                 .createQuery(
-                    "SELECT t FROM TrainerDAO t JOIN FETCH t.traineeDAOS WHERE t.userDAO.username = :username",
-                    TrainerDAO.class)
+                        "SELECT t FROM TrainerDAO t JOIN FETCH t.traineeDAOS WHERE t.userDAO.username = :username",
+                        TrainerDAO.class)
                 .setParameter("username", "Jane.Smith")
                 .getSingleResult();
 
@@ -413,13 +420,10 @@ class DatabaseBootstrapperTest {
         data.setTrainingTypes(List.of(new TrainingTypeDTO("YOGA"), new TrainingTypeDTO("CARDIO")));
 
         // Users
-        data
-                .setUsers(
-                    List
-                            .of(
-                                new UserDTO("John", "Doe", "John.Doe", "password123", true, "TRAINEE"),
-                                new UserDTO("Jane", "Smith", "Jane.Smith", "password456", true, "TRAINER"),
-                                new UserDTO("Bob", "Jones", "Bob.Jones", "password789", true, "TRAINEE")));
+        data.setUsers(List.of(
+                new UserDTO("John", "Doe", "John.Doe", "password123", true, "TRAINEE"),
+                new UserDTO("Jane", "Smith", "Jane.Smith", "password456", true, "TRAINER"),
+                new UserDTO("Bob", "Jones", "Bob.Jones", "password789", true, "TRAINEE")));
 
         // Trainers
         TrainerDTO trainer = new TrainerDTO();
@@ -447,5 +451,4 @@ class DatabaseBootstrapperTest {
 
         return data;
     }
-
 }

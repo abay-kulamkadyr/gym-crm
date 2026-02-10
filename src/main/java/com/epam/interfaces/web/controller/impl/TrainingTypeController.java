@@ -25,12 +25,9 @@ public class TrainingTypeController implements TrainingTypeControllerApi {
     @Override
     @GetMapping
     public ResponseEntity<List<TrainingTypeResponse>> getTrainingTypes() {
-        List<TrainingTypeResponse> response = gymFacade
-                .getTrainingTypes()
-                .stream()
+        List<TrainingTypeResponse> response = gymFacade.getTrainingTypes().stream()
                 .map(type -> new TrainingTypeResponse(type.getTrainingTypeId(), type.getTrainingTypeName()))
                 .toList();
         return ResponseEntity.ok(response);
     }
-
 }

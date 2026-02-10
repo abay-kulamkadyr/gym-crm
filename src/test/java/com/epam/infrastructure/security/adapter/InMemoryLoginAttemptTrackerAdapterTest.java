@@ -74,5 +74,4 @@ class InMemoryLoginAttemptTrackerAdapterTest {
 
         assertFalse(tracker.isAccountLocked("user"));
     }
-
 }

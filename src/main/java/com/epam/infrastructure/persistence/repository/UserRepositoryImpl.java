@@ -20,7 +20,8 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(String username) {
-        String query = """
+        String query =
+                """
                            SELECT u FROM UserDAO u
                            LEFT JOIN FETCH u.traineeDAO
                            LEFT JOIN FETCH u.trainerDAO
@@ -44,8 +45,7 @@ public class UserRepositoryImpl implements UserRepository {
             }
             return TraineeMapper.toDomain(userDAO.getTraineeDAO());
 
-        }
-        else if (userDAO.getUserRole() == UserRole.TRAINER) {
+        } else if (userDAO.getUserRole() == UserRole.TRAINER) {
 
             if (userDAO.getTrainerDAO() == null) {
                 throw new IllegalStateException("Data Integrity Error: Role is TRAINER but profile missing");
@@ -55,5 +55,4 @@ public class UserRepositoryImpl implements UserRepository {
 
         throw new IllegalStateException("Invalid Role");
     }
-
 }

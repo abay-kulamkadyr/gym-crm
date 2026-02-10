@@ -49,7 +49,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TraineeController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
-@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class })
+@ImportAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @ActiveProfiles("test")
 class TraineeControllerTest {
 
@@ -85,19 +85,16 @@ class TraineeControllerTest {
     @DisplayName("POST /api/trainees - Should register trainee successfully")
     void testRegisterTrainee_Success() throws Exception {
         // Given
-        TraineeRegistrationRequest request = new TraineeRegistrationRequest("John",
-                "Doe",
-                Optional.of(LocalDate.of(1990, 1, 1)),
-                Optional.of("123 Main St"));
+        TraineeRegistrationRequest request = new TraineeRegistrationRequest(
+                "John", "Doe", Optional.of(LocalDate.of(1990, 1, 1)), Optional.of("123 Main St"));
 
-        when(gymFacade.createTraineeProfile(any(CreateTraineeProfileRequest.class))).thenReturn(testTrainee);
+        when(gymFacade.createTraineeProfile(any(CreateTraineeProfileRequest.class)))
+                .thenReturn(testTrainee);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainees")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("john.doe"))
                 .andExpect(jsonPath("$.password").value("password123"));
@@ -109,17 +106,13 @@ class TraineeControllerTest {
     @DisplayName("POST /api/trainees - Should return 400 for invalid input")
     void testRegisterTrainee_InvalidInput() throws Exception {
         // Given
-        TraineeRegistrationRequest request = new TraineeRegistrationRequest("",
-                "Doe",
-                Optional.of(LocalDate.of(1990, 1, 1)),
-                Optional.of("123 Main St"));
+        TraineeRegistrationRequest request = new TraineeRegistrationRequest(
+                "", "Doe", Optional.of(LocalDate.of(1990, 1, 1)), Optional.of("123 Main St"));
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainees")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
         verify(gymFacade, never()).createTraineeProfile(any());
@@ -129,51 +122,50 @@ class TraineeControllerTest {
     @DisplayName("POST /api/trainees - Should return 400 for future date of birth")
     void testRegisterTrainee_FutureDateOfBirth() throws Exception {
         // Given
-        TraineeRegistrationRequest request = new TraineeRegistrationRequest("John",
+        TraineeRegistrationRequest request = new TraineeRegistrationRequest(
+                "John",
                 "Doe",
                 Optional.of(LocalDate.now().plusDays(1)), // Future date
                 Optional.of("123 Main St"));
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainees")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-	@DisplayName("GET /api/trainees/{username} - Should return trainee profile")
-	void testGetProfile_Success() throws Exception {
-		// Given
-		when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenReturn(testTrainee);
-		when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
+    @DisplayName("GET /api/trainees/{username} - Should return trainee profile")
+    void testGetProfile_Success() throws Exception {
+        // Given
+        when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenReturn(testTrainee);
+        when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
-		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.firstName").value("John"))
-			.andExpect(jsonPath("$.lastName").value("Doe"))
-			.andExpect(jsonPath("$.address").value("123 Main St"))
-			.andExpect(jsonPath("$.active").value(true))
-			.andExpect(jsonPath("$.trainers").isArray())
-			.andExpect(jsonPath("$.trainers[0].username").value("jane.smith"));
+        // When & Then
+        mockMvc.perform(get("/api/trainees/john.doe"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("John"))
+                .andExpect(jsonPath("$.lastName").value("Doe"))
+                .andExpect(jsonPath("$.address").value("123 Main St"))
+                .andExpect(jsonPath("$.active").value(true))
+                .andExpect(jsonPath("$.trainers").isArray())
+                .andExpect(jsonPath("$.trainers[0].username").value("jane.smith"));
 
-		verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
-	}
+        verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
+    }
 
     @Test
-	@DisplayName("GET /api/trainees/{username} - Should return 404 when trainee not found")
-	void testGetProfile_NotFound() throws Exception {
-		// Given
-		when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenThrow(EntityNotFoundException.class);
+    @DisplayName("GET /api/trainees/{username} - Should return 404 when trainee not found")
+    void testGetProfile_NotFound() throws Exception {
+        // Given
+        when(gymFacade.getTraineeByUsername(testTrainee.getUsername())).thenThrow(EntityNotFoundException.class);
 
-		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe")).andExpect(status().isNotFound()); // Will
-																							// throw
-		verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
-	}
+        // When & Then
+        mockMvc.perform(get("/api/trainees/john.doe")).andExpect(status().isNotFound()); // Will
+        // throw
+        verify(gymFacade).getTraineeByUsername(testTrainee.getUsername());
+    }
 
     @Test
     @DisplayName("PUT /api/trainees/{username} - Should update trainee profile")
@@ -190,11 +182,9 @@ class TraineeControllerTest {
         when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of());
 
         // When & Then
-        mockMvc
-                .perform(
-                    put("/api/trainees/john.doe")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/trainees/john.doe")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("john.doe"))
                 .andExpect(jsonPath("$.lastName").value("Doe Updated"))
@@ -217,20 +207,20 @@ class TraineeControllerTest {
     }
 
     @Test
-	@DisplayName("GET /api/trainees/{username}/available-trainers - Should return available trainers")
-	void testGetAvailableTrainers_Success() throws Exception {
-		// Given
-		when(gymFacade.getTraineeUnassignedTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
+    @DisplayName("GET /api/trainees/{username}/available-trainers - Should return available trainers")
+    void testGetAvailableTrainers_Success() throws Exception {
+        // Given
+        when(gymFacade.getTraineeUnassignedTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
-		// When & Then
-		mockMvc.perform(get("/api/trainees/john.doe/available-trainers"))
-			.andExpect(status().isOk())
-			.andExpect(jsonPath("$").isArray())
-			.andExpect(jsonPath("$[0].username").value("jane.smith"))
-			.andExpect(jsonPath("$[0].specialization").value("BOXING"));
+        // When & Then
+        mockMvc.perform(get("/api/trainees/john.doe/available-trainers"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].username").value("jane.smith"))
+                .andExpect(jsonPath("$[0].specialization").value("BOXING"));
 
-		verify(gymFacade).getTraineeUnassignedTrainers(testTrainee.getUsername());
-	}
+        verify(gymFacade).getTraineeUnassignedTrainers(testTrainee.getUsername());
+    }
 
     @Test
     @DisplayName("PUT /api/trainees/{username}/trainers - Should update trainers list")
@@ -242,11 +232,9 @@ class TraineeControllerTest {
         when(gymFacade.getTraineeTrainers(testTrainee.getUsername())).thenReturn(List.of(testTrainer));
 
         // Then
-        mockMvc
-                .perform(
-                    put("/api/trainees/john.doe/trainers")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/trainees/john.doe/trainers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
 
@@ -260,11 +248,9 @@ class TraineeControllerTest {
         UpdateTraineeTrainersRequest request = new UpdateTraineeTrainersRequest(List.of());
 
         // When & Then
-        mockMvc
-                .perform(
-                    put("/api/trainees/john.doe/trainers")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/trainees/john.doe/trainers")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
         verify(gymFacade, never()).updateTraineeTrainersList(any(), any());
@@ -275,8 +261,7 @@ class TraineeControllerTest {
     void testGetTrainings_Success() throws Exception {
         // Given
         TrainingType trainingType = new TrainingType(TrainingTypeEnum.CARDIO);
-        Training training = Training
-                .builder()
+        Training training = Training.builder()
                 .trainingName("Morning Workout")
                 .trainingDate(LocalDateTime.now())
                 .trainingDurationMin(60)
@@ -290,11 +275,9 @@ class TraineeControllerTest {
                 .thenReturn(List.of(training));
 
         // Then
-        mockMvc
-                .perform(
-                    get("/api/trainees/john.doe/trainings")
-                            .param("trainerName", "jane.smith")
-                            .param("trainingType", "CARDIO"))
+        mockMvc.perform(get("/api/trainees/john.doe/trainings")
+                        .param("trainerName", "jane.smith")
+                        .param("trainingType", "CARDIO"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].trainingName").value("Morning Workout"));
@@ -313,5 +296,4 @@ class TraineeControllerTest {
 
         verify(gymFacade).toggleTraineeActiveStatus(testTrainee.getUsername());
     }
-
 }

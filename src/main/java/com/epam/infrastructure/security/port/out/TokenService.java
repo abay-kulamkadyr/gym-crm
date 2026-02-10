@@ -11,5 +11,4 @@ public interface TokenService {
 
     // if valid -> TokenData, if not throw
     TokenData validateToken(String token) throws IllegalArgumentException;
-
 }

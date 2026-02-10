@@ -51,11 +51,8 @@ public class TraineeServiceImpl implements TraineeService {
 
         Trainee trainee = new Trainee(request.firstName(), request.lastName(), request.active());
 
-        String username = CredentialsUtil
-                .generateUniqueUsername(
-                    trainee.getFirstName(),
-                    trainee.getLastName(),
-                    traineeRepository::findLatestUsername);
+        String username = CredentialsUtil.generateUniqueUsername(
+                trainee.getFirstName(), trainee.getLastName(), traineeRepository::findLatestUsername);
         String password = CredentialsUtil.generateRandomPassword(10);
 
         trainee.setUsername(username);
@@ -118,7 +115,6 @@ public class TraineeServiceImpl implements TraineeService {
         trainee.setActive(newStatus);
 
         traineeRepository.save(trainee);
-
     }
 
     @Override
@@ -170,5 +166,4 @@ public class TraineeServiceImpl implements TraineeService {
         }
         CredentialsUtil.validatePassword(password);
     }
-
 }

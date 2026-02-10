@@ -36,7 +36,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(TrainingController.class)
 @TestPropertySource(properties = "spring.main.banner-mode=off")
-@ImportAutoConfiguration(exclude = { SecurityAutoConfiguration.class })
+@ImportAutoConfiguration(exclude = {SecurityAutoConfiguration.class})
 @ActiveProfiles("test")
 class TrainingControllerTest {
 
@@ -58,22 +58,18 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should add training successfully")
     void testAddTraining_Success() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
-                "jane.smith",
-                "Morning Workout",
-                LocalDateTime.now().plusDays(7),
-                60);
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe", "jane.smith", "Morning Workout", LocalDateTime.now().plusDays(7), 60);
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
-        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class))).thenReturn(null);
+        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class)))
+                .thenReturn(null);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         verify(gymFacade, times(1)).createTraining(any(CreateTrainingRequest.class));
@@ -87,11 +83,9 @@ class TrainingControllerTest {
                 new AddTrainingRequest("", "jane.smith", "Morning Workout", LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -106,11 +100,9 @@ class TrainingControllerTest {
                 new AddTrainingRequest("john.doe", "", "Morning Workout", LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -121,7 +113,8 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for short training name")
     void testAddTraining_ShortTrainingName() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe",
                 "jane.smith",
                 "AB", // Invalid:
                 // less
@@ -132,11 +125,9 @@ class TrainingControllerTest {
                 60);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -152,11 +143,9 @@ class TrainingControllerTest {
                 new AddTrainingRequest("john.doe", "jane.smith", longName, LocalDateTime.of(2024, 12, 1, 9, 0), 60);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -167,18 +156,17 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for past training date")
     void testAddTraining_PastTrainingDate() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe",
                 "jane.smith",
                 "Morning Workout",
                 LocalDateTime.of(2020, 1, 1, 9, 0), // Past date
                 60);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -189,7 +177,8 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for null training date")
     void testAddTraining_NullTrainingDate() throws Exception {
         // Given
-        String requestJson = """
+        String requestJson =
+                """
                              {
                                "traineeUsername": "john.doe",
                                "trainerUsername": "jane.smith",
@@ -199,8 +188,9 @@ class TrainingControllerTest {
                              """;
 
         // When & Then
-        mockMvc
-                .perform(post("/api/trainings").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -211,19 +201,18 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for duration less than 1")
     void testAddTraining_DurationTooShort() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe",
                 "jane.smith",
                 "Morning Workout",
                 LocalDateTime.of(2024, 12, 1, 9, 0),
                 0 // Invalid: less than 1 minute
-        );
+                );
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -234,20 +223,19 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for duration more than 480")
     void testAddTraining_DurationTooLong() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe",
                 "jane.smith",
                 "Morning Workout",
                 LocalDateTime.of(2024, 12, 1, 9, 0),
                 500 // Invalid: more than 480 minutes
-        // (8 hours)
-        );
+                // (8 hours)
+                );
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -258,7 +246,8 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should return 400 for null duration")
     void testAddTraining_NullDuration() throws Exception {
         // Given
-        String requestJson = """
+        String requestJson =
+                """
                              {
                                "traineeUsername": "john.doe",
                                "trainerUsername": "jane.smith",
@@ -268,8 +257,9 @@ class TrainingControllerTest {
                              """;
 
         // When & Then
-        mockMvc
-                .perform(post("/api/trainings").contentType(MediaType.APPLICATION_JSON).content(requestJson))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -280,20 +270,19 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should accept minimum valid duration")
     void testAddTraining_MinimumDuration() throws Exception {
         // Given
-        AddTrainingRequest request =
-                new AddTrainingRequest("john.doe", "jane.smith", "Quick Session", LocalDateTime.now().plusDays(7), 1 // Minimum valid: 1 minute
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe", "jane.smith", "Quick Session", LocalDateTime.now().plusDays(7), 1 // Minimum valid: 1 minute
                 );
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
-        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class))).thenReturn(null);
+        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class)))
+                .thenReturn(null);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         verify(gymFacade, times(1)).createTraining(any(CreateTrainingRequest.class));
@@ -303,27 +292,25 @@ class TrainingControllerTest {
     @DisplayName("POST /api/trainings - Should accept maximum valid duration")
     void testAddTraining_MaximumDuration() throws Exception {
         // Given
-        AddTrainingRequest request = new AddTrainingRequest("john.doe",
+        AddTrainingRequest request = new AddTrainingRequest(
+                "john.doe",
                 "jane.smith",
                 "All Day Training",
                 LocalDateTime.now().plusDays(7),
                 480 // Maximum valid: 480 minutes (8
-        // hours)
-        );
+                // hours)
+                );
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
         when(workload.processTrainerRequest(any())).thenReturn(null);
 
         // When & Then
-        mockMvc
-                .perform(
-                    post("/api/trainings")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/trainings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         verify(gymFacade, times(1)).createTraining(any(CreateTrainingRequest.class));
     }
-
 }

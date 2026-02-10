@@ -56,9 +56,7 @@ public class TraineeDAO {
     @Column(name = "address")
     private String address;
 
-    public TraineeDAO() {
-
-    }
+    public TraineeDAO() {}
 
     public void addTraining(TrainingDAO trainingDAO) {
         if (!trainingDAOS.contains(trainingDAO)) {
@@ -72,5 +70,4 @@ public class TraineeDAO {
             trainerDAOS.add(trainerDAO);
         }
     }
-
 }

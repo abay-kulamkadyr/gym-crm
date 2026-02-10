@@ -38,7 +38,8 @@ public class TrainingController implements TrainingControllerApi {
     @PostMapping
     @PreAuthorize("#request.traineeUsername == authentication.name or #request.trainerUsername == authentication.name")
     public ResponseEntity<Void> addTraining(@Valid @RequestBody AddTrainingRequest request) {
-        CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest(request.trainingName(),
+        CreateTrainingRequest createTrainingRequest = new CreateTrainingRequest(
+                request.trainingName(),
                 request.trainingDate(),
                 request.trainingDurationMin(),
                 Optional.empty(),
@@ -46,15 +47,14 @@ public class TrainingController implements TrainingControllerApi {
                 request.trainerUsername());
         gymFacade.createTraining(createTrainingRequest);
         Trainer trainer = gymFacade.getTrainerByUsername(request.trainerUsername());
-        trainerWorkload
-                .processTrainerRequest(
-                    new TrainerWorkloadWebRequest(request.trainerUsername(),
-                            trainer.getFirstName(),
-                            trainer.getLastName(),
-                            trainer.getActive(),
-                            request.trainingDate(),
-                            request.trainingDurationMin(),
-                            ActionType.ADD));
+        trainerWorkload.processTrainerRequest(new TrainerWorkloadWebRequest(
+                request.trainerUsername(),
+                trainer.getFirstName(),
+                trainer.getLastName(),
+                trainer.getActive(),
+                request.trainingDate(),
+                request.trainingDurationMin(),
+                ActionType.ADD));
         return ResponseEntity.ok().build();
     }
 
@@ -64,15 +64,14 @@ public class TrainingController implements TrainingControllerApi {
     public ResponseEntity<Void> deleteTraining(@Valid @RequestBody DeleteTrainingRequest request) {
         gymFacade.deleteTraining(request.traineeUsername(), request.trainerUsername(), request.trainingDate());
         Trainer trainer = gymFacade.getTrainerByUsername(request.trainerUsername());
-        trainerWorkload
-                .processTrainerRequest(
-                    new TrainerWorkloadWebRequest(request.trainerUsername(),
-                            trainer.getFirstName(),
-                            trainer.getLastName(),
-                            trainer.getActive(),
-                            request.trainingDate(),
-                            request.trainingDurationMin(),
-                            ActionType.DELETE));
+        trainerWorkload.processTrainerRequest(new TrainerWorkloadWebRequest(
+                request.trainerUsername(),
+                trainer.getFirstName(),
+                trainer.getLastName(),
+                trainer.getActive(),
+                request.trainingDate(),
+                request.trainingDurationMin(),
+                ActionType.DELETE));
         return ResponseEntity.ok().build();
     }
 }

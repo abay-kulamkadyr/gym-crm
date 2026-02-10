@@ -14,5 +14,4 @@ public interface TraineeService extends UserService<Trainee, CreateTraineeProfil
     List<Trainer> getTrainers(String username);
 
     void updateTrainersList(String username, List<String> trainerUsernames);
-
 }

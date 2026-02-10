@@ -64,12 +64,10 @@ class UserControllerTest {
 
         when(authenticationUseCase.authenticate(TEST_USERNAME, TEST_PASSWORD)).thenReturn(authResult);
 
-        mockMvc
-                .perform(
-                    post("/api/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").value(TEST_TOKEN));
 
@@ -85,12 +83,10 @@ class UserControllerTest {
         when(authenticationUseCase.authenticate(TEST_USERNAME, "wrongpassword"))
                 .thenThrow(new BadCredentialsException("Invalid credentials"));
 
-        mockMvc
-                .perform(
-                    post("/api/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Authentication Failed"))
                 .andExpect(jsonPath("$.message").value("Invalid credentials"));
@@ -104,12 +100,10 @@ class UserControllerTest {
     void testLogin_BlankUsername() throws Exception {
         LoginRequest request = new LoginRequest("", TEST_PASSWORD);
 
-        mockMvc
-                .perform(
-                    post("/api/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -122,12 +116,10 @@ class UserControllerTest {
     void testLogin_BlankPassword() throws Exception {
         LoginRequest request = new LoginRequest(TEST_USERNAME, "");
 
-        mockMvc
-                .perform(
-                    post("/api/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -143,12 +135,10 @@ class UserControllerTest {
         when(authenticationUseCase.authenticate(TEST_USERNAME, TEST_PASSWORD))
                 .thenThrow(new LockedException("Account locked. Try again in 5 minutes"));
 
-        mockMvc
-                .perform(
-                    post("/api/auth/login")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(post("/api/auth/login")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(jsonPath("$.message").value(containsString("locked")));
@@ -162,8 +152,7 @@ class UserControllerTest {
     void testLogout_Success() throws Exception {
         String authHeader = "Bearer " + TEST_TOKEN;
 
-        mockMvc
-                .perform(post("/api/auth/logout").with(csrf()).header("Authorization", authHeader))
+        mockMvc.perform(post("/api/auth/logout").with(csrf()).header("Authorization", authHeader))
                 .andExpect(status().isNoContent());
 
         verify(authenticationUseCase).logout(TEST_TOKEN);
@@ -182,8 +171,7 @@ class UserControllerTest {
     @WithMockUser
     @DisplayName("POST /api/auth/logout - Should handle malformed Authorization header")
     void testLogout_MalformedAuthorizationHeader() throws Exception {
-        mockMvc
-                .perform(post("/api/auth/logout").with(csrf()).header("Authorization", "InvalidFormat"))
+        mockMvc.perform(post("/api/auth/logout").with(csrf()).header("Authorization", "InvalidFormat"))
                 .andExpect(status().isNoContent());
 
         verify(authenticationUseCase, never()).logout(anyString());
@@ -197,12 +185,10 @@ class UserControllerTest {
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_USERNAME, TEST_PASSWORD, NEW_PASSWORD);
 
         // When
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         // Verify
@@ -215,12 +201,10 @@ class UserControllerTest {
     void testChangePassword_UsesAuthenticatedUser() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_USERNAME, TEST_PASSWORD, NEW_PASSWORD);
 
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
 
         // Verify
@@ -232,12 +216,10 @@ class UserControllerTest {
     void testChangePassword_NotAuthenticated() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_USERNAME, TEST_PASSWORD, NEW_PASSWORD);
 
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
 
         verify(passwordManagementUseCase, never()).changePassword(anyString(), anyString(), anyString());
@@ -249,12 +231,10 @@ class UserControllerTest {
     void testChangePassword_BlankOldPassword() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_USERNAME, "", NEW_PASSWORD);
 
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -267,12 +247,10 @@ class UserControllerTest {
     void testChangePassword_ShortNewPassword() throws Exception {
         ChangePasswordRequest request = new ChangePasswordRequest(TEST_USERNAME, TEST_PASSWORD, "short");
 
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation Failed"));
 
@@ -289,16 +267,13 @@ class UserControllerTest {
                 .when(passwordManagementUseCase)
                 .changePassword(TEST_USERNAME, "wrongOldPassword", NEW_PASSWORD);
 
-        mockMvc
-                .perform(
-                    put("/api/auth/password")
-                            .with(csrf())
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(put("/api/auth/password")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Current password is incorrect"));
 
         verify(passwordManagementUseCase).changePassword(TEST_USERNAME, "wrongOldPassword", NEW_PASSWORD);
     }
-
 }

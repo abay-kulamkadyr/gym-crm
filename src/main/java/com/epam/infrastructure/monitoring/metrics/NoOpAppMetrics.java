@@ -8,23 +8,14 @@ import org.springframework.stereotype.Component;
 class NoOpAppMetrics implements AppMetrics {
 
     @Override
-    public void incrementTraineeRegistered() {
-
-    }
+    public void incrementTraineeRegistered() {}
 
     @Override
-    public void incrementTrainerRegistered() {
-
-    }
+    public void incrementTrainerRegistered() {}
 
     @Override
-    public void incrementUserLoginAttempts() {
-
-    }
+    public void incrementUserLoginAttempts() {}
 
     @Override
-    public void incrementUserLoginFailed() {
-
-    }
-
+    public void incrementUserLoginFailed() {}
 }

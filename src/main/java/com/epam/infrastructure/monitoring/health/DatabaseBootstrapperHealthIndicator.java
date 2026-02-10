@@ -21,7 +21,10 @@ class DatabaseBootstrapperHealthIndicator implements HealthIndicator {
     @Override
     public Health health() {
         if (bootstrapper.getLastError() != null) {
-            return Health.down().withDetail("status", "FAILED").withException(bootstrapper.getLastError()).build();
+            return Health.down()
+                    .withDetail("status", "FAILED")
+                    .withException(bootstrapper.getLastError())
+                    .build();
         }
 
         if (bootstrapper.isInitialized()) {
@@ -29,13 +32,11 @@ class DatabaseBootstrapperHealthIndicator implements HealthIndicator {
 
             if (bootstrapper.isSkipped()) {
                 builder.withDetail("status", "SKIPPED_ALREADY_POPULATED");
-            }
-            else {
+            } else {
                 builder.withDetail("status", "BOOTSTRAP_COMPLETED");
             }
 
-            return builder
-                    .withDetail("loadedUsers", bootstrapper.getUserCount())
+            return builder.withDetail("loadedUsers", bootstrapper.getUserCount())
                     .withDetail("loadedTrainers", bootstrapper.getTrainerCount())
                     .withDetail("loadedTrainees", bootstrapper.getTraineeCount())
                     .withDetail("loadedTrainingTypes", bootstrapper.getTrainingTypeCount())
@@ -44,7 +45,6 @@ class DatabaseBootstrapperHealthIndicator implements HealthIndicator {
 
         return Health.unknown().withDetail("status", "INITIALIZATION_PENDING").build();
     }
-
 }
 
 @Component("bootstrap")
@@ -53,11 +53,9 @@ class BootstrapDisabledHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
-        return Health
-                .outOfService()
+        return Health.outOfService()
                 .withDetail("status", "BOOTSTRAP_DISABLED")
                 .withDetail("reason", "The DatabaseBootstrapper component is not loaded in this profile.")
                 .build();
     }
-
 }

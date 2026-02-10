@@ -52,5 +52,4 @@ class InMemoryTokenBlacklistAdapterTest {
         adapter.revokeToken("token123", expiresAt);
         assertFalse(adapter.isTokenRevoked("token123"));
     }
-
 }

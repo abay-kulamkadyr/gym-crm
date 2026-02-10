@@ -42,27 +42,23 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            AuthenticationManager authenticationManager,
-            TokenBlacklist tokenBlacklist) throws Exception {
+            HttpSecurity http, AuthenticationManager authenticationManager, TokenBlacklist tokenBlacklist)
+            throws Exception {
 
         JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(authenticationManager, tokenBlacklist);
 
-        return http
-                .cors(Customizer.withDefaults())
+        return http.cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(new RestAuthenticationEntryPoint()))
-                .authorizeHttpRequests(
-                    auth -> auth
-                            .requestMatchers("/api/auth/login")
-                            .permitAll()
-                            .requestMatchers(HttpMethod.POST, "/api/trainees", "/api/trainers")
-                            .permitAll()
-                            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
-                            .permitAll()
-                            .anyRequest()
-                            .authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/login")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/trainees", "/api/trainers")
+                        .permitAll()
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
@@ -73,7 +69,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Parse comma-separated origins from property file
-        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
+        configuration.setAllowedOrigins(
+                Arrays.stream(allowedOrigins.split(",")).map(String::trim).toList());
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         configuration.setAllowedHeaders(List.of("*"));
@@ -105,21 +102,17 @@ public class SecurityConfig {
     public Clock clock() {
         return Clock.systemUTC();
     }
-
 }
 
 class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            AuthenticationException authException) throws IOException {
+            HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
+            throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response
-                .getWriter()
+        response.getWriter()
                 .write("{\"error\": \"Unauthorized\", \"message\": \"" + authException.getMessage() + "\"}");
     }
-
 }

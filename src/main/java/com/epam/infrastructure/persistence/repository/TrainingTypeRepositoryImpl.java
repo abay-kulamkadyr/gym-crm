@@ -28,8 +28,7 @@ public class TrainingTypeRepositoryImpl implements TrainingTypeRepository {
 
         if (trainingType.getTrainingTypeId() == null) {
             entityManager.persist(entity);
-        }
-        else {
+        } else {
             entityManager.merge(entity);
         }
 
@@ -78,8 +77,8 @@ public class TrainingTypeRepositoryImpl implements TrainingTypeRepository {
     @Override
     public List<TrainingType> getTrainingTypes() {
         String jpql = "SELECT t FROM TrainingTypeDAO t";
-        List<TrainingTypeDAO> results = entityManager.createQuery(jpql, TrainingTypeDAO.class).getResultList();
+        List<TrainingTypeDAO> results =
+                entityManager.createQuery(jpql, TrainingTypeDAO.class).getResultList();
         return results.stream().map(TrainingTypeMapper::toDomain).toList();
     }
-
 }

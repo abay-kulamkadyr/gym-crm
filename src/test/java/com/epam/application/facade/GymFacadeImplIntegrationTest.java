@@ -81,15 +81,13 @@ class GymFacadeImplIntegrationTest {
     @Test
     void updateTrainee_shouldUpdateExistingTrainee() {
         // Given
-        CreateTraineeProfileRequest createRequest = new CreateTraineeProfileRequest("Sarah",
-                "Wilson",
-                true,
-                Optional.of(LocalDate.of(1990, 1, 1)),
-                Optional.empty());
+        CreateTraineeProfileRequest createRequest = new CreateTraineeProfileRequest(
+                "Sarah", "Wilson", true, Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
 
         Trainee trainee = gymFacade.createTraineeProfile(createRequest);
 
-        UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(trainee.getUsername(),
+        UpdateTraineeProfileRequest updateRequest = new UpdateTraineeProfileRequest(
+                trainee.getUsername(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -157,7 +155,8 @@ class GymFacadeImplIntegrationTest {
                 new CreateTrainerProfileRequest("Test", "Trainer", true, specialization.getTrainingTypeName());
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-        CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1",
+        CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest(
+                "Training 1",
                 LocalDateTime.now(),
                 60,
                 Optional.of(specialization.getTrainingTypeName()),
@@ -165,7 +164,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(trainingRequest1);
 
-        CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest("Training 2",
+        CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest(
+                "Training 2",
                 LocalDateTime.now().plusDays(1),
                 45,
                 Optional.of(specialization.getTrainingTypeName()),
@@ -210,7 +210,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(createRequest);
 
         TrainingType newType = createOrGetTestTrainingType(TrainingTypeEnum.PILATES);
-        UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(trainer.getUsername(),
+        UpdateTrainerProfileRequest updateRequest = new UpdateTrainerProfileRequest(
+                trainer.getUsername(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
@@ -274,14 +275,12 @@ class GymFacadeImplIntegrationTest {
                 new CreateTrainerProfileRequest("John", "Trainer", true, TrainingTypeEnum.YOGA);
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("Jane",
-                "Trainee",
-                true,
-                Optional.of(LocalDate.of(1990, 1, 1)),
-                Optional.empty());
+        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest(
+                "Jane", "Trainee", true, Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
         Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-        CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Cardio",
+        CreateTrainingRequest trainingRequest = new CreateTrainingRequest(
+                "Morning Cardio",
                 LocalDateTime.now(),
                 60,
                 Optional.of(type.getTrainingTypeName()),
@@ -312,14 +311,12 @@ class GymFacadeImplIntegrationTest {
                 new CreateTrainerProfileRequest("Shared", "Trainer", true, TrainingTypeEnum.CARDIO);
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("Test",
-                "Trainee",
-                true,
-                Optional.of(LocalDate.of(1990, 1, 1)),
-                Optional.empty());
+        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest(
+                "Test", "Trainee", true, Optional.of(LocalDate.of(1990, 1, 1)), Optional.empty());
         Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
-        CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest("Training 1",
+        CreateTrainingRequest trainingRequest1 = new CreateTrainingRequest(
+                "Training 1",
                 LocalDateTime.now(),
                 60,
                 Optional.of(type.getTrainingTypeName()),
@@ -327,7 +324,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(trainingRequest1);
 
-        CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest("Training 2",
+        CreateTrainingRequest trainingRequest2 = new CreateTrainingRequest(
+                "Training 2",
                 LocalDateTime.now().plusDays(1),
                 45,
                 Optional.of(type.getTrainingTypeName()),
@@ -355,7 +353,8 @@ class GymFacadeImplIntegrationTest {
                 new CreateTrainerProfileRequest("Test", "Trainer", true, TrainingTypeEnum.YOGA);
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
-        CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Run",
+        CreateTrainingRequest t1Request = new CreateTrainingRequest(
+                "Morning Run",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(specialization.getTrainingTypeName()),
@@ -363,7 +362,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(t1Request);
 
-        CreateTrainingRequest t2Request = new CreateTrainingRequest("Evening Yoga",
+        CreateTrainingRequest t2Request = new CreateTrainingRequest(
+                "Evening Yoga",
                 LocalDateTime.now().minusDays(5),
                 45,
                 Optional.of(specialization.getTrainingTypeName()),
@@ -372,12 +372,11 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(t2Request);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.of(LocalDateTime.now().minusDays(7)),
-                    Optional.of(LocalDateTime.now()),
-                    Optional.of(trainer.getUsername()),
-                    Optional.of(specialization.getTrainingTypeName()));
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.of(LocalDateTime.now().minusDays(7)),
+                Optional.of(LocalDateTime.now()),
+                Optional.of(trainer.getUsername()),
+                Optional.of(specialization.getTrainingTypeName()));
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -403,7 +402,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Create trainings
-        CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest yogaRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -411,7 +411,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(yogaRequest);
 
-        CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+        CreateTrainingRequest boxingRequest = new CreateTrainingRequest(
+                "Evening Boxing",
                 LocalDateTime.now().minusDays(10),
                 45,
                 Optional.of(boxing.getTrainingTypeName()),
@@ -420,12 +421,11 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(boxingRequest);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.of(LocalDateTime.now().minusDays(7)),
-                    Optional.of(LocalDateTime.now()),
-                    Optional.empty(),
-                    Optional.empty());
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.of(LocalDateTime.now().minusDays(7)),
+                Optional.of(LocalDateTime.now()),
+                Optional.empty(),
+                Optional.empty());
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -448,7 +448,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Create trainings
-        CreateTrainingRequest t1Request = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest t1Request = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -456,7 +457,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(t1Request);
 
-        CreateTrainingRequest t2Request = new CreateTrainingRequest("Evening Yoga",
+        CreateTrainingRequest t2Request = new CreateTrainingRequest(
+                "Evening Yoga",
                 LocalDateTime.now().minusDays(10),
                 45,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -465,8 +467,8 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(t2Request);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(Optional.empty(), Optional.empty(), Optional.of(trainer.getUsername()), Optional.empty());
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.empty(), Optional.empty(), Optional.of(trainer.getUsername()), Optional.empty());
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -490,7 +492,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Create trainings
-        CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest yogaRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -498,7 +501,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(yogaRequest);
 
-        CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+        CreateTrainingRequest boxingRequest = new CreateTrainingRequest(
+                "Evening Boxing",
                 LocalDateTime.now().minusDays(10),
                 45,
                 Optional.of(boxing.getTrainingTypeName()),
@@ -507,12 +511,8 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(boxingRequest);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.empty(),
-                    Optional.of(yoga.getTrainingTypeName()));
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(yoga.getTrainingTypeName()));
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -536,7 +536,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Create trainings
-        CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest yogaRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -544,7 +545,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(yogaRequest);
 
-        CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+        CreateTrainingRequest boxingRequest = new CreateTrainingRequest(
+                "Evening Boxing",
                 LocalDateTime.now().minusDays(10),
                 45,
                 Optional.of(boxing.getTrainingTypeName()),
@@ -553,12 +555,11 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(boxingRequest);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.of(LocalDateTime.now().minusDays(100)),
-                    Optional.of(LocalDateTime.now().minusDays(90)),
-                    Optional.empty(),
-                    Optional.of(yoga.getTrainingTypeName()));
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.of(LocalDateTime.now().minusDays(100)),
+                Optional.of(LocalDateTime.now().minusDays(90)),
+                Optional.empty(),
+                Optional.of(yoga.getTrainingTypeName()));
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -581,7 +582,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Create trainings
-        CreateTrainingRequest yogaRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest yogaRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -589,7 +591,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(yogaRequest);
 
-        CreateTrainingRequest boxingRequest = new CreateTrainingRequest("Evening Boxing",
+        CreateTrainingRequest boxingRequest = new CreateTrainingRequest(
+                "Evening Boxing",
                 LocalDateTime.now().minusDays(10),
                 45,
                 Optional.of(boxing.getTrainingTypeName()),
@@ -598,12 +601,11 @@ class GymFacadeImplIntegrationTest {
         gymFacade.createTraining(boxingRequest);
 
         // When
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.of(LocalDateTime.now().minusDays(2)),
-                    Optional.of(LocalDateTime.now()),
-                    Optional.of(trainer.getUsername()),
-                    Optional.of(yoga.getTrainingTypeName()));
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.of(LocalDateTime.now().minusDays(2)),
+                Optional.of(LocalDateTime.now()),
+                Optional.of(trainer.getUsername()),
+                Optional.of(yoga.getTrainingTypeName()));
 
         List<Training> trainings = gymFacade.getTraineeTrainings(trainee.getUsername(), filter);
 
@@ -694,7 +696,8 @@ class GymFacadeImplIntegrationTest {
         Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
         // Create trainings
-        CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+        CreateTrainingRequest training1Request = new CreateTrainingRequest(
+                "Morning Session",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -702,7 +705,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(training1Request);
 
-        CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+        CreateTrainingRequest training2Request = new CreateTrainingRequest(
+                "Evening Session",
                 LocalDateTime.now().minusDays(2),
                 45,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -740,7 +744,8 @@ class GymFacadeImplIntegrationTest {
         Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
         // Create trainings
-        CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+        CreateTrainingRequest training1Request = new CreateTrainingRequest(
+                "Morning Session",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -748,7 +753,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(training1Request);
 
-        CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+        CreateTrainingRequest training2Request = new CreateTrainingRequest(
+                "Evening Session",
                 LocalDateTime.now().minusDays(2),
                 45,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -774,11 +780,8 @@ class GymFacadeImplIntegrationTest {
         // Given
 
         // 1. Create Trainee
-        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest("John",
-                "Doe",
-                true,
-                Optional.of(LocalDate.of(1995, 1, 1)),
-                Optional.empty());
+        CreateTraineeProfileRequest traineeRequest = new CreateTraineeProfileRequest(
+                "John", "Doe", true, Optional.of(LocalDate.of(1995, 1, 1)), Optional.empty());
         Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
         // 2. Create Training Types
@@ -804,7 +807,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer3 = gymFacade.createTrainerProfile(trainer3Request);
 
         // Assign trainer1 by creating a training
-        CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest trainingRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now().minusDays(1),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -875,7 +879,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer2 = gymFacade.createTrainerProfile(trainer2Request);
 
         List<Trainer> trainers = List.of(trainer1, trainer2);
-        List<String> trainerUsernames = trainers.stream().map(Trainer::getUsername).toList();
+        List<String> trainerUsernames =
+                trainers.stream().map(Trainer::getUsername).toList();
 
         gymFacade.updateTraineeTrainersList(trainee.getUsername(), trainerUsernames);
 
@@ -886,7 +891,8 @@ class GymFacadeImplIntegrationTest {
                 .setParameter("username", trainee.getUsername())
                 .getResultList();
         List<TrainerDAO> trainerDAOS = traineeDAO.get(0).getTrainerDAOS();
-        List<Trainer> retrievedTrainers = trainerDAOS.stream().map(TrainerMapper::toDomain).toList();
+        List<Trainer> retrievedTrainers =
+                trainerDAOS.stream().map(TrainerMapper::toDomain).toList();
 
         assertThat(retrievedTrainers).containsExactlyInAnyOrderElementsOf(trainers);
     }
@@ -979,7 +985,8 @@ class GymFacadeImplIntegrationTest {
         Trainer trainer = gymFacade.createTrainerProfile(trainerRequest);
 
         // Assign trainer by creating a training
-        CreateTrainingRequest trainingRequest = new CreateTrainingRequest("Morning Yoga",
+        CreateTrainingRequest trainingRequest = new CreateTrainingRequest(
+                "Morning Yoga",
                 LocalDateTime.now(),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -1023,7 +1030,8 @@ class GymFacadeImplIntegrationTest {
         Trainee trainee2 = gymFacade.createTraineeProfile(trainee2Request);
 
         // Assign trainees by creating trainings
-        CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+        CreateTrainingRequest training1Request = new CreateTrainingRequest(
+                "Morning Session",
                 LocalDateTime.now(),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -1031,7 +1039,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(training1Request);
 
-        CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+        CreateTrainingRequest training2Request = new CreateTrainingRequest(
+                "Evening Session",
                 LocalDateTime.now().plusDays(1),
                 45,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -1079,7 +1088,8 @@ class GymFacadeImplIntegrationTest {
         Trainee trainee = gymFacade.createTraineeProfile(traineeRequest);
 
         // Create multiple trainings with the same trainee
-        CreateTrainingRequest training1Request = new CreateTrainingRequest("Morning Session",
+        CreateTrainingRequest training1Request = new CreateTrainingRequest(
+                "Morning Session",
                 LocalDateTime.now(),
                 60,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -1087,7 +1097,8 @@ class GymFacadeImplIntegrationTest {
                 trainer.getUsername());
         gymFacade.createTraining(training1Request);
 
-        CreateTrainingRequest training2Request = new CreateTrainingRequest("Evening Session",
+        CreateTrainingRequest training2Request = new CreateTrainingRequest(
+                "Evening Session",
                 LocalDateTime.now().plusDays(1),
                 45,
                 Optional.of(yoga.getTrainingTypeName()),
@@ -1167,8 +1178,8 @@ class GymFacadeImplIntegrationTest {
         assertThat(trainingTypes1).hasSize(trainingTypes2.size());
         assertThat(trainingTypes1)
                 .extracting(TrainingType::getTrainingTypeName)
-                .containsExactlyInAnyOrderElementsOf(
-                    trainingTypes2.stream().map(TrainingType::getTrainingTypeName).toList());
+                .containsExactlyInAnyOrderElementsOf(trainingTypes2.stream()
+                        .map(TrainingType::getTrainingTypeName)
+                        .toList());
     }
-
 }

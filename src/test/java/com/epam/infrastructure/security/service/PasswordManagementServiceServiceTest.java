@@ -67,99 +67,99 @@ class PasswordManagementServiceServiceTest {
     }
 
     @Test
-	@DisplayName("Should successfully change password for Trainee")
-	void testChangePassword_Trainee_Success() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
+    @DisplayName("Should successfully change password for Trainee")
+    void testChangePassword_Trainee_Success() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
 
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
 
-		// Then
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-		verify(gymFacade).updateTraineePassword(USERNAME, NEW_PASSWORD);
-		verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
-	}
-
-    @Test
-	@DisplayName("Should successfully change password for Trainer")
-	void testChangePassword_Trainer_Success() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
-
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
-
-		// Then
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-		verify(gymFacade).updateTrainerPassword(USERNAME, NEW_PASSWORD);
-		verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
-	}
+        // Then
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+        verify(gymFacade).updateTraineePassword(USERNAME, NEW_PASSWORD);
+        verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
+    }
 
     @Test
-	@DisplayName("Should throw EntityNotFoundException when user does not exist")
-	void testChangePassword_UserNotFound() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
+    @DisplayName("Should successfully change password for Trainer")
+    void testChangePassword_Trainer_Success() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
 
-		// When & Then
-		assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
-			.isInstanceOf(EntityNotFoundException.class)
-			.hasMessageContaining("User not found with username: " + USERNAME);
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
 
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder, never()).matches(anyString(), anyString());
-		verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
-		verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
-	}
-
-    @Test
-	@DisplayName("Should throw BadCredentialsException when old password is incorrect for Trainee")
-	void testChangePassword_Trainee_IncorrectOldPassword() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(false);
-
-		// When & Then
-		assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
-			.isInstanceOf(BadCredentialsException.class)
-			.hasMessage("Current password is incorrect");
-
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-		verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
-		verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
-	}
+        // Then
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+        verify(gymFacade).updateTrainerPassword(USERNAME, NEW_PASSWORD);
+        verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
+    }
 
     @Test
-	@DisplayName("Should throw BadCredentialsException when old password is incorrect for Trainer")
-	void testChangePassword_Trainer_IncorrectOldPassword() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(false);
+    @DisplayName("Should throw EntityNotFoundException when user does not exist")
+    void testChangePassword_UserNotFound() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.empty());
 
-		// When & Then
-		assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
-			.isInstanceOf(BadCredentialsException.class)
-			.hasMessage("Current password is incorrect");
+        // When & Then
+        assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
+                .isInstanceOf(EntityNotFoundException.class)
+                .hasMessageContaining("User not found with username: " + USERNAME);
 
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-		verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
-		verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
-	}
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
+        verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should throw BadCredentialsException when old password is incorrect for Trainee")
+    void testChangePassword_Trainee_IncorrectOldPassword() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(false);
+
+        // When & Then
+        assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("Current password is incorrect");
+
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+        verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
+        verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
+    }
+
+    @Test
+    @DisplayName("Should throw BadCredentialsException when old password is incorrect for Trainer")
+    void testChangePassword_Trainer_IncorrectOldPassword() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(false);
+
+        // When & Then
+        assertThatThrownBy(() -> passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD))
+                .isInstanceOf(BadCredentialsException.class)
+                .hasMessage("Current password is incorrect");
+
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+        verify(gymFacade, never()).updateTraineePassword(anyString(), anyString());
+        verify(gymFacade, never()).updateTrainerPassword(anyString(), anyString());
+    }
 
     @Test
     @DisplayName("Should throw IllegalStateException for unsupported user type")
     void testChangePassword_UnsupportedUserType() {
         // Given - Create a custom User subclass that's not Trainee or Trainer
         User unsupportedUser = new User("", "", true) {
-            // Anonymous subclass for testing
-        };
+                    // Anonymous subclass for testing
+                };
         unsupportedUser.setUsername(USERNAME);
         unsupportedUser.setPassword(ENCODED_OLD_PASSWORD);
 
@@ -178,20 +178,20 @@ class PasswordManagementServiceServiceTest {
     }
 
     @Test
-	@DisplayName("Should handle password change when old and new passwords are the same")
-	void testChangePassword_SamePassword() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
+    @DisplayName("Should handle password change when old and new passwords are the same")
+    void testChangePassword_SamePassword() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
 
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, OLD_PASSWORD);
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, OLD_PASSWORD);
 
-		// Then - Should still process the change
-		verify(userRepository).findByUsername(USERNAME);
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-		verify(gymFacade).updateTraineePassword(USERNAME, OLD_PASSWORD);
-	}
+        // Then - Should still process the change
+        verify(userRepository).findByUsername(USERNAME);
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+        verify(gymFacade).updateTraineePassword(USERNAME, OLD_PASSWORD);
+    }
 
     @Test
     @DisplayName("Should handle password change with special characters")
@@ -211,47 +211,46 @@ class PasswordManagementServiceServiceTest {
     }
 
     @Test
-	@DisplayName("Should verify password encoder is called with correct parameters")
-	void testChangePassword_PasswordEncoderCalledCorrectly() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
+    @DisplayName("Should verify password encoder is called with correct parameters")
+    void testChangePassword_PasswordEncoderCalledCorrectly() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
 
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
 
-		// Then
-		verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
-	}
-
-    @Test
-	@DisplayName("Should call gymFacade only once for Trainee")
-	void testChangePassword_GymFacadeCalledOnceForTrainee() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
-
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
-
-		// Then
-		verify(gymFacade, times(1)).updateTraineePassword(USERNAME, NEW_PASSWORD);
-		verifyNoMoreInteractions(gymFacade);
-	}
+        // Then
+        verify(passwordEncoder).matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD);
+    }
 
     @Test
-	@DisplayName("Should call gymFacade only once for Trainer")
-	void testChangePassword_GymFacadeCalledOnceForTrainer() {
-		// Given
-		when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
-		when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
+    @DisplayName("Should call gymFacade only once for Trainee")
+    void testChangePassword_GymFacadeCalledOnceForTrainee() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainee));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
 
-		// When
-		passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
 
-		// Then
-		verify(gymFacade, times(1)).updateTrainerPassword(USERNAME, NEW_PASSWORD);
-		verifyNoMoreInteractions(gymFacade);
-	}
+        // Then
+        verify(gymFacade, times(1)).updateTraineePassword(USERNAME, NEW_PASSWORD);
+        verifyNoMoreInteractions(gymFacade);
+    }
 
+    @Test
+    @DisplayName("Should call gymFacade only once for Trainer")
+    void testChangePassword_GymFacadeCalledOnceForTrainer() {
+        // Given
+        when(userRepository.findByUsername(USERNAME)).thenReturn(Optional.of(trainer));
+        when(passwordEncoder.matches(OLD_PASSWORD, ENCODED_OLD_PASSWORD)).thenReturn(true);
+
+        // When
+        passwordManagementService.changePassword(USERNAME, OLD_PASSWORD, NEW_PASSWORD);
+
+        // Then
+        verify(gymFacade, times(1)).updateTrainerPassword(USERNAME, NEW_PASSWORD);
+        verifyNoMoreInteractions(gymFacade);
+    }
 }

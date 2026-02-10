@@ -16,5 +16,4 @@ public interface UserService<T, C extends CreateProfileRequest, U extends Update
     void deleteProfile(String username);
 
     T getProfileByUsername(String username);
-
 }

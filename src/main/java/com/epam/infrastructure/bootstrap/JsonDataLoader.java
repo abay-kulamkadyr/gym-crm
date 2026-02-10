@@ -61,14 +61,13 @@ public class JsonDataLoader {
         data.setTrainings(loadList(trainingsFile, new TypeReference<List<TrainingDTO>>() {}));
         data.setTrainingTypes(loadList(trainingTypesFile, new TypeReference<List<TrainingTypeDTO>>() {}));
 
-        log
-                .info(
-                    "Loaded bootstrap data: {} users, {} trainers, {} trainees, {} trainings, {} types",
-                    data.getUsers().size(),
-                    data.getTrainers().size(),
-                    data.getTrainees().size(),
-                    data.getTrainings().size(),
-                    data.getTrainingTypes().size());
+        log.info(
+                "Loaded bootstrap data: {} users, {} trainers, {} trainees, {} trainings, {} types",
+                data.getUsers().size(),
+                data.getTrainers().size(),
+                data.getTrainees().size(),
+                data.getTrainings().size(),
+                data.getTrainingTypes().size());
 
         return data;
     }
@@ -80,11 +79,9 @@ public class JsonDataLoader {
                 return Collections.emptyList();
             }
             return objectMapper.readValue(inputStream, type);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Failed to load bootstrap data from {}: {}", path, e.getMessage());
             throw new RuntimeException("Failed to load bootstrap data from " + path, e);
         }
     }
-
 }

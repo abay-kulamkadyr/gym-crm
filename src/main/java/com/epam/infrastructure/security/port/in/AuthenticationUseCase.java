@@ -8,5 +8,4 @@ public interface AuthenticationUseCase {
     AuthenticationResult authenticate(String username, String password) throws AuthenticationException;
 
     void logout(String token);
-
 }

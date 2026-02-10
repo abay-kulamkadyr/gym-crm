@@ -47,8 +47,5 @@ public class TrainingDAO {
     @Column(name = "training_duration", nullable = false)
     private Integer trainingDurationMin;
 
-    public TrainingDAO() {
-
-    }
-
+    public TrainingDAO() {}
 }

@@ -54,15 +54,12 @@ public class PasswordManagementService implements PasswordManagementUseCase {
     private void updatePasswordByUserType(User user, String newPassword) {
         if (user instanceof Trainee) {
             gymFacade.updateTraineePassword(user.getUsername(), newPassword);
-        }
-        else if (user instanceof Trainer) {
+        } else if (user instanceof Trainer) {
             gymFacade.updateTrainerPassword(user.getUsername(), newPassword);
-        }
-        else {
+        } else {
             log.error("Unsupported user type: {}", user.getClass().getSimpleName());
             throw new IllegalStateException(
                     String.format("Unsupported user type: %s", user.getClass().getSimpleName()));
         }
     }
-
 }

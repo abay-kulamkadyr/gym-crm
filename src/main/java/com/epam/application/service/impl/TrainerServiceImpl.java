@@ -61,11 +61,8 @@ public class TrainerServiceImpl implements TrainerService {
 
         Trainer trainer = new Trainer(request.firstName(), request.lastName(), request.active(), specialization);
 
-        String username = CredentialsUtil
-                .generateUniqueUsername(
-                    trainer.getFirstName(),
-                    trainer.getLastName(),
-                    trainerRepository::findLatestUsername);
+        String username = CredentialsUtil.generateUniqueUsername(
+                trainer.getFirstName(), trainer.getLastName(), trainerRepository::findLatestUsername);
         String password = CredentialsUtil.generateRandomPassword(10);
 
         trainer.setUsername(username);
@@ -99,8 +96,9 @@ public class TrainerServiceImpl implements TrainerService {
         request.active().ifPresent(trainer::setActive);
 
         request.specialization().ifPresent(newSpecialization -> {
-            TrainingType trainingType =
-                    trainingTypeRepository.findByTrainingTypeName(newSpecialization).orElseThrow(() -> {
+            TrainingType trainingType = trainingTypeRepository
+                    .findByTrainingTypeName(newSpecialization)
+                    .orElseThrow(() -> {
                         log.error("TrainingType not found: {}", newSpecialization);
                         return new EntityNotFoundException(
                                 String.format("TrainingType with name '%s' not found", newSpecialization));
@@ -171,5 +169,4 @@ public class TrainerServiceImpl implements TrainerService {
         }
         CredentialsUtil.validatePassword(password);
     }
-
 }

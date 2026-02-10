@@ -48,8 +48,8 @@ public class TraineeController implements TraineeControllerApi {
     @Override
     @PostMapping
     public ResponseEntity<CredentialsResponse> register(@Valid @RequestBody TraineeRegistrationRequest request) {
-        CreateTraineeProfileRequest createTraineeProfileRequest = new CreateTraineeProfileRequest(request
-                .firstName(), request.lastName(), true, request.dateOfBirth(), request.address());
+        CreateTraineeProfileRequest createTraineeProfileRequest = new CreateTraineeProfileRequest(
+                request.firstName(), request.lastName(), true, request.dateOfBirth(), request.address());
         Trainee createdTrainee = gymFacade.createTraineeProfile(createTraineeProfileRequest);
         CredentialsResponse response =
                 new CredentialsResponse(createdTrainee.getUsername(), createdTrainee.getPassword());
@@ -61,12 +61,11 @@ public class TraineeController implements TraineeControllerApi {
     @PreAuthorize("#username == authentication.name")
     public ResponseEntity<TraineeResponse> getProfile(@PathVariable String username) {
         Trainee trainee = gymFacade.getTraineeByUsername(username);
-        List<EmbeddedTrainerResponse> trainers = gymFacade
-                .getTraineeTrainers(username)
-                .stream()
+        List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(username).stream()
                 .map(EmbeddedTrainerResponse::toEmbeddedTrainer)
                 .toList();
-        TraineeResponse response = new TraineeResponse(Optional.empty(),
+        TraineeResponse response = new TraineeResponse(
+                Optional.empty(),
                 trainee.getFirstName(),
                 trainee.getLastName(),
                 trainee.getDob(),
@@ -80,9 +79,9 @@ public class TraineeController implements TraineeControllerApi {
     @PutMapping("/{username}")
     @PreAuthorize("#username == authentication.name")
     public ResponseEntity<TraineeResponse> updateTraineeProfile(
-            @PathVariable String username,
-            @Valid @RequestBody UpdateTraineeRequest request) {
-        UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(username,
+            @PathVariable String username, @Valid @RequestBody UpdateTraineeRequest request) {
+        UpdateTraineeProfileRequest updateProfileRequest = new UpdateTraineeProfileRequest(
+                username,
                 Optional.of(request.firstName()),
                 Optional.of(request.lastName()),
                 Optional.empty(),
@@ -91,13 +90,12 @@ public class TraineeController implements TraineeControllerApi {
                 Optional.ofNullable(request.address()));
         Trainee trainee = gymFacade.updateTraineeProfile(updateProfileRequest);
 
-        List<EmbeddedTrainerResponse> trainers = gymFacade
-                .getTraineeTrainers(username)
-                .stream()
+        List<EmbeddedTrainerResponse> trainers = gymFacade.getTraineeTrainers(username).stream()
                 .map(EmbeddedTrainerResponse::toEmbeddedTrainer)
                 .toList();
 
-        TraineeResponse response = new TraineeResponse(Optional.of(trainee.getUsername()),
+        TraineeResponse response = new TraineeResponse(
+                Optional.of(trainee.getUsername()),
                 trainee.getFirstName(),
                 trainee.getLastName(),
                 trainee.getDob(),
@@ -120,9 +118,7 @@ public class TraineeController implements TraineeControllerApi {
     @GetMapping("/{username}/available-trainers")
     @PreAuthorize("#username == authentication.name")
     public ResponseEntity<List<EmbeddedTrainerResponse>> getAvailableTrainers(@PathVariable String username) {
-        List<EmbeddedTrainerResponse> response = gymFacade
-                .getTraineeUnassignedTrainers(username)
-                .stream()
+        List<EmbeddedTrainerResponse> response = gymFacade.getTraineeUnassignedTrainers(username).stream()
                 .map(EmbeddedTrainerResponse::toEmbeddedTrainer)
                 .toList();
         return ResponseEntity.ok(response);
@@ -132,12 +128,9 @@ public class TraineeController implements TraineeControllerApi {
     @PutMapping("/{username}/trainers")
     @PreAuthorize("#username == authentication.name")
     public ResponseEntity<List<EmbeddedTrainerResponse>> updateTrainers(
-            @PathVariable String username,
-            @Valid @RequestBody UpdateTraineeTrainersRequest request) {
+            @PathVariable String username, @Valid @RequestBody UpdateTraineeTrainersRequest request) {
         gymFacade.updateTraineeTrainersList(username, request.trainerUsernames());
-        List<EmbeddedTrainerResponse> response = gymFacade
-                .getTraineeTrainers(username)
-                .stream()
+        List<EmbeddedTrainerResponse> response = gymFacade.getTraineeTrainers(username).stream()
                 .map(EmbeddedTrainerResponse::toEmbeddedTrainer)
                 .toList();
         return ResponseEntity.ok(response);
@@ -152,15 +145,12 @@ public class TraineeController implements TraineeControllerApi {
             @RequestParam(required = false) LocalDateTime periodTo,
             @RequestParam(required = false) String trainerName,
             @RequestParam(required = false) TrainingTypeEnum trainingType) {
-        TrainingFilter filter = TrainingFilter
-                .forTrainee(
-                    Optional.ofNullable(periodFrom),
-                    Optional.ofNullable(periodTo),
-                    Optional.ofNullable(trainerName),
-                    Optional.ofNullable(trainingType));
-        List<EmbeddedTraineeTrainingResponse> response = gymFacade
-                .getTraineeTrainings(username, filter)
-                .stream()
+        TrainingFilter filter = TrainingFilter.forTrainee(
+                Optional.ofNullable(periodFrom),
+                Optional.ofNullable(periodTo),
+                Optional.ofNullable(trainerName),
+                Optional.ofNullable(trainingType));
+        List<EmbeddedTraineeTrainingResponse> response = gymFacade.getTraineeTrainings(username, filter).stream()
                 .map(EmbeddedTraineeTrainingResponse::toEmbeddedTraining)
                 .toList();
         return ResponseEntity.ok(response);
@@ -173,5 +163,4 @@ public class TraineeController implements TraineeControllerApi {
         gymFacade.toggleTraineeActiveStatus(username);
         return ResponseEntity.ok().build();
     }
-
 }
