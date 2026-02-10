@@ -10,6 +10,7 @@ import com.epam.infrastructure.logging.MdcConstants;
 import com.epam.interfaces.web.dto.response.ErrorResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.concurrent.CircuitBreakingException;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -92,6 +93,22 @@ class GlobalExceptionHandler {
                 buildErrorResponse(HttpStatus.NOT_FOUND, "Resource Not Found", ex.getMessage(), request);
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(CircuitBreakingException.class)
+    public ResponseEntity<ErrorResponse> handleCircuitBreakerException(
+            CircuitBreakingException ex,
+            WebRequest request) {
+
+        logException(ex, request, null);
+
+        ErrorResponse errorResponse = buildErrorResponse(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Service is current unavailable",
+            ex.getMessage(),
+            request);
+
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)

@@ -1,5 +1,6 @@
 package com.epam.application.facade;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.epam.application.request.CreateTraineeProfileRequest;
@@ -126,6 +127,11 @@ public class GymFacadeImpl implements GymFacade {
     @Override
     public Training createTraining(CreateTrainingRequest request) {
         return trainingService.create(request);
+    }
+
+    @Override
+    public void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date) {
+        trainingService.deleteTraining(traineeUsername, trainerUsername, date);
     }
 
     @Override

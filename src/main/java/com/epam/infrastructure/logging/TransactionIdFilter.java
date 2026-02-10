@@ -44,6 +44,9 @@ class TransactionIdFilter implements Filter {
             // Store in MDC
             MDC.put(MdcConstants.TRANSACTION_ID_MDC_KEY, transactionId);
 
+            // Add to attribute to pass to downstream services traceId
+            httpRequest.setAttribute(MdcConstants.TRANSACTION_ID_HEADER, transactionId);
+
             // Add to response header so downstream services can use it
             httpResponse.setHeader(MdcConstants.TRANSACTION_ID_HEADER, transactionId);
 
@@ -61,7 +64,7 @@ class TransactionIdFilter implements Filter {
 
         }
         finally {
-            MDC.clear();
+            MDC.remove(MdcConstants.TRANSACTION_ID_MDC_KEY);
         }
     }
 

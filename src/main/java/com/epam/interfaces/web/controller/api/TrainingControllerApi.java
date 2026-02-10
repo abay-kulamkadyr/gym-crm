@@ -1,6 +1,7 @@
 package com.epam.interfaces.web.controller.api;
 
 import com.epam.interfaces.web.dto.request.AddTrainingRequest;
+import com.epam.interfaces.web.dto.request.DeleteTrainingRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -14,4 +15,6 @@ public interface TrainingControllerApi {
             description = "Create a new training session, training type is determined by the trainer's specialization")
     ResponseEntity<Void> addTraining(@Valid AddTrainingRequest request);
 
+    @Operation(summary = "Delete Training", description = "Delete a training session")
+    ResponseEntity<Void> deleteTraining(@Valid DeleteTrainingRequest request);
 }
