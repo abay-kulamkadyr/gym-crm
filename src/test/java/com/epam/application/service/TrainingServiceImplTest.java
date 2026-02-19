@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTrainingRequest;
 import com.epam.application.service.impl.TrainingServiceImpl;
 import com.epam.domain.TrainingFilter;
@@ -44,6 +45,9 @@ class TrainingServiceImplTest {
 
     @Mock
     private TrainingTypeRepository trainingTypeRepository;
+
+    @Mock
+    private TrainingEventPublisher trainingEventPublisher;
 
     @InjectMocks
     private TrainingServiceImpl trainingService;

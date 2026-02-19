@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.model.UserRole;
 import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
@@ -30,6 +31,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -40,6 +42,9 @@ class DatabaseBootstrapperTest {
 
     @PersistenceContext
     private EntityManager entityManager;
+
+    @MockitoBean
+    private TrainingEventPublisher trainingEventPublisher;
 
     private JsonDataLoader jsonDataLoader;
 

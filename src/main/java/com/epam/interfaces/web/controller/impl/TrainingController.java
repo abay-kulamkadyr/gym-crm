@@ -4,10 +4,6 @@ import java.util.Optional;
 
 import com.epam.application.facade.GymFacade;
 import com.epam.application.request.CreateTrainingRequest;
-import com.epam.domain.model.Trainer;
-import com.epam.interfaces.web.client.TrainerWorkloadInterface;
-import com.epam.interfaces.web.client.request.ActionType;
-import com.epam.interfaces.web.client.request.TrainerWorkloadWebRequest;
 import com.epam.interfaces.web.controller.api.TrainingControllerApi;
 import com.epam.interfaces.web.dto.request.AddTrainingRequest;
 import com.epam.interfaces.web.dto.request.DeleteTrainingRequest;
@@ -26,12 +22,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class TrainingController implements TrainingControllerApi {
 
     private final GymFacade gymFacade;
-    private final TrainerWorkloadInterface trainerWorkload;
 
     @Autowired
-    public TrainingController(GymFacade gymFacade, TrainerWorkloadInterface trainerWorkload) {
+    public TrainingController(GymFacade gymFacade) {
         this.gymFacade = gymFacade;
-        this.trainerWorkload = trainerWorkload;
     }
 
     @Override
@@ -46,15 +40,6 @@ public class TrainingController implements TrainingControllerApi {
                 request.traineeUsername(),
                 request.trainerUsername());
         gymFacade.createTraining(createTrainingRequest);
-        Trainer trainer = gymFacade.getTrainerByUsername(request.trainerUsername());
-        trainerWorkload.processTrainerRequest(new TrainerWorkloadWebRequest(
-                request.trainerUsername(),
-                trainer.getFirstName(),
-                trainer.getLastName(),
-                trainer.getActive(),
-                request.trainingDate(),
-                request.trainingDurationMin(),
-                ActionType.ADD));
         return ResponseEntity.ok().build();
     }
 
@@ -63,15 +48,6 @@ public class TrainingController implements TrainingControllerApi {
     @PreAuthorize("#request.traineeUsername == authentication.name or #request.trainerUsername == authentication.name")
     public ResponseEntity<Void> deleteTraining(@Valid @RequestBody DeleteTrainingRequest request) {
         gymFacade.deleteTraining(request.traineeUsername(), request.trainerUsername(), request.trainingDate());
-        Trainer trainer = gymFacade.getTrainerByUsername(request.trainerUsername());
-        trainerWorkload.processTrainerRequest(new TrainerWorkloadWebRequest(
-                request.trainerUsername(),
-                trainer.getFirstName(),
-                trainer.getLastName(),
-                trainer.getActive(),
-                request.trainingDate(),
-                request.trainingDurationMin(),
-                ActionType.DELETE));
         return ResponseEntity.ok().build();
     }
 }

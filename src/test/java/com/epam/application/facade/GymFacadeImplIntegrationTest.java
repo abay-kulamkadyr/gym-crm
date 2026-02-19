@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.CreateTrainingRequest;
@@ -32,18 +33,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
 @TestPropertySource(properties = "spring.main.banner-mode=off")
+@SpringBootTest
 @Transactional
 @ActiveProfiles("test")
 class GymFacadeImplIntegrationTest {
 
-    private GymFacadeImpl gymFacade;
-
     @PersistenceContext
     private EntityManager entityManager;
+
+    @MockitoBean
+    private TrainingEventPublisher trainingEventPublisher;
+
+    private GymFacadeImpl gymFacade;
 
     @Autowired
     void setGymFacade(GymFacadeImpl gymFacade) {
