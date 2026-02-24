@@ -17,8 +17,6 @@ import com.epam.application.request.CreateTrainingRequest;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
-import com.epam.interfaces.web.client.TrainerWorkloadInterface;
-import com.epam.interfaces.web.client.request.TrainerWorkloadWebRequest;
 import com.epam.interfaces.web.controller.impl.TrainingController;
 import com.epam.interfaces.web.dto.request.AddTrainingRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,9 +47,6 @@ class TrainingControllerTest {
     @MockitoBean
     private GymFacade gymFacade;
 
-    @MockitoBean
-    private TrainerWorkloadInterface workload;
-
     private final Trainer mockTrainer = new Trainer("john", "doe", true, new TrainingType(TrainingTypeEnum.CARDIO));
 
     @Test
@@ -63,8 +58,6 @@ class TrainingControllerTest {
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
-        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class)))
-                .thenReturn(null);
 
         // When & Then
         mockMvc.perform(post("/api/trainings")
@@ -276,8 +269,6 @@ class TrainingControllerTest {
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
-        when(workload.processTrainerRequest(any(TrainerWorkloadWebRequest.class)))
-                .thenReturn(null);
 
         // When & Then
         mockMvc.perform(post("/api/trainings")
@@ -303,7 +294,6 @@ class TrainingControllerTest {
 
         when(gymFacade.getTrainerByUsername(anyString())).thenReturn(mockTrainer);
         when(gymFacade.createTraining(any(CreateTrainingRequest.class))).thenReturn(null);
-        when(workload.processTrainerRequest(any())).thenReturn(null);
 
         // When & Then
         mockMvc.perform(post("/api/trainings")

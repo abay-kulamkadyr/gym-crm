@@ -119,6 +119,38 @@ public class TrainingRepositoryImpl implements TrainingRepository {
         }
     }
 
+    @Override
+    public Optional<Training> findByTrainerUsernameAndTraineeUsernameAndDate(
+            String trainerUsername, String traineeUsername, LocalDateTime date) {
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<TrainingDAO> cq = cb.createQuery(TrainingDAO.class);
+        Root<TrainingDAO> root = cq.from(TrainingDAO.class);
+
+        Predicate trainerMatch = cb.equal(root.get("trainerDAO").get("userDAO").get("username"), trainerUsername);
+        Predicate traineeMatch = cb.equal(root.get("traineeDAO").get("userDAO").get("username"), traineeUsername);
+        Predicate dateMatch = cb.equal(root.get("trainingDate"), date);
+
+        cq.select(root).where(cb.and(trainerMatch, traineeMatch, dateMatch));
+
+        List<TrainingDAO> results = entityManager.createQuery(cq).getResultList();
+
+        if (results.isEmpty()) {
+            log.debug(
+                    "No training found for Trainer: {}, Trainee: {}, Date: {}", trainerUsername, traineeUsername, date);
+            return Optional.empty();
+        }
+
+        if (results.size() > 1) {
+            log.warn(
+                    "Multiple trainings found for Trainer: {}, Trainee: {}, Date: {}. Returning first.",
+                    trainerUsername,
+                    traineeUsername,
+                    date);
+        }
+
+        return Optional.of(trainingMapper.toDomain(results.get(0)));
+    }
+
     private List<Training> getTrainings(String requestedUsername, TrainingFilter trainingFilter, UserType userType) {
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<TrainingDAO> cq = cb.createQuery(TrainingDAO.class);
