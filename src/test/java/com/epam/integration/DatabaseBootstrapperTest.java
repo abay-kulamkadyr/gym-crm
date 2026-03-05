@@ -1,4 +1,4 @@
-package com.epam.infrastructure.bootstrap;
+package com.epam.integration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -9,10 +9,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.epam.IntegrationTestBase;
-import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.model.UserRole;
+import com.epam.infrastructure.bootstrap.DatabaseBootstrapper;
+import com.epam.infrastructure.bootstrap.JsonDataLoader;
 import com.epam.infrastructure.bootstrap.dto.InitialBootstrapData;
 import com.epam.infrastructure.bootstrap.dto.TraineeDTO;
 import com.epam.infrastructure.bootstrap.dto.TrainerDTO;
@@ -29,7 +29,6 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.DefaultApplicationArguments;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
@@ -37,9 +36,6 @@ class DatabaseBootstrapperTest extends IntegrationTestBase {
 
     @PersistenceContext
     private EntityManager entityManager;
-
-    @MockitoBean
-    private TrainingEventPublisher trainingEventPublisher;
 
     private JsonDataLoader jsonDataLoader;
 
