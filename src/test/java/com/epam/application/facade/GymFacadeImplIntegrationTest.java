@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.IntegrationTestBase;
 import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.CreateTrainerProfileRequest;
@@ -30,17 +31,11 @@ import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-@TestPropertySource(properties = "spring.main.banner-mode=off")
-@SpringBootTest
 @Transactional
-@ActiveProfiles("test")
-class GymFacadeImplIntegrationTest {
+class GymFacadeImplIntegrationTest extends IntegrationTestBase {
 
     @PersistenceContext
     private EntityManager entityManager;

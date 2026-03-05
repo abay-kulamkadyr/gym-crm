@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.epam.IntegrationTestBase;
 import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.model.UserRole;
@@ -27,18 +28,12 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.boot.DefaultApplicationArguments;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
 @Transactional
-@TestPropertySource(properties = "spring.main.banner-mode=off")
-@ActiveProfiles({"test"})
-class DatabaseBootstrapperTest {
+class DatabaseBootstrapperTest extends IntegrationTestBase {
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -50,9 +45,10 @@ class DatabaseBootstrapperTest {
 
     private DatabaseBootstrapper bootstrapper;
 
+    private static final DefaultApplicationArguments ARGS = new DefaultApplicationArguments();
+
     @BeforeEach
     void setUp() {
-        // Clean database
         entityManager.createQuery("DELETE FROM TrainingDAO").executeUpdate();
         entityManager.createQuery("DELETE FROM TraineeDAO").executeUpdate();
         entityManager.createQuery("DELETE FROM TrainerDAO").executeUpdate();
@@ -60,43 +56,30 @@ class DatabaseBootstrapperTest {
         entityManager.createQuery("DELETE FROM TrainingTypeDAO").executeUpdate();
         entityManager.flush();
 
-        // Create mock JsonDataLoader and DatabaseBootstrapper manually
         jsonDataLoader = mock(JsonDataLoader.class);
-        bootstrapper = new DatabaseBootstrapper(jsonDataLoader);
 
-        // Inject EntityManager via reflection (since it's package-private)
-        try {
-            var field = DatabaseBootstrapper.class.getDeclaredField("entityManager");
-            field.setAccessible(true);
-            field.set(bootstrapper, entityManager);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to inject EntityManager", e);
-        }
+        bootstrapper = new DatabaseBootstrapper(jsonDataLoader, entityManager);
     }
 
     @Test
-    void shouldSuccessfullyBootstrapWithValidData() {
+    void shouldSuccessfullyBootstrapWithValidData() throws Exception {
         // Given
         InitialBootstrapData data = createValidBootstrapData();
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
 
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
-
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
         assertThat(bootstrapper.isInitialized()).isTrue();
         assertThat(bootstrapper.isSkipped()).isFalse();
         assertThat(bootstrapper.getLastError()).isNull();
 
-        // Verify counts
         assertThat(bootstrapper.getTrainingTypeCount()).isEqualTo(2);
         assertThat(bootstrapper.getUserCount()).isEqualTo(3);
         assertThat(bootstrapper.getTrainerCount()).isEqualTo(1);
         assertThat(bootstrapper.getTraineeCount()).isEqualTo(2);
 
-        // Verify data persisted
         Long userCount = entityManager
                 .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
                 .getSingleResult();
@@ -114,8 +97,8 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldSkipBootstrapWhenDataAlreadyExists() {
-        // Given - Create existing user
+    void shouldSkipBootstrapWhenDataAlreadyExists() throws Exception {
+        // Given
         UserDAO existingUser = new UserDAO();
         existingUser.setFirstName("Existing");
         existingUser.setLastName("User");
@@ -126,41 +109,35 @@ class DatabaseBootstrapperTest {
         entityManager.persist(existingUser);
         entityManager.flush();
 
-        InitialBootstrapData data = createValidBootstrapData();
-        when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
+        when(jsonDataLoader.loadBootstrapData()).thenReturn(createValidBootstrapData());
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
         assertThat(bootstrapper.isInitialized()).isTrue();
         assertThat(bootstrapper.isSkipped()).isTrue();
         assertThat(bootstrapper.getUserCount()).isEqualTo(1);
 
-        // Verify no additional data was created
         Long userCount = entityManager
                 .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
                 .getSingleResult();
-        assertThat(userCount).isEqualTo(1); // Only the existing user
+        assertThat(userCount).isEqualTo(1);
     }
 
     @Test
-    void shouldCreateTraineeTrainerRelationshipsCorrectly() {
+    void shouldCreateTraineeTrainerRelationshipsCorrectly() throws Exception {
         // Given
-        InitialBootstrapData data = createValidBootstrapData();
-        when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
+        when(jsonDataLoader.loadBootstrapData()).thenReturn(createValidBootstrapData());
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
-        String jpql = "SELECT t FROM TraineeDAO t JOIN FETCH t.trainerDAOS WHERE t.userDAO.username = :username";
         TraineeDAO trainee = entityManager
-                .createQuery(jpql, TraineeDAO.class)
+                .createQuery(
+                        "SELECT t FROM TraineeDAO t JOIN FETCH t.trainerDAOS WHERE t.userDAO.username = :username",
+                        TraineeDAO.class)
                 .setParameter("username", "John.Doe")
                 .getSingleResult();
 
@@ -169,35 +146,27 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldHandleMissingTrainerReference() {
+    void shouldHandleMissingTrainerReference() throws Exception {
         // Given
         InitialBootstrapData data = new InitialBootstrapData();
-
-        // Create training types
         data.setTrainingTypes(List.of(new TrainingTypeDTO("YOGA")));
-
-        // Create users
         data.setUsers(List.of(new UserDTO("John", "Doe", "John.Doe", "password123", true, "TRAINEE")));
 
-        // Create trainee with reference to non-existent trainer
         TraineeDTO trainee = new TraineeDTO();
         trainee.setUsername("John.Doe");
         trainee.setDateOfBirth(LocalDate.of(1990, 1, 1));
         trainee.setAddress("123 Main St");
-        trainee.setTrainerUsernames(List.of("NonExistent.Trainer")); // This trainer
-        // doesn't exist
+        trainee.setTrainerUsernames(List.of("NonExistent.Trainer"));
         data.setTrainees(List.of(trainee));
-
-        data.setTrainers(List.of()); // No trainers
+        data.setTrainers(List.of());
         data.setTrainings(List.of());
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
-        // Then - Should complete successfully without the invalid relationship
+        // Then
         assertThat(bootstrapper.isInitialized()).isTrue();
         assertThat(bootstrapper.getTraineeCount()).isEqualTo(1);
 
@@ -206,15 +175,13 @@ class DatabaseBootstrapperTest {
                 .setParameter("username", "John.Doe")
                 .getSingleResult();
 
-        assertThat(persistedTrainee.getTrainerDAOS()).isEmpty(); // No relationship
-        // created
+        assertThat(persistedTrainee.getTrainerDAOS()).isEmpty();
     }
 
     @Test
-    void shouldHandleMissingTraineeInTraining() {
+    void shouldHandleMissingTraineeInTraining() throws Exception {
         // Given
         InitialBootstrapData data = new InitialBootstrapData();
-
         data.setTrainingTypes(List.of(new TrainingTypeDTO("YOGA")));
         data.setUsers(List.of(new UserDTO("Jane", "Smith", "Jane.Smith", "password123", true, "TRAINER")));
 
@@ -222,40 +189,36 @@ class DatabaseBootstrapperTest {
         trainer.setUsername("Jane.Smith");
         trainer.setSpecialization("YOGA");
         data.setTrainers(List.of(trainer));
-
         data.setTrainees(List.of());
 
-        // Create training with non-existent trainee
         TrainingDTO training = new TrainingDTO();
         training.setName("Morning Yoga");
         training.setDate(LocalDateTime.now());
         training.setDurationMinutes(60);
-        training.setTraineeUsername("NonExistent.Trainee"); // This trainee doesn't exist
+        training.setTraineeUsername("NonExistent.Trainee");
         training.setTrainerUsername("Jane.Smith");
         training.setTrainingType("YOGA");
         data.setTrainings(List.of(training));
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
-        // Then - Should complete without creating the invalid training
+        // Then
         assertThat(bootstrapper.isInitialized()).isTrue();
 
         Long trainingCount = entityManager
                 .createQuery("SELECT COUNT(t) FROM TrainingDAO t", Long.class)
                 .getSingleResult();
-        assertThat(trainingCount).isEqualTo(0); // Training not created
+        assertThat(trainingCount).isEqualTo(0);
     }
 
     @Test
-    void shouldPersistTrainingsWithAllValidReferences() {
+    void shouldPersistTrainingsWithAllValidReferences() throws Exception {
         // Given
         InitialBootstrapData data = createValidBootstrapData();
 
-        // Add training
         TrainingDTO training = new TrainingDTO();
         training.setName("Morning Yoga");
         training.setDate(LocalDateTime.now());
@@ -266,10 +229,9 @@ class DatabaseBootstrapperTest {
         data.setTrainings(List.of(training));
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
         List<TrainingDAO> trainings = entityManager
@@ -284,17 +246,18 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldSetErrorStateWhenJsonLoadingFails() {
+    void shouldFailStartupWhenJsonLoadingFails() {
         // Given
         RuntimeException loadError = new RuntimeException("Failed to load JSON");
         when(jsonDataLoader.loadBootstrapData()).thenThrow(loadError);
 
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
-
         // When & Then
-        assertThatThrownBy(() -> bootstrapper.onApplicationEvent(event))
+        assertThatThrownBy(() -> bootstrapper.run(ARGS))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Database bootstrap error");
+                .hasMessageContaining("Database bootstrap failed")
+                .hasCauseInstanceOf(RuntimeException.class)
+                .getCause()
+                .hasMessage("Failed to load JSON");
 
         assertThat(bootstrapper.isInitialized()).isFalse();
         assertThat(bootstrapper.getLastError()).isNotNull();
@@ -302,7 +265,7 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldHandleEmptyBootstrapData() {
+    void shouldHandleEmptyBootstrapData() throws Exception {
         // Given
         InitialBootstrapData emptyData = new InitialBootstrapData();
         emptyData.setUsers(List.of());
@@ -312,19 +275,19 @@ class DatabaseBootstrapperTest {
         emptyData.setTrainings(List.of());
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(emptyData);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
-        // Then - Should complete without errors but not set initialized
+        // Then
+        assertThat(bootstrapper.isInitialized()).isFalse();
         assertThat(bootstrapper.getUserCount()).isEqualTo(0);
         assertThat(bootstrapper.getTrainerCount()).isEqualTo(0);
         assertThat(bootstrapper.getTraineeCount()).isEqualTo(0);
     }
 
     @Test
-    void shouldCreateAllTrainingTypes() {
+    void shouldCreateAllTrainingTypes() throws Exception {
         // Given
         InitialBootstrapData data = new InitialBootstrapData();
         data.setTrainingTypes(
@@ -335,10 +298,9 @@ class DatabaseBootstrapperTest {
         data.setTrainings(List.of());
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
         List<TrainingTypeDAO> types = entityManager
@@ -352,7 +314,7 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldPersistUserWithAllFields() {
+    void shouldPersistUserWithAllFields() throws Exception {
         // Given
         InitialBootstrapData data = new InitialBootstrapData();
         data.setTrainingTypes(List.of());
@@ -362,10 +324,9 @@ class DatabaseBootstrapperTest {
         data.setTrainings(List.of());
 
         when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
         // Then
         UserDAO user = entityManager
@@ -382,17 +343,14 @@ class DatabaseBootstrapperTest {
     }
 
     @Test
-    void shouldCreateBidirectionalTraineeTrainerRelationship() {
+    void shouldCreateBidirectionalTraineeTrainerRelationship() throws Exception {
         // Given
-        InitialBootstrapData data = createValidBootstrapData();
-        when(jsonDataLoader.loadBootstrapData()).thenReturn(data);
-
-        ContextRefreshedEvent event = mock(ContextRefreshedEvent.class);
+        when(jsonDataLoader.loadBootstrapData()).thenReturn(createValidBootstrapData());
 
         // When
-        bootstrapper.onApplicationEvent(event);
+        bootstrapper.run(ARGS);
 
-        // Then - Check trainee side
+        // Then — trainee side
         TraineeDAO trainee = entityManager
                 .createQuery(
                         "SELECT t FROM TraineeDAO t JOIN FETCH t.trainerDAOS WHERE t.userDAO.username = :username",
@@ -402,7 +360,7 @@ class DatabaseBootstrapperTest {
 
         assertThat(trainee.getTrainerDAOS()).hasSize(1);
 
-        // Check trainer side
+        // Then — trainer side
         TrainerDAO trainer = entityManager
                 .createQuery(
                         "SELECT t FROM TrainerDAO t JOIN FETCH t.traineeDAOS WHERE t.userDAO.username = :username",
@@ -421,22 +379,18 @@ class DatabaseBootstrapperTest {
     private InitialBootstrapData createValidBootstrapData() {
         InitialBootstrapData data = new InitialBootstrapData();
 
-        // Training types
         data.setTrainingTypes(List.of(new TrainingTypeDTO("YOGA"), new TrainingTypeDTO("CARDIO")));
 
-        // Users
         data.setUsers(List.of(
                 new UserDTO("John", "Doe", "John.Doe", "password123", true, "TRAINEE"),
                 new UserDTO("Jane", "Smith", "Jane.Smith", "password456", true, "TRAINER"),
                 new UserDTO("Bob", "Jones", "Bob.Jones", "password789", true, "TRAINEE")));
 
-        // Trainers
         TrainerDTO trainer = new TrainerDTO();
         trainer.setUsername("Jane.Smith");
         trainer.setSpecialization("YOGA");
         data.setTrainers(List.of(trainer));
 
-        // Trainees
         TraineeDTO trainee1 = new TraineeDTO();
         trainee1.setUsername("John.Doe");
         trainee1.setDateOfBirth(LocalDate.of(1990, 1, 1));
@@ -450,8 +404,6 @@ class DatabaseBootstrapperTest {
         trainee2.setTrainerUsernames(List.of());
 
         data.setTrainees(List.of(trainee1, trainee2));
-
-        // Trainings (initially empty, can be added per test)
         data.setTrainings(List.of());
 
         return data;
