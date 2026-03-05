@@ -1,12 +1,22 @@
-version: '3.8'
-services:
-  postgres:
-    image: postgres:16
-    container_name: postgres
-    restart: always
-    environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: gym-crm
-    ports:
-      - "5432:5432"
+# Root compose file — spins up the full infrastructure stack.
+# Requires Docker Compose v2.20+ for `include` support.
+#
+# Usage:
+#   Full stack:      docker compose up -d
+#   Postgres only:   docker compose -f compose.postgres.yaml up -d
+#   Kafka only:      docker compose -f compose.kafka.yaml up -d   (requires gym-crm-net to exist)
+#   Monitoring only: docker compose -f prometheus-grafana/compose.yaml up -d  (requires gym-crm-net to exist)
+#
+# The shared network (gym-crm-net) is created by compose.postgres.yaml.
+# Always bring postgres up first when running stacks individually.
+
+include:
+  - compose.postgres.yaml
+  - compose.kafka.yaml
+  - prometheus-grafana/compose.yaml
+
+networks:
+  gym-crm-net:
+    name: gym-crm-net
+    driver: bridge
+
