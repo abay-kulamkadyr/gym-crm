@@ -11,7 +11,6 @@ import com.epam.domain.port.TrainingRepository;
 import com.epam.infrastructure.persistence.dao.TraineeDAO;
 import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingDAO;
-import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.mapper.TrainingMapper;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +18,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Fetch;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import lombok.extern.slf4j.Slf4j;
@@ -156,13 +157,21 @@ public class TrainingRepositoryImpl implements TrainingRepository {
         CriteriaQuery<TrainingDAO> cq = cb.createQuery(TrainingDAO.class);
         Root<TrainingDAO> trainingRoot = cq.from(TrainingDAO.class);
 
-        Join<TrainingDAO, TraineeDAO> traineeJoin = trainingRoot.join("traineeDAO");
-        Join<TrainingDAO, TrainerDAO> trainerJoin = trainingRoot.join("trainerDAO");
-        Join<TrainingDAO, TrainingTypeDAO> typeJoin = trainingRoot.join("trainingTypeDAO");
+        // Eagerly loads associated data in a single SQL query via JOINs, preventing per-row SELECT statements
+        Fetch<TrainingDAO, TraineeDAO> traineeFetch = trainingRoot.fetch("traineeDAO", JoinType.INNER);
+        traineeFetch.fetch("userDAO", JoinType.INNER); // ✅ also fetch the nested userDAO
+
+        Fetch<TrainingDAO, TrainerDAO> trainerFetch = trainingRoot.fetch("trainerDAO", JoinType.INNER);
+        trainerFetch.fetch("userDAO", JoinType.INNER); // ✅ same here
+
+        trainingRoot.fetch("trainingTypeDAO", JoinType.INNER);
+
+        // Criteria API requires casting Fetch -> Join to use in predicates
+        Join<TrainingDAO, TraineeDAO> traineeJoin = (Join<TrainingDAO, TraineeDAO>) traineeFetch;
+        Join<TrainingDAO, TrainerDAO> trainerJoin = (Join<TrainingDAO, TrainerDAO>) trainerFetch;
 
         List<Predicate> predicates = new ArrayList<>();
 
-        // --- Dynamic Primary Predicate ---
         if (userType == UserType.TRAINEE) {
             predicates.add(cb.equal(traineeJoin.get("userDAO").get("username"), requestedUsername));
         } else {
@@ -189,15 +198,17 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
         trainingFilter
                 .trainingType()
-                .ifPresent(typeName -> predicates.add(cb.equal(typeJoin.get("trainingTypeName"), typeName)));
+                .ifPresent(typeName -> predicates.add(
+                        cb.equal(trainingRoot.get("trainingTypeDAO").get("trainingTypeName"), typeName)));
 
         cq.select(trainingRoot)
                 .where(cb.and(predicates.toArray(new Predicate[0])))
-                .orderBy(cb.asc(trainingRoot.get("trainingDate")));
+                .orderBy(cb.asc(trainingRoot.get("trainingDate")))
+                .distinct(true);
 
-        List<TrainingDAO> result = entityManager.createQuery(cq).getResultList();
-
-        return result.stream().map(trainingMapper::toDomain).toList();
+        return entityManager.createQuery(cq).getResultList().stream()
+                .map(trainingMapper::toDomain)
+                .toList();
     }
 
     private enum UserType {

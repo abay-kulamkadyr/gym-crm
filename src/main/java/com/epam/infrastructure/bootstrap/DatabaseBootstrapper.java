@@ -18,14 +18,12 @@ import com.epam.infrastructure.persistence.dao.TrainingDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.dao.UserDAO;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationListener;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +33,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Profile("local")
 @Slf4j
-public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshedEvent> {
+public class DatabaseBootstrapper implements ApplicationRunner {
+    private final EntityManager entityManager;
+    private final JsonDataLoader dataLoader;
 
     // --- Health data for actuator ---
     private final AtomicBoolean initialized = new AtomicBoolean(false);
-
-    private final JsonDataLoader dataLoader;
 
     @Getter
     private boolean isSkipped = false;
@@ -60,42 +58,36 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
     @Getter
     private Exception lastError = null;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Autowired
-    public DatabaseBootstrapper(JsonDataLoader dataLoader) {
+    public DatabaseBootstrapper(JsonDataLoader dataLoader, EntityManager entityManager) {
         this.dataLoader = dataLoader;
+        this.entityManager = entityManager;
     }
 
     @Override
     @Transactional
-    public void onApplicationEvent(@NonNull ContextRefreshedEvent event) {
-
+    public void run(ApplicationArguments args) {
+        log.info("Starting database bootstrap check...");
         try {
-            // Check if already initialized
             Long existingUserCount = entityManager
                     .createQuery("SELECT COUNT(u) FROM UserDAO u", Long.class)
                     .getSingleResult();
 
             if (existingUserCount > 0) {
-                log.info("Database already initialized ({} users found), skipping bootstrap", existingUserCount);
+                log.info("Database already populated ({} users), skipping bootstrap", existingUserCount);
                 this.userCount = existingUserCount;
                 this.isSkipped = true;
                 this.initialized.set(true);
                 return;
             }
-            this.lastError = null;
 
-            // Load bootstrap data
             InitialBootstrapData data = dataLoader.loadBootstrapData();
 
             if (data.getUsers().isEmpty()) {
-                log.warn("No bootstrap data to load found");
+                log.warn("No bootstrap data found");
                 return;
             }
 
-            // Execute bootstrap steps
             Map<String, TrainingTypeDAO> trainingTypes = persistTrainingTypes(data);
             Map<String, UserDAO> users = persistUsers(data);
             Map<String, TrainerDAO> trainers = persistTrainers(data, users, trainingTypes);
@@ -103,7 +95,6 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
             createTraineeTrainerRelationships(data, trainees, trainers);
             persistTrainings(data, trainees, trainers, trainingTypes);
 
-            // --- UPDATE TRACKING FIELDS ---
             this.trainingTypeCount = trainingTypes.size();
             this.userCount = users.size();
             this.trainerCount = trainers.size();
@@ -111,17 +102,18 @@ public class DatabaseBootstrapper implements ApplicationListener<ContextRefreshe
             this.initialized.set(true);
             this.isSkipped = false;
 
-            log.info("Database initialization complete:");
-            log.info("{} Training Types", trainingTypes.size());
-            log.info("{} Users", users.size());
-            log.info("{} Trainers", trainers.size());
-            log.info("{} Trainees", trainees.size());
+            log.info(
+                    "Bootstrap complete: {} types, {} users, {} trainers, {} trainees",
+                    trainingTypes.size(),
+                    users.size(),
+                    trainers.size(),
+                    trainees.size());
 
         } catch (Exception e) {
-            log.error("Database initialization failed", e);
+            log.error("Database bootstrap failed", e);
             this.lastError = e;
             this.initialized.set(false);
-            throw new RuntimeException("Database bootstrap error", e);
+            throw new RuntimeException("Database bootstrap failed", e);
         }
     }
 

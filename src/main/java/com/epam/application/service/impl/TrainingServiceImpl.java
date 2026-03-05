@@ -2,7 +2,6 @@ package com.epam.application.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import com.epam.application.messaging.event.TrainerWorkloadEvent;
 import com.epam.application.messaging.publisher.TrainingEventPublisher;
@@ -75,9 +74,10 @@ public class TrainingServiceImpl implements TrainingService {
                 .trainingType(trainingType)
                 .build();
 
+        // This transaction commits before the Kafka send completes
         Training savedTraining = trainingRepository.save(training);
         TrainerWorkloadEvent event = createTrainerWorkloadEvent(training, TrainerWorkloadEvent.ActionType.ADD);
-        eventPublisher.publishTrainingCreated(event);
+        eventPublisher.publishTrainingCreated(event); // fire and forget
 
         return savedTraining;
     }
@@ -98,18 +98,23 @@ public class TrainingServiceImpl implements TrainingService {
     public void deleteTraining(String traineeUsername, String trainerUsername, LocalDateTime date) {
         log.debug("Deleting training for trainee: {}, trainer: {} on date: {}", traineeUsername, trainerUsername, date);
 
-        Training training = trainingRepository
+        trainingRepository
                 .findByTrainerUsernameAndTraineeUsernameAndDate(trainerUsername, traineeUsername, date)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(
-                        "Training not found for trainee: %s, trainer: %s, date: %s",
-                        traineeUsername, trainerUsername, date)));
+                .ifPresentOrElse(
+                        training -> {
+                            trainingRepository.deleteByTraineeTrainerAndDate(traineeUsername, trainerUsername, date);
 
-        trainingRepository.deleteByTraineeTrainerAndDate(traineeUsername, trainerUsername, date);
+                            TrainerWorkloadEvent event =
+                                    createTrainerWorkloadEvent(training, TrainerWorkloadEvent.ActionType.DELETE);
+                            eventPublisher.publishTrainingDeleted(event);
 
-        TrainerWorkloadEvent event = createTrainerWorkloadEvent(training, TrainerWorkloadEvent.ActionType.DELETE);
-        eventPublisher.publishTrainingDeleted(event);
-
-        log.info("Successfully deleted training and published deletion event");
+                            log.info("Successfully deleted training and published deletion event");
+                        },
+                        () -> log.warn(
+                                "Delete skipped: No training found for trainee: {}, trainer: {} on date: {}",
+                                traineeUsername,
+                                trainerUsername,
+                                date));
     }
 
     private Trainee findTraineeOrThrow(String username) {
@@ -144,29 +149,5 @@ public class TrainingServiceImpl implements TrainingService {
                 .trainingDurationMinutes(training.getTrainingDurationMin())
                 .actionType(actionType)
                 .build();
-    }
-
-    private Optional<TrainerWorkloadEvent> createTrainerWorkloadEvent(
-            String trainerUsername,
-            String traineeUsername,
-            LocalDateTime date,
-            TrainerWorkloadEvent.ActionType actionType) {
-        Optional<Training> trainingOptional = trainingRepository.findByTrainerUsernameAndTraineeUsernameAndDate(
-                trainerUsername, traineeUsername, date);
-        if (trainingOptional.isEmpty()) {
-            return Optional.empty();
-        }
-        Training training = trainingOptional.get();
-        Trainer trainer = training.getTrainer();
-
-        return Optional.of(TrainerWorkloadEvent.builder()
-                .trainerFirstname(trainer.getFirstName())
-                .trainerLastname(trainer.getLastName())
-                .trainerUsername(trainer.getUsername())
-                .isActive(trainer.getActive())
-                .trainingDate(date)
-                .trainingDurationMinutes(training.getTrainingDurationMin())
-                .actionType(actionType)
-                .build());
     }
 }

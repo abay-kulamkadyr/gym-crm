@@ -11,9 +11,7 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,10 +54,9 @@ public class UserController implements UserControllerApi {
 
     @Override
     @PutMapping("/password")
-    @PreAuthorize("#username == authentication.name")
     public ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request) {
-        String username = userDetails.getUsername();
+            Authentication authentication, @Valid @RequestBody ChangePasswordRequest request) {
+        String username = authentication.getName();
         log.info("Password change request for user: {}", username);
         passwordManagementUseCase.changePassword(username, request.oldPassword(), request.newPassword());
         return ResponseEntity.ok().build();

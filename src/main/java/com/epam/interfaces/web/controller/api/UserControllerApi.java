@@ -7,8 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
@@ -20,7 +19,7 @@ public interface UserControllerApi {
 
     @Operation(summary = "Change Password", description = "Change user password")
     ResponseEntity<Void> changePassword(
-            @AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody ChangePasswordRequest request);
+            Authentication authentication, @Valid @RequestBody ChangePasswordRequest request);
 
     @Operation(
             summary = "Logout",
