@@ -159,10 +159,10 @@ public class TrainingRepositoryImpl implements TrainingRepository {
 
         // Eagerly loads associated data in a single SQL query via JOINs, preventing per-row SELECT statements
         Fetch<TrainingDAO, TraineeDAO> traineeFetch = trainingRoot.fetch("traineeDAO", JoinType.INNER);
-        traineeFetch.fetch("userDAO", JoinType.INNER); // ✅ also fetch the nested userDAO
+        traineeFetch.fetch("userDAO", JoinType.INNER); // also fetch the nested userDAO
 
         Fetch<TrainingDAO, TrainerDAO> trainerFetch = trainingRoot.fetch("trainerDAO", JoinType.INNER);
-        trainerFetch.fetch("userDAO", JoinType.INNER); // ✅ same here
+        trainerFetch.fetch("userDAO", JoinType.INNER); // same here
 
         trainingRoot.fetch("trainingTypeDAO", JoinType.INNER);
 
