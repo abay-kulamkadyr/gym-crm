@@ -196,6 +196,19 @@
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco.version}</version>
+        <configuration>
+          <excludes>
+            <exclude>com/epam/application/event/**/*</exclude>
+            <exclude>com/epam/application/exception/**/*</exclude>
+            <exclude>com/epam/application/messaging/**/*</exclude>
+            <exclude>com/epam/application/request/**/*</exclude>
+            <exclude>com/epam/infrastructure/bootstrap/dto/**/*</exclude>
+            <exclude>com/epam/interfaces/web/dto/**/*</exclude>
+            <exclude>com/epam/interfaces/web/client/**/*</exclude>
+            <exclude>com/epam/domain/model/**/*</exclude>
+            <exclude>com/epam/Main.class</exclude>
+          </excludes>
+        </configuration>
         <executions>
           <execution>
             <id>prepare-agent</id>
@@ -229,12 +242,6 @@
                   </limits>
                 </rule>
               </rules>
-              <excludes>  <!-- exclude generated/boilerplate from coverage -->
-                <exclude>com/epam/infrastructure/bootstrap/dto/**</exclude>
-                <exclude>com/epam/interfaces/web/dto/**</exclude>
-                <exclude>com/epam/domain/model/**</exclude>
-                <exclude>com/epam/Main.class</exclude>
-              </excludes>
             </configuration>
           </execution>
         </executions>
