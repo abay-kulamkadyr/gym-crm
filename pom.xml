@@ -24,8 +24,88 @@
     <springdoc.version>2.8.6</springdoc.version>
     <jacoco.version>0.8.12</jacoco.version>
     <spotless.version>2.43.0</spotless.version>
+    <resttemplate.version>4.0.1</resttemplate.version>
+    <cucumber.version>7.18.0</cucumber.version>
     <jacoco.minimum.coverage>0.70</jacoco.minimum.coverage>
   </properties>
+  <profiles>
+    <!-- Run only unit tests (default, fastest) -->
+    <profile>
+      <id>unit</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/unit/**/*Test.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Run only integration + component + unit tests -->
+    <profile>
+      <id>integration</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/integration/**/*Test.java</include>
+                <include>**/component/**/*Test.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Run only Cucumber E2E tests -->
+    <profile>
+      <id>e2e</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/e2e/CucumberTestSuite.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Run everything -->
+    <profile>
+      <id>all-tests</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/*Test.java</include>
+                <include>**/e2e/CucumberTestSuite.java</include>
+              </includes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
   <dependencies>
     <!-- ===== Core ===== -->
@@ -65,7 +145,7 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- ===== Observability ===== -->
+    <!-- ===== Observability & Metrics ===== -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
@@ -158,8 +238,36 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mongodb</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.awaitility</groupId>
       <artifactId>awaitility</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-spring</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <version>${cucumber.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -222,11 +330,16 @@
             <exclude>com/epam/application/exception/**/*</exclude>
             <exclude>com/epam/application/messaging/**/*</exclude>
             <exclude>com/epam/application/request/**/*</exclude>
-            <exclude>com/epam/infrastructure/bootstrap/dto/**/*</exclude>
             <exclude>com/epam/interfaces/web/dto/**/*</exclude>
             <exclude>com/epam/interfaces/web/client/**/*</exclude>
             <exclude>com/epam/domain/model/**/*</exclude>
+            <exclude>com/epam/infrastructure/bootstrap/dto/**/*</exclude>
+            <exclude>com/epam/infrastructure/security/authentication_token/**/*</exclude>
+            <exclude>com/epam/infrastructure/monitoring/**/*</exclude>
+            <exclude>com/epam/infrastructure/persistence/exception/**/*</exclude>
+            <exclude>com/epam/application/Credentials.class</exclude>
             <exclude>com/epam/Main.class</exclude>
+            <exclude>com/epam/infrastructure/bootstrap/**/*</exclude>
           </excludes>
         </configuration>
         <executions>

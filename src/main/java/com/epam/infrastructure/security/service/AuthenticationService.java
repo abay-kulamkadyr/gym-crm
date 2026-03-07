@@ -40,7 +40,7 @@ public class AuthenticationService implements AuthenticationUseCase {
     private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
-    AuthenticationService(
+    public AuthenticationService(
             AuthenticationManager authManager,
             TokenService tokenService,
             TokenBlacklist tokenBlacklist,

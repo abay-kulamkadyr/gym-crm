@@ -3,15 +3,19 @@ package com.epam.application.service.impl;
 import java.util.List;
 
 import com.epam.application.event.TraineeRegisteredEvent;
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.application.exception.ValidationException;
+import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTraineeProfileRequest;
 import com.epam.application.request.UpdateTraineeProfileRequest;
 import com.epam.application.service.TraineeService;
 import com.epam.application.util.CredentialsUtil;
+import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
+import com.epam.domain.model.Training;
 import com.epam.domain.port.TraineeRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.epam.domain.port.TrainingRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -30,6 +34,10 @@ public class TraineeServiceImpl implements TraineeService {
 
     private PasswordEncoder passwordEncoder;
 
+    private TrainingRepository trainingRepository;
+
+    private TrainingEventPublisher trainingEventPublisher;
+
     @Autowired
     void setTraineeRepository(TraineeRepository traineeRepository) {
         this.traineeRepository = traineeRepository;
@@ -43,6 +51,16 @@ public class TraineeServiceImpl implements TraineeService {
     @Autowired
     void setPasswordEncoder(PasswordEncoder encoder) {
         this.passwordEncoder = encoder;
+    }
+
+    @Autowired
+    void setTrainingRepository(TrainingRepository repository) {
+        this.trainingRepository = repository;
+    }
+
+    @Autowired
+    void setTrainingEventPublisher(TrainingEventPublisher eventPublisher) {
+        this.trainingEventPublisher = eventPublisher;
     }
 
     @Override
@@ -120,6 +138,10 @@ public class TraineeServiceImpl implements TraineeService {
     @Override
     public void deleteProfile(String username) {
         findTraineeByUsernameOrThrow(username);
+
+        List<Training> trainings = trainingRepository.getTraineeTrainings(username, TrainingFilter.empty());
+        trainingEventPublisher.publishDeleteEventsForTrainings(trainings);
+
         traineeRepository.deleteByUsername(username);
     }
 

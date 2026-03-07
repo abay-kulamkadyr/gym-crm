@@ -3,18 +3,22 @@ package com.epam.application.service.impl;
 import java.util.List;
 
 import com.epam.application.event.TrainerRegisteredEvent;
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.application.exception.ValidationException;
+import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTrainerProfileRequest;
 import com.epam.application.request.UpdateTrainerProfileRequest;
 import com.epam.application.service.TrainerService;
 import com.epam.application.util.CredentialsUtil;
+import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
+import com.epam.domain.model.Training;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainerRepository;
+import com.epam.domain.port.TrainingRepository;
 import com.epam.domain.port.TrainingTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -35,6 +39,10 @@ public class TrainerServiceImpl implements TrainerService {
 
     private PasswordEncoder passwordEncoder;
 
+    private TrainingRepository trainingRepository;
+
+    private TrainingEventPublisher trainingEventPublisher;
+
     @Autowired
     void setTrainerRepository(TrainerRepository trainerRepository) {
         this.trainerRepository = trainerRepository;
@@ -53,6 +61,16 @@ public class TrainerServiceImpl implements TrainerService {
     @Autowired
     void setApplicationEventPublisher(ApplicationEventPublisher publisher) {
         this.applicationEventPublisher = publisher;
+    }
+
+    @Autowired
+    void setTrainingRepository(TrainingRepository trainingRepository) {
+        this.trainingRepository = trainingRepository;
+    }
+
+    @Autowired
+    void setTrainingEventPublisher(TrainingEventPublisher eventPublisher) {
+        this.trainingEventPublisher = eventPublisher;
     }
 
     @Override
@@ -134,6 +152,10 @@ public class TrainerServiceImpl implements TrainerService {
     @Override
     public void deleteProfile(String username) {
         findTrainerByUsernameOrThrow(username);
+
+        List<Training> trainings = trainingRepository.getTrainerTrainings(username, TrainingFilter.empty());
+        trainingEventPublisher.publishDeleteEventsForTrainings(trainings);
+
         trainerRepository.deleteByUsername(username);
     }
 
