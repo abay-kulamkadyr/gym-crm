@@ -3,6 +3,7 @@ package com.epam.application.service.impl;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.application.messaging.event.TrainerWorkloadEvent;
 import com.epam.application.messaging.publisher.TrainingEventPublisher;
 import com.epam.application.request.CreateTrainingRequest;
@@ -17,7 +18,6 @@ import com.epam.domain.port.TraineeRepository;
 import com.epam.domain.port.TrainerRepository;
 import com.epam.domain.port.TrainingRepository;
 import com.epam.domain.port.TrainingTypeRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

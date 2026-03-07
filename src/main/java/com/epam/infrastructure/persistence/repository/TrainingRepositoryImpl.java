@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.domain.TrainingFilter;
 import com.epam.domain.model.Training;
 import com.epam.domain.port.TrainingRepository;
@@ -13,7 +14,6 @@ import com.epam.infrastructure.persistence.dao.TrainerDAO;
 import com.epam.infrastructure.persistence.dao.TrainingDAO;
 import com.epam.infrastructure.persistence.mapper.TrainingMapper;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;

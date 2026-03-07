@@ -3,13 +3,13 @@ package com.epam.infrastructure.persistence.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.domain.model.TrainingType;
 import com.epam.domain.model.TrainingTypeEnum;
 import com.epam.domain.port.TrainingTypeRepository;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.mapper.TrainingTypeMapper;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;

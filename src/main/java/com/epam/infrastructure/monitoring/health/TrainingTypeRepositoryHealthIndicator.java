@@ -7,12 +7,12 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
 
 @Component("training-types")
-class TrainingTypeRepositoryHealthIndicator implements HealthIndicator {
+public class TrainingTypeRepositoryHealthIndicator implements HealthIndicator {
 
     private final TrainingTypeRepository trainingTypeRepository;
 
     @Autowired
-    TrainingTypeRepositoryHealthIndicator(TrainingTypeRepository repository) {
+    public TrainingTypeRepositoryHealthIndicator(TrainingTypeRepository repository) {
         this.trainingTypeRepository = repository;
     }
 

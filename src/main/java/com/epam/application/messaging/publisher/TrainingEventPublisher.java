@@ -1,8 +1,10 @@
 package com.epam.application.messaging.publisher;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.epam.application.messaging.event.TrainerWorkloadEvent;
+import com.epam.domain.model.Training;
 import com.epam.infrastructure.logging.MdcConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -70,5 +72,21 @@ public class TrainingEventPublisher {
                 log.error("Failed to publish training deletion event for trainer: {}", event.getTrainerUsername(), ex);
             }
         });
+    }
+
+    public void publishDeleteEventsForTrainings(List<Training> trainings) {
+        for (Training training : trainings) {
+            TrainerWorkloadEvent event = TrainerWorkloadEvent.builder()
+                    .trainerUsername(training.getTrainer().getUsername())
+                    .trainerFirstname(training.getTrainer().getFirstName())
+                    .trainerLastname(training.getTrainer().getLastName())
+                    .isActive(training.getTrainer().getActive())
+                    .trainingDate(training.getTrainingDate())
+                    .trainingDurationMinutes(training.getTrainingDurationMin())
+                    .actionType(TrainerWorkloadEvent.ActionType.DELETE)
+                    .build();
+
+            publishTrainingDeleted(event);
+        }
     }
 }

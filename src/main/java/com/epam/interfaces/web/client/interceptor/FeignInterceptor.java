@@ -1,6 +1,7 @@
 package com.epam.interfaces.web.client.interceptor;
 
 import com.epam.infrastructure.logging.MdcConstants;
+import com.epam.infrastructure.security.core.FeignTokenHolder;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,8 @@ public class FeignInterceptor implements RequestInterceptor {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
         if (attributes == null) {
-            log.warn("No request attributes available - cannot propagate headers");
+            String token = FeignTokenHolder.get();
+            if (token != null) template.header("Authorization", token);
             return;
         }
 

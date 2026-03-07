@@ -5,15 +5,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.application.exception.ValidationException;
 import com.epam.infrastructure.logging.MdcConstants;
 import com.epam.interfaces.web.dto.response.ErrorResponse;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.CircuitBreakingException;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -60,7 +61,7 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
     }
 
-    @ExceptionHandler({AuthenticationException.class, AuthorizationDeniedException.class})
+    @ExceptionHandler({AuthenticationException.class})
     public ResponseEntity<ErrorResponse> handleAuthenticationException(Exception ex, WebRequest request) {
 
         logException(ex, request, null);
@@ -71,7 +72,19 @@ class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
-    @ExceptionHandler({ValidationException.class, IllegalArgumentException.class})
+    @ExceptionHandler({AuthorizationDeniedException.class})
+    public ResponseEntity<ErrorResponse> handleAuthorizationException(Exception ex, WebRequest request) {
+
+        logException(ex, request, null);
+
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.FORBIDDEN, "You are not allowed to view the resource", ex.getMessage(), request);
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    @ExceptionHandler({ValidationException.class, IllegalArgumentException.class, HttpMessageNotReadableException.class
+    })
     public ResponseEntity<ErrorResponse> handleBadRequestExceptions(Exception ex, WebRequest request) {
 
         logException(ex, request, null);

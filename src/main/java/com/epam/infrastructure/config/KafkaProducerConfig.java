@@ -12,8 +12,14 @@ public class KafkaProducerConfig {
     @Value("${app.kafka.topics.training-created}")
     private String trainingTopic;
 
+    @Value("${app.kafka.topics.training-created-partitions:3}")
+    private int partitions;
+
     @Bean
     public NewTopic trainerWorkloadTopic() {
-        return TopicBuilder.name(trainingTopic).partitions(3).replicas(1).build();
+        return TopicBuilder.name(trainingTopic)
+                .partitions(partitions)
+                .replicas(1)
+                .build();
     }
 }

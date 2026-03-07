@@ -29,7 +29,7 @@ public class JwtTokenServiceAdapter implements TokenService {
     private final Clock clock;
 
     @Autowired
-    JwtTokenServiceAdapter(
+    public JwtTokenServiceAdapter(
             @Value("${security.jwt.secret}") String secret,
             @Value("${security.jwt.lifetime}") Duration tokenLifetime,
             Clock clock) {

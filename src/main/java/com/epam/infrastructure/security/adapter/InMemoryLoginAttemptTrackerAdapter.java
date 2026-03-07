@@ -31,7 +31,7 @@ public class InMemoryLoginAttemptTrackerAdapter implements LoginAttemptTracker {
     private Duration lockoutDuration;
 
     @Autowired
-    InMemoryLoginAttemptTrackerAdapter(Clock clock) {
+    public InMemoryLoginAttemptTrackerAdapter(Clock clock) {
         this.clock = clock;
     }
 

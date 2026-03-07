@@ -1,5 +1,6 @@
 package com.epam.infrastructure.persistence.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import com.epam.domain.model.User;
@@ -22,19 +23,19 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<User> findByUsername(String username) {
         String query =
                 """
-                           SELECT u FROM UserDAO u
-                           LEFT JOIN FETCH u.traineeDAO
-                           LEFT JOIN FETCH u.trainerDAO
-                           WHERE u.username = :username
-                       """;
+            SELECT u FROM UserDAO u
+            LEFT JOIN FETCH u.traineeDAO
+            LEFT JOIN FETCH u.trainerDAO
+            WHERE u.username = :username
+            """;
 
-        Optional<UserDAO> userOpt = entityManager
+        List<UserDAO> results = entityManager
                 .createQuery(query, UserDAO.class)
                 .setParameter("username", username)
-                .getResultStream()
-                .findFirst();
+                .setMaxResults(1)
+                .getResultList();
 
-        return userOpt.map(this::mapToDomain);
+        return results.isEmpty() ? Optional.empty() : Optional.of(mapToDomain(results.get(0)));
     }
 
     private User mapToDomain(UserDAO userDAO) {
