@@ -1,5 +1,6 @@
 package com.epam.infrastructure.persistence.mapper;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.Training;
@@ -10,7 +11,6 @@ import com.epam.infrastructure.persistence.dao.TrainingDAO;
 import com.epam.infrastructure.persistence.dao.TrainingTypeDAO;
 import com.epam.infrastructure.persistence.exception.MappingException;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;

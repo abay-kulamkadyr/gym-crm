@@ -3,6 +3,7 @@ package com.epam.infrastructure.persistence.repository;
 import java.util.List;
 import java.util.Optional;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.port.TrainerRepository;
@@ -12,7 +13,6 @@ import com.epam.infrastructure.persistence.mapper.TraineeMapper;
 import com.epam.infrastructure.persistence.mapper.TrainerMapper;
 import com.epam.infrastructure.persistence.util.UsernameFinder;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.lang.NonNull;

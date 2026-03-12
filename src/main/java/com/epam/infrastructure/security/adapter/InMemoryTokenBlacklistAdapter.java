@@ -22,7 +22,7 @@ public class InMemoryTokenBlacklistAdapter implements TokenBlacklist {
     private final Clock clock;
 
     @Autowired
-    InMemoryTokenBlacklistAdapter(Clock clock) {
+    public InMemoryTokenBlacklistAdapter(Clock clock) {
         this.clock = clock;
     }
 

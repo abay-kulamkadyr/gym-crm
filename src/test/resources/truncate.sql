@@ -1,0 +1,13 @@
+TRUNCATE TABLE trainings        RESTART IDENTITY CASCADE;
+TRUNCATE TABLE trainee_trainer  RESTART IDENTITY CASCADE;
+TRUNCATE TABLE trainees         RESTART IDENTITY CASCADE;
+TRUNCATE TABLE trainers         RESTART IDENTITY CASCADE;
+TRUNCATE TABLE users            RESTART IDENTITY CASCADE;
+TRUNCATE TABLE training_types   RESTART IDENTITY CASCADE;
+
+-- Reset sequences so auto-generated IDs start from 101 again after truncation
+ALTER SEQUENCE trainings_seq      RESTART WITH 101;
+ALTER SEQUENCE trainees_seq       RESTART WITH 101;
+ALTER SEQUENCE trainers_seq       RESTART WITH 101;
+ALTER SEQUENCE users_seq          RESTART WITH 101;
+ALTER SEQUENCE training_types_seq RESTART WITH 101;

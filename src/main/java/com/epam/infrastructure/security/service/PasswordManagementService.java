@@ -1,12 +1,12 @@
 package com.epam.infrastructure.security.service;
 
+import com.epam.application.exception.EntityNotFoundException;
 import com.epam.application.facade.GymFacade;
 import com.epam.domain.model.Trainee;
 import com.epam.domain.model.Trainer;
 import com.epam.domain.model.User;
 import com.epam.domain.port.UserRepository;
 import com.epam.infrastructure.security.port.in.PasswordManagementUseCase;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;

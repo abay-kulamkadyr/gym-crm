@@ -755,25 +755,89 @@ The project follows standard Java conventions:
 
 ### Running Tests
 
+#### Prerequisites for Integration & Cucumber Tests
+
+The integration and Cucumber end-to-end tests require a locally built Docker image of the
+Trainer Workload Service, since the tests spin it up as a Testcontainer.
+
+**Step 1 — Clone and build the Trainer Workload Service image**
 ```bash
-# Run all tests
-./mvnw test
-
-# Run specific test class
-./mvnw test -Dtest=TraineeServiceTest
-
-# Run with coverage
-./mvnw test jacoco:report
+git clone git@github.com:abay-kulamkadyr/trainer-workload-service.git
+cd trainer-workload-service
+./mvnw spring-boot:build-image -DskipTests
 ```
+
+Verify the image is available:
+```bash
+docker images | grep trainer-workload-service
+# Expected: trainer-workload-service   0.0.1-SNAPSHOT   ...
+```
+
+> The image name and tag must exactly match `trainer-workload-service:0.0.1-SNAPSHOT`
+> as defined in `TestImages.TRAINER_WORKLOAD`. If you change the version, update
+> `TestImages.java` accordingly.
+
+**Step 2 — Ensure Docker is running**
+
+The test suite starts PostgreSQL, Kafka, MongoDB, and the Trainer Workload Service
+automatically via Testcontainers. Docker must be running before executing any
+integration or Cucumber tests.
+
+---
+
+### Running Test Suites
+
+| Command | Runs | Requires Docker |
+|---------|------|-----------------|
+| `./mvnw test` | Unit tests only | No |
+| `./mvnw test -Pintegration` | Integration + component tests | Yes |
+| `./mvnw test -Pe2e` | Cucumber E2E tests | Yes (+ workload image) |
+| `./mvnw test -Pall-tests` | All tests | Yes (+ workload image) |
+---
 
 ### Test Infrastructure
 
-| Test Type | Technology                                            | Notes |
-|-----------|-------------------------------------------------------|-------|
-| Unit tests | JUnit 5 + Mockito                                     | Service and utility classes |
-| Integration tests | Spring Boot Test + Test containers  | Full application context |
-| Controller tests | `@WebMvcTest` + MockMvc                               | Slice tests, security disabled via `@ImportAutoConfiguration(exclude = SecurityAutoConfiguration.class)` |
+| Test Type | Base Class | Technology | Notes |
+|-----------|-----------|------------|-------|
+| Unit tests | — | JUnit 5 + Mockito | No Spring context, fast |
+| Controller tests | — | `@WebMvcTest` + MockMvc | Slice tests, security excluded |
+| Transactional integration tests | `TransactionalTestBase` | Spring Boot Test + Testcontainers | Full context, rolls back after each test |
+| Component (HTTP) tests | `ComponentTestBase` | Spring Boot Test + `TestRestTemplate` | Full HTTP stack, DB re-seeded per method |
+| Cucumber E2E tests | `CucumberSpringConfiguration` | Cucumber + Testcontainers | Requires workload Docker image (see above) |
 
+---
+
+### Shared Container Architecture
+
+All integration and Cucumber tests share a **single set of containers** started once per
+JVM via `SharedContainers`. This avoids redundant container startup overhead across
+test classes. Containers are stopped automatically by the Testcontainers Ryuk reaper
+when the JVM exits.
+
+| Container | Image | Purpose |
+|-----------|-------|---------|
+| PostgreSQL | `postgres:16-alpine` | Primary relational database |
+| Kafka | `confluentinc/cp-kafka:7.6.0` | Event streaming (internal port `19092`) |
+| MongoDB | `mongo:6` | Workload service data store |
+| Trainer Workload Service | `trainer-workload-service:0.0.1-SNAPSHOT` | Downstream microservice under test |
+
+---
+
+### Troubleshooting Tests
+
+**`Could not find a valid Docker environment`**
+→ Docker is not running. Start Docker Desktop or the Docker daemon.
+
+**`trainer-workload-service:0.0.1-SNAPSHOT` image not found**
+→ Build the workload service image first (see Prerequisites above).
+
+**Tests pass individually but fail together (HikariPool timeout)**
+→ This indicates a shared context issue. Ensure you are using `SharedContainers`
+and not re-declaring `@Container` fields in subclasses.
+
+**Cucumber workload assertion times out after 15 seconds**
+→ Check that the Kafka listener port is `19092` in both `SharedContainers` and the
+workload service's `SPRING_KAFKA_BOOTSTRAP_SERVERS` env var.
 
 ## License
 
